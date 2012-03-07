@@ -12,6 +12,11 @@ class File(object):
     def name(self):
         return self._name
 
+    # We want to be able to rename the files
+    @name.setter
+    def name(self, name):
+        self._name = name
+
     @property
     def hash(self):
         return self._hash

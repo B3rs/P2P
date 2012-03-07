@@ -1,16 +1,6 @@
-class User(object):
+from mongoengine import *
 
-    def __init__(self, ip, port):
-        self._ip = ip
-        self._port = port
-
-    def destroy(self):
-        print "destroy tdb"
-
-    @property
-    def ip(self):
-        return self._ip
-
-    @property
-    def port(self):
-        return self._port
+class User(Document):
+    ip = StringField() #TODO make specs complaint
+    port = IntField() #TODO make specs complaint
+    session_id = StringField(min_length = 10, max_length = 10)

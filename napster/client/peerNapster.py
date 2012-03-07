@@ -2,8 +2,8 @@ __author__ = 'ingiulio maury puccigui'
 import socket
 from socket import *
 
-host = "10.42.43.1" #da mettere quello di luca
-port = 800 #giusta?
+host = "10.42.43.1" #mettere quello della directory
+port = 800
 addr = host, port
 
 while 1:
@@ -20,14 +20,13 @@ while 1:
 
     def login():
 
-        print "Sto per fare: login\n"
-        dir = socket(AF_INET, SOCK_STREAM) #creo la socket lato client #ho rinominato la socket (adesso si chiama dir come directory)
-        print "ho fatto dir = socket()"
-        dir.connect(addr) #mi connetto alla directory centralizzata
-        print "Connessione con il Server stabilita"
+        print "Login...\n"
+        dir = socket(AF_INET, SOCK_STREAM)
+        dir.connect(addr)
+        print "Connection with directory enstablished"
         my_IP = dir.getsockname()[0]
 
-        print "mio IP: " + my_IP
+        print "My IP: " + my_IP
         my_IP_split = my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
         IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
@@ -37,42 +36,48 @@ while 1:
 
 
         my_port = str(dir.getsockname()[1])
-        print "mia porta: " + my_port
+        print "My porta: " + my_port
         PORT = '%(#)05d' % {"#" : int(my_port)}
 
-        dir.send("LOGI." + IP_tot + "." + PORT) #mando alla directory la stringa di login
+        dir.send("LOGI" + IP_tot + PORT)
 
-        ack = dir.recv(21)
+        # acknowledge
+        ack = dir.recv(20)
         print ack
 
-        if ack[:4]=="ALOG":
-            print "ok, ack ricevuto\n"
-            session_ID = ack[5:21]
-            print "session ID: " + session_ID + "\n"
+        if ack[:4]=="ALOG": #se non funziona ALOG usare ALGI
+            print "OK, ack received\n"
+            session_ID = ack[4:20]
+            print "Session ID: " + session_ID + "\n"
         else :
-            print "ko, ack errato\n"
+            print "KO, ack parsing failed\n"
+
+        if ack[4:20]=="0000000000000000":
+            print "Login failed: try again!"
+            dir.close()
 
 
 
     def addfile():
-        print "Sto per fare: aggiunta file\n"
+        print "Add file...\n"
 
     def delfile():
-        print "Sto per fare: rimozione file\n"
+        print "Delete file...\n"
 
     def logout():
-        print "Sto per fare: logout\n"
+        print "Logout...\n"
 
     def find():
-        print "Sto per fare: ricerca file\n"
+        print "Find...\n"
 
     def download():
-        print "Sto per fare: download file\n"
+        print "Download...\n"
 
     def error():
-        print "Errore! Scegli bene!\n"
+        print "Option not valid: try again!\n"
 
     options = {
+
         '1' : login,
         '2' : addfile,
         '3' : delfile,
@@ -83,7 +88,6 @@ while 1:
 
     print 
 
-    options.get(data,error)() #esegue la funzione che l'utente ha specificato
-                                #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
+    options.get(data,error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
 
 print "\nFine."

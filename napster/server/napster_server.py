@@ -1,5 +1,5 @@
-from napster.server.managers.filesmanager import FilesManager
-from napster.server.managers.usersmanager import UserManager
+from managers.filesmanager import FilesManager
+from managers.usersmanager import UserManager
 
 class NapsterServer:
     def __init__(self):

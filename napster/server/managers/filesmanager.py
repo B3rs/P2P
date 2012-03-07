@@ -1,6 +1,6 @@
 __author__ = 'luca'
 
-from napster.server.models.file import File
+from models.file import File
 
 class FilesManager:
 

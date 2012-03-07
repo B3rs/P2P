@@ -1,4 +1,4 @@
-class File:
+class File(object):
 
     def __init__(self, name, hash, user):
         self._name = name

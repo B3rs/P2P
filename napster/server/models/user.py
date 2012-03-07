@@ -1,4 +1,4 @@
-class User:
+class User(object):
 
     def __init__(self, ip, port):
         self._ip = ip

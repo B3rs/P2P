@@ -5,6 +5,7 @@ from socket import *
 host = "10.42.43.1" #mettere quello della directory
 port = 800
 addr = host, port
+P2P_port = 6500
 
 while 1:
 
@@ -32,14 +33,13 @@ while 1:
         IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
         IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
         IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
-        IP_tot = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4
-
+        IPP2P = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4
 
         my_port = str(dir.getsockname()[1])
-        print "My porta: " + my_port
-        PORT = '%(#)05d' % {"#" : int(my_port)}
+        print "My port: " + my_port
+        PP2P = '%(#)05d' % {"#" : int(P2P_port)}
 
-        dir.send("LOGI" + IP_tot + PORT)
+        dir.send("LOGI" + IPP2P + PP2P)
 
         # acknowledge
         ack = dir.recv(20)
@@ -49,6 +49,10 @@ while 1:
             print "OK, ack received\n"
             session_ID = ack[4:20]
             print "Session ID: " + session_ID + "\n"
+	    # server socket creation
+	    peersocket = socket(AF_INET, SOCK_STREAM)
+	    peersocket.bind(my_IP,PP2P)
+	    peersocket.listen(100)
         else :
             print "KO, ack parsing failed\n"
 

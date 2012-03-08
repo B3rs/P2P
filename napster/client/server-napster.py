@@ -1,8 +1,8 @@
 ### server
 
 from socket import *
-host = "127.0.0.1"
-port = 80
+host = "192.168.0.194"
+port = 800
 
 test = socket(AF_INET, SOCK_STREAM)
 test.bind((host, port))

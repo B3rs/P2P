@@ -2,7 +2,7 @@ import mongodbmanager
 from models.file import File
 from models.user import User
 
-class FilesManager:
+class FilesManager(object):
 
     @classmethod
     def find_file_by_query(cls, query):
@@ -10,9 +10,19 @@ class FilesManager:
         pass
 
     @classmethod
-    def find_file_by_hash(cls, hash):
+    def find_file_by_hash_and_sessionid(cls, hash, session_id):
         mongodbmanager.connect()
-        return File.objects(hash = hash).first()
+        return File.objects(hash = hash, session_id = session_id).first()
+
+    @classmethod
+    def find_files_by_hash(cls, hash):
+        mongodbmanager.connect()
+        return File.objects(hash = hash).all()
+
+    @classmethod
+    def count_files_by_hash(cls, hash):
+        mongodbmanager.connect()
+        return File.objects(hash = hash).count()
 
     @classmethod
     def find_files_for_user(cls, user):

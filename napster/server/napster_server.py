@@ -1,7 +1,8 @@
 from managers.filesmanager import FilesManager
-from managers.usersmanager import UserManager
+from managers.usersmanager import UsersManager
 import socket, os
 from threading import Thread
+from custom_utils.logging import klog
 
 
 class ServiceThread(Thread):
@@ -9,23 +10,30 @@ class ServiceThread(Thread):
         self._socket = socket
         super(ServiceThread, self).__init__()
 
-    def login_user(self, ipp2p, pp2p):
-        #UserManager.create_user("123123", "ssss")
-        print "tdb"
-        session_id = "1234567812345678"
-        return session_id
+    def login_user(self, ip, port):
+        user = UsersManager.create_user(ip, port)
+        return user.session_id
 
-    def logout_user(self, socket):
-        print "tdb"
+    def logout_user(self, session_id):
+        user = UsersManager.find_user_by_session_id(session_id)
+        if user:
+            numdeleted = FilesManager.delete_files_for_user(user)
+            UsersManager.delete_user(user)
+            return numdeleted
+        else:
+            return -1
 
-    def add_file(self, session_id, md5, file_name):
-        FilesManager.create_file("prova", "sssss", "ssss")
-        print "tdb"
-        #return copy_number
+    def add_file(self, session_id, hash, file_name):
+        user = UsersManager.find_user_by_session_id(session_id)
+        if user:
+            FilesManager.create_file(file_name, hash, user)
+        return FilesManager.count_files_by_hash(hash)
 
-    def remove_file(self, session_id, md5):
-        print "tdb"
-        #return copy_number
+    def remove_file(self, session_id, hash):
+        file = FilesManager.find_file_by_hash_and_sessionid(hash, session_id)
+        if file:
+            FilesManager.delete_file(file)
+        return FilesManager.count_files_by_hash(hash)
 
     def find_file(self, session_id, query_string):
         print "tdb"
@@ -36,29 +44,36 @@ class ServiceThread(Thread):
         #return download_number
 
     def run(self):
-        print "trhead started"
+        print "thread started"
         while 1:
             try:
+                #TODO: cambiare questo perche la recv tenta di leggere byte anche se non ce ne sono e va in loop, che si fa?
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":
                     peer_ip = str(self._socket.recv(15))
                     peer_port = str(self._socket.recv(5))
                     session_id = str(self.login_user(peer_ip, peer_port))
+                    klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
                     self._socket.send("ALOG"+session_id)
+                    klog("Sent ALOG to: %s, port: %s" %(peer_ip, peer_port))
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_md5 = str(self._socket.recv(16))
+                    file_hash = str(self._socket.recv(16))
                     file_name = str(self._socket.recv(100))
-                    copy_num = self.add_file(peer_session_id, file_md5, file_name)
+                    copy_num = str(self.add_file(peer_session_id, file_hash, file_name))
+                    klog("Received a ADDF, from: %s. Hash: %s. Filename: %s. Files with same hash: %d" %(peer_session_id, file_hash, file_name, copy_num))
                     self._socket.send("AADD"+copy_num)
+                    klog("Sent AADD to: %s. Files copy num: %s" %(peer_session_id, copy_num))
 
                 elif command == "DELF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_md5 = str(self._socket.recv(16))
-                    copy_num = self.remove_file(peer_session_id, file_md5)
+                    file_hash = str(self._socket.recv(16))
+                    copy_num = str(self.remove_file(peer_session_id, file_hash))
+                    klog("Received a DELF, from: %s. Hash: %s. Remaining files with same hash: %d" %(peer_session_id, file_hash, copy_num))
                     self._socket.send("ADEL"+copy_num)
+                    klog("Sent ADEL to: %s" %(peer_session_id))
 
                 elif command == "FIND":
                     peer_session_id = str(self._socket.recv(16))
@@ -77,8 +92,10 @@ class ServiceThread(Thread):
 
                 elif command == "LOGO":
                     peer_session_id = str(self._socket.recv(16))
-                    delete_num = self.find_file(peer_session_id, query_string)
+                    delete_num = self.logout_user(peer_session_id)
+                    klog("Received a LOGO, from session_id: %s" %(session_id))
                     self._socket.send("ALGO"+delete_num)
+                    klog("Sent ALGO to session_id: %s" %(session_id))
 
             except Exception, e:
                 print e

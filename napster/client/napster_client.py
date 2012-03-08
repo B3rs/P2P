@@ -1,5 +1,7 @@
 __author__ = 'ingiulio'
 
+from napster_client_threads import Server
+
 import socket
 #import serversocket
 import hashlib #per calcolare l'md5 dei file
@@ -46,6 +48,23 @@ class NapsterClient(object):
     def login(self): # va messo self. davanti a tutte le variabili che voglio rendere "condivise" tra tutti i metodi
 
         print "Login...\n"
+
+
+
+        #versione maury
+        #metto a disposizione una porta per il peer to peer
+        #peersocket = serversocket.socket(serversocket.AF_INET, serversocket.SOCK_STREAM)
+        #peersocket.bind(my_IP,PP2P) #bisognerebbe controllare che per sfiga non sia la stessa che mi porta alla directory
+        #peersocket.listen(100)
+
+        #versione giulio
+        #s = Server()
+        #s.run()
+
+
+
+        #se sono riuscito senza problemi, mi connetto alla directory
+
         self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket verso la directory
         self.dir_socket.connect(self.dir_addr)
         print "Connection with directory enstablished"
@@ -77,18 +96,15 @@ class NapsterClient(object):
             print "OK, ack received\n"
             self.session_ID = ack[4:20]
             print "Session ID: " + self.session_ID + "\n"
-            self.logged=True #sono loggato
+            #non ho ancora controllato il SESSIONID
 
             # Check login non riuscito
             if self.session_ID=="0000000000000000":
                 print "Login failed: try again!"
                 self.dir_socket.close()
                 self.logged=False #non sono loggato
-
-            # server socket creation
-            #peersocket = serversocket.socket(serversocket.AF_INET, serversocket.SOCK_STREAM)
-            #peersocket.bind(my_IP,PP2P) #bisognerebbe controllare che per sfiga non sia la stessa che mi porta alla directory
-            #peersocket.listen(100)
+            else:
+                self.logged=True
 
 
         else :
@@ -107,7 +123,7 @@ class NapsterClient(object):
     def addfile(self):
         print "Add file...\n"
 
-        nc.md5_for_file("PIPPO.jpeg")
+        self.md5_for_file("PIPPO.jpeg")
 
 
 

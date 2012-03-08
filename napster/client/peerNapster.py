@@ -2,8 +2,8 @@ __author__ = 'ingiulio maury puccigui'
 import socket
 from socket import *
 
-host = "10.42.43.1" #mettere quello della directory
-port = 800
+host = "0.0.0.0" #mettere quello della directory
+port = 9999
 addr = host, port
 P2P_port = 6500
 

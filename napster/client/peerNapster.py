@@ -1,11 +1,16 @@
 __author__ = 'ingiulio maury puccigui'
 import socket
-from socket import *
+import serversocket
 
-host = "10.42.43.1" #mettere quello della directory
-port = 800
+global session_ID
+
+# DIRECTORY
+host = "192.168.0.194" # indirizzo della directory
+port = 800 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
 addr = host, port
-P2P_port = 6500
+
+# PEER
+P2P_port = 6500 # porta che rendo disponibile per altri peer
 
 while 1:
 
@@ -22,11 +27,12 @@ while 1:
     def login():
 
         print "Login...\n"
-        dir = socket(AF_INET, SOCK_STREAM)
+        dir = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         dir.connect(addr)
         print "Connection with directory enstablished"
-        my_IP = dir.getsockname()[0]
 
+        # Formattazione indirizzo IP per invio alla directory
+        my_IP = dir.getsockname()[0]
         print "My IP: " + my_IP
         my_IP_split = my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -35,31 +41,39 @@ while 1:
         IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
         IPP2P = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4
 
+        # Formattazione porta
         my_port = str(dir.getsockname()[1])
         print "My port: " + my_port
         PP2P = '%(#)05d' % {"#" : int(P2P_port)}
 
+        # SPEDISCO IL PRIMO MESSAGGIO
         dir.send("LOGI" + IPP2P + PP2P)
 
-        # acknowledge
+        # Acknowledge "ALGI" dalla directory
         ack = dir.recv(20)
         print ack
 
-        if ack[:4]=="ALOG": #se non funziona ALOG usare ALGI
+        if ack[:4]=="ALGI": # se non funziona ALGI usare ALOG
+
             print "OK, ack received\n"
-            session_ID = ack[4:20]
+            session_ID = ack[4:20] # variabile globale
             print "Session ID: " + session_ID + "\n"
-	    # server socket creation
-	    peersocket = socket(AF_INET, SOCK_STREAM)
-	    peersocket.bind(my_IP,PP2P)
-	    peersocket.listen(100)
+
+            # Check login non riuscito
+            if session_ID=="0000000000000000":
+                print "Login failed: try again!"
+                dir.close()
+
+            # server socket creation
+            peersocket = serversocket.socket(serversocket.AF_INET, serversocket.SOCK_STREAM)
+            peersocket.bind(my_IP,PP2P)
+            peersocket.listen(100)
+
+
+
         else :
+
             print "KO, ack parsing failed\n"
-
-        if ack[4:20]=="0000000000000000":
-            print "Login failed: try again!"
-            dir.close()
-
 
 
     def addfile():
@@ -95,3 +109,4 @@ while 1:
     options.get(data,error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
 
 print "\nFine."
+

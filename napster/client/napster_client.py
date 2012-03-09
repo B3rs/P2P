@@ -25,9 +25,9 @@ class NapsterClient(object):
         self.stop = False #non voglio uscire subito dal programma
 
 
-    def md5_for_file(self,fileName): #gli passo il nome (o percorso) di un file
+    def md5_for_file(self,fileName):
 
-        print "funzione che calcola l'md5 di un file"
+        print "Funzione che calcola l'md5 di un file"
 
         f = open(fileName)
         md5 = hashlib.md5()
@@ -38,7 +38,6 @@ class NapsterClient(object):
             md5.update(data)
         print md5.digest()
         return md5.digest()
-
 
 
     # USER HANDLERS
@@ -113,21 +112,49 @@ class NapsterClient(object):
 
 
 
+
+
     def nologin(self):
         print "You're about to exit the program... Bye!\n"
         self.stop = True
 
 
 
-
     def addfile(self):
         print "Add file...\n"
 
-        self.md5_for_file("PIPPO.jpeg")
+        filename = raw_input("Insert the file name: ")
 
 
+        md5file = self.md5_for_file(filename) #calcolo l'md5 del file
+
+        filename_100 = '%(#)0100s' % {"#" : filename} #formatto il nome del file
+
+        print "filename formattato: " + filename_100
+
+        # SPEDISCO IL MESSAGGIO
+        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_100)
+
+        # Acknowledge "AADD" dalla directory
+        ack = self.dir_socket.recv(7)
+        print ack
+
+        if ack[:4]=="AADD":
+
+            print "OK, ack received\n"
+            num_copy = ack[4:7]
+            print "Number of copies: " + num_copy + "\n"
+
+            # Check num copies
+            if int(num_copy) < 1:
+                print "La directory non ha aggiunto il tuo file"
+            else:
+                print "Copia aggiunta!"
 
 
+        else :
+            print "KO, ack parsing failed\n"
+            print "aggiunta file fallita!"
 
 
 
@@ -202,10 +229,10 @@ class NapsterClient(object):
             print "1. Add file"
             print "2. Delete file"
             print "3. Find"
-            print "4. Download\n"
+            print "4. Download"
             print "5. Logout\n"
 
-        data = raw_input("Choose an option: ")
+        choice = raw_input("Choose an option: ")
 
         optNoLog = {
 
@@ -227,11 +254,11 @@ class NapsterClient(object):
 
         if self.logged==False: #non sono loggato
 
-            optNoLog.get(data,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
+            optNoLog.get(choice,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
 
         else: #sono loggato
 
-            optLog.get(data,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
+            optLog.get(choice,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
 
 
 

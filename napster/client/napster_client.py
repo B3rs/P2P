@@ -1,6 +1,6 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import Server
+from napster_client_threads import DownloadMe
 
 import socket
 #import serversocket
@@ -48,25 +48,13 @@ class NapsterClient(object):
 
         print "Login...\n"
 
-
-
-        #versione maury
-        #metto a disposizione una porta per il peer to peer
-        #peersocket = serversocket.socket(serversocket.AF_INET, serversocket.SOCK_STREAM)
-        #peersocket.bind(my_IP,PP2P) #bisognerebbe controllare che per sfiga non sia la stessa che mi porta alla directory
-        #peersocket.listen(100)
-
-        #versione giulio
-        #s = Server()
-        #s.run()
-
-
-
         #se sono riuscito senza problemi, mi connetto alla directory
 
         self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket verso la directory
+        #aggiunge option by maury
         self.dir_socket.connect(self.dir_addr)
         print "Connection with directory enstablished"
+
 
         # Formattazione indirizzo IP per invio alla directory
         my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
@@ -76,15 +64,20 @@ class NapsterClient(object):
         IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
         IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
         IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
-        self.IPP2P = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+        self.IPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
 
         # Formattazione porta
         my_port = str(self.dir_socket.getsockname()[1]) #porta non ancora formattata
-        print "My port: " + my_port
-        self.PP2P = '%(#)05d' % {"#" : int(self.P2P_port)} #porta formattata per bene
+        print "My port: " + my_port #DEBUG
+        self.PP2P_form = '%(#)05d' % {"#" : int(self.P2P_port)} #porta formattata per bene
+
+        #metto a disposizione una porta per il peer to peer
+        self.peersocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.peersocket.bind(my_IP,self.P2P_port)
+        self.peersocket.listen(100) #socket per chi vorra' fare download da me
 
         # SPEDISCO IL PRIMO MESSAGGIO
-        self.dir_socket.send("LOGI" + self.IPP2P + self.PP2P)
+        self.dir_socket.send("LOGI" + self.IPP2P_form + self.PP2P_form)
 
         # Acknowledge "ALGI" dalla directory
         ack = self.dir_socket.recv(20)
@@ -104,14 +97,12 @@ class NapsterClient(object):
                 self.logged=False #non sono loggato
             else:
                 self.logged=True
+                DownloadMe().start() #thread che gestisce il download da parte dei peer
 
 
         else :
             print "KO, ack parsing failed\n"
             self.logged=False #non sono loggato
-
-
-
 
 
     def nologin(self):
@@ -162,9 +153,6 @@ class NapsterClient(object):
 
     def delfile(self):
         print "Delete file...\n"
-
-
-
 
 
 

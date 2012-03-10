@@ -1,70 +1,25 @@
-__author__ = 'ingiulio'
-
-import socket
-import select
+import socket # networking module
 import sys
 import threading
-import hashlib #per calcolare l'md5 dei file
+import time
 
-class Server:
-    def __init__(self):
-        self.host = ''
-        self.port = 50000
-        self.backlog = 5
-        self.size = 1024
-        self.server = None
-        self.threads = []
-
-    def open_socket(self):
-        try:
-            self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server.bind((self.host,self.port))
-            self.server.listen(5)
-        except socket.error, (value,message):
-            if self.server:
-                self.server.close()
-            print "Could not open socket: " + message
-            sys.exit(1)
+class DownloadMe(threading.Thread):
 
     def run(self):
-        self.open_socket()
-        input = [self.server,sys.stdin]
-        running = 1
-        while running:
-            inputready,outputready,exceptready = select.select(input,[],[])
 
-            for s in inputready:
+        while 1:
+            (socketclient,address) = NapsterClient.peer_socket.accept()
 
-                if s == self.server:
-                # handle the server socket
-                    c = Client(self.server.accept())
-                    c.start()
-                    self.threads.append(c)
+            #codice per gestire il download da parte dei peer
+            #(meglio se concorrente)
 
-                elif s == sys.stdin:
-                # handle standard input
-                    junk = sys.stdin.readline()
-                    running = 0
-
-                    # close all threads
-
-        self.server.close()
-        for c in self.threads:
-            c.join()
-
-class Client(threading.Thread):
-    def __init__(self,(client,address)):
-        threading.Thread.__init__(self)
-        self.client = client
-        self.address = address
-        self.size = 1024
-
-    def run(self):
-        running = 1
-        while running:
-            data = self.client.recv(self.size)
-            if data:
-                self.client.send(data)
-            else:
-                self.client.close()
-                running = 0
+            # un peer si attacca a me e mi manda una stringa fatta cosi'
+            # “RETR”[4B].Filemd5[16B]
+            # io devo leggerla e parsarla
+            # e poi devo andare a recuperare il file che ha quel md5
+            # mi sa che per far cio' dovrei mantenermi una tabellina in cui mi scrivo la corrispondenza tra
+            # i nomi dei file che uploado e i loro md5 (altrimenti come posso fare? parlarne insieme)
+            # quando ho recuperato il file lo devo mandare al peer in questo modo:
+            # “ARET”[4B].#chunk[6B].{Lenchunk_i[5B].data[LB]}(i=1..#chunk)
+            # decidendo io il numero dei chunk e la loro lunghezza
+            # poi basta, non devo fare nient'altro

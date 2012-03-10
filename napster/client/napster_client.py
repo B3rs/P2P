@@ -1,10 +1,10 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import Server
+from napster_client_threads import DownloadMe
 
 import socket
-#import serversocket
 import hashlib #per calcolare l'md5 dei file
+
 
 class NapsterClient(object):
 
@@ -19,9 +19,9 @@ class NapsterClient(object):
         self.dir_addr = self.dir_host, self.dir_port
 
         # PEER
-        self.P2P_port = 6500 # porta che rendo disponibile per altri peer quando vogliono fare download da me
+        self.myP2P_port = 6500 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
 
-        self.logged = False #non sono loggato
+        self.logged = True #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
 
 
@@ -40,51 +40,36 @@ class NapsterClient(object):
         return md5.digest()
 
 
-    # USER HANDLERS
 
-
-
-    def login(self): # va messo self. davanti a tutte le variabili che voglio rendere "condivise" tra tutti i metodi
+    def login(self):
 
         print "Login...\n"
 
-
-
-        #versione maury
-        #metto a disposizione una porta per il peer to peer
-        #peersocket = serversocket.socket(serversocket.AF_INET, serversocket.SOCK_STREAM)
-        #peersocket.bind(my_IP,PP2P) #bisognerebbe controllare che per sfiga non sia la stessa che mi porta alla directory
-        #peersocket.listen(100)
-
-        #versione giulio
-        #s = Server()
-        #s.run()
-
-
-
-        #se sono riuscito senza problemi, mi connetto alla directory
-
-        self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket verso la directory
+        #mi connetto alla directory tramite la socket self.dir_socket
+        self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.dir_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
         self.dir_socket.connect(self.dir_addr)
         print "Connection with directory enstablished"
 
         # Formattazione indirizzo IP per invio alla directory
-        my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
-        print "My IP: " + my_IP
-        my_IP_split = my_IP.split(".")
+        self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
+        my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
         IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
         IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
         IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
-        self.IPP2P = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+        self.myIPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
 
         # Formattazione porta
-        my_port = str(self.dir_socket.getsockname()[1]) #porta non ancora formattata
-        print "My port: " + my_port
-        self.PP2P = '%(#)05d' % {"#" : int(self.P2P_port)} #porta formattata per bene
+        self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
+
+        #metto a disposizione una porta per il peer to peer
+        self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.peer_socket.bind(self.my_IP,self.myP2P_port)
+        self.peer_socket.listen(100) #socket per chi vorra' fare download da me
 
         # SPEDISCO IL PRIMO MESSAGGIO
-        self.dir_socket.send("LOGI" + self.IPP2P + self.PP2P)
+        self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
 
         # Acknowledge "ALGI" dalla directory
         ack = self.dir_socket.recv(20)
@@ -104,14 +89,12 @@ class NapsterClient(object):
                 self.logged=False #non sono loggato
             else:
                 self.logged=True
+                DownloadMe().start() #thread che gestisce il download da parte dei peer
 
 
         else :
             print "KO, ack parsing failed\n"
             self.logged=False #non sono loggato
-
-
-
 
 
     def nologin(self):
@@ -123,17 +106,19 @@ class NapsterClient(object):
     def addfile(self):
         print "Add file...\n"
 
-        filename = raw_input("Insert the file name: ")
-
+        filename = raw_input("Insert the name of the file to add: ")
 
         md5file = self.md5_for_file(filename) #calcolo l'md5 del file
 
-        filename_100 = '%(#)0100s' % {"#" : filename} #formatto il nome del file
+        filename_form = '%(#)0100s' % {"#" : filename} #formatto il nome del file
 
-        print "filename formattato: " + filename_100
+        print "Filename in format '%100s': " + filename_form
 
-        # SPEDISCO IL MESSAGGIO
-        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_100)
+        #TODO: controllare se il file esiste veramente
+        #direi che basterebbe fare una open e vedere se va a buon fine
+
+        # SPEDISCO IL PACCHETTO
+        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
 
         # Acknowledge "AADD" dalla directory
         ack = self.dir_socket.recv(7)
@@ -141,20 +126,20 @@ class NapsterClient(object):
 
         if ack[:4]=="AADD":
 
-            print "OK, ack received\n"
+            print "OK, ack received\n" # DEBUG
             num_copy = ack[4:7]
             print "Number of copies: " + num_copy + "\n"
 
             # Check num copies
             if int(num_copy) < 1:
-                print "La directory non ha aggiunto il tuo file"
+                print "Central Directory hasn't add your file"
             else:
-                print "Copia aggiunta!"
+                print "Added copy"
 
 
         else :
             print "KO, ack parsing failed\n"
-            print "aggiunta file fallita!"
+            print "Adding file failed!\n"
 
 
 
@@ -163,8 +148,33 @@ class NapsterClient(object):
     def delfile(self):
         print "Delete file...\n"
 
+        filename = raw_input("Insert the name of the file to delete: ")
+
+        md5file = self.md5_for_file(filename) #calcolo l'md5 del file
+
+        # SPEDISCO IL PACCHETTO
+        self.dir_socket.send("DELF" + self.session_ID + md5file)
+
+        # Acknowledge "ADEL" from directory
+        ack = self.dir_socket.recv(7)
+        print ack
+
+        if ack[:4]=="ADEL":
+
+            print "OK, ack received\n" # DEBUG
+            num_copy = ack[4:7]
+            print "Number of copies left: " + num_copy + "\n"
+
+            # Check num copies
+            if int(num_copy) < 0:
+                print "Warning: an error occured during file deleting\n"
+            else:
+                print "The specified copy has been removed\n"
 
 
+        else :
+            print "KO, ack parsing failed\n"
+            print "Removing file failed\n"
 
 
 
@@ -172,11 +182,225 @@ class NapsterClient(object):
     def find(self):
         print "Find...\n"
 
+        ricerca = raw_input("Inserisci una stringa di ricerca: ")
+
+        ricerca_form = '%(#)020s' % {"#" : ricerca} #formatto la stringa di ricerca
+
+        # SPEDISCO IL PACCHETTO
+        self.dir_socket.send("FIND" + self.session_ID + ricerca_form)
+
+        # Acknowledge "AFIN" from directory
+        ack = self.dir_socket.recv(7) #leggo i primi 7B, poi il resto lo leggo dopo perche' non ha lunghezza fissa
+        print ack
+
+        if ack[:4]=="AFIN":
+
+            print "OK, ack received\n" # DEBUG
+            num_idmd5 = ack[4:7]
+            print "Number of different md5: " + num_idmd5 + "\n"
+
+            if num_idmd5==0:
+
+                print "Spiacente. Non ci sono risultati per la tua ricerca"
+
+            else:
+
+                #creo gli array che mi serviranno dopo
+                #array:
+                self.filemd5_down = []
+                self.filename_down = []
+                self.num_copy_down = []
+                #matrici:
+                self.IPP2P_down = [][]
+                self.PP2P_down = [][]
+
+                for i in range(1,num_idmd5): #i=numero di identificativo md5
+
+                    #devo leggere altri byte ora
+                    #ne leggo 119 perche' 119 e' la lunghezza del pezzo di cui so la lunghezza
+                    ackmd5 = self.dir_socket.recv(119)
+                    print ackmd5
+
+                    print "md5 n." + i
+
+                    self.filemd5_down[i] = ackmd5[:16] #lungo 16
+                    self.filename_down[i] = ackmd5[16:116] #lungo 100
+                    self.num_copy_down[i] = ackmd5[116:119] #lungo 3
+                    print "md5 n." + i + self.filemd5_down[i] + self.filename_down[i] + self.num_copy_down[i]
+                    #la lunghezza di questo pezzo e' sempre 119
+
+                    for j in range(1,self.num_copy_down[i]): #j=numero di copia per quello stesso md5
+
+                        #devo leggere altri byte ora
+                        #ne leggo 20*numero_di_copie
+                        #perche' per ogni copia devo leggere 20 byte
+
+                        ackcopy = self.dir_socket.recv(20*self.num_copy_down[i])
+                        print ackcopy
+
+                        print "copy n." + j
+                        print "identificativo con cui scaricarla " + i + "." + "j"
+
+                        self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
+                        self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
+                        print "    copy n." + i + self.IPP2P_down[i][j] + self.PP2P_down[i][j]
+                        #la lunghezza di questo pezzo e' 20*num_copy[i]
+
+
+                #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca
+
+                answer="Z" #la inizializzo ad una lettera a caso
+
+                while answer!="Y" and answer!="N":
+
+                    answer = raw_input("Vuoi scaricare una di queste copie? (Y/N)")
+
+                    if answer=="N":
+
+                        print "Ok, verrai riportato nel menu principale"
+                        #non chiamo il metodo download() e continuo col mio normale flusso di lavoro
+                        #ossia tornero' al menu principale
+
+                    elif answer=="Y":
+
+                        print "Ok, continuiamo su questa strada allora. Si svolazza!"
+
+                        self.download()
+
+                    #se l'utente non ha digitato ne' "Y" ne' "N" dovrebbe rifarmi la domanda un'altra volta
+
+
+        else:
+
+            print "KO, ack parsing failed\n"
 
 
 
     def download(self):
         print "Download...\n"
+
+        choice = "0.0"
+
+        while id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
+
+            choice = raw_input("Choose a copy da scaricare: ")
+
+            #mi dovrebbe arrivare dall'utente una cosa del tipo: "id_md5.id_copy"
+
+            #splitto la sua risposta
+            choice_split = choice.split(".")
+            id_md5 = int(choice_split[0])
+            id_copy = int(choice_split[1])
+
+            #contro se la sua risposta e' in un formato giusto
+            #ovvero controllo che id_md5 sia tra 1 e il numero di md5
+            #e che id_copy sia tra 1 e numero di copie per quell'md5
+
+            if id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
+
+                print "hai sbagliato a digitare la tua scelta"
+
+            else: #scelta corretta quindi inizio con il download vero e proprio
+
+
+                #l'utente vuole scaricare la copia id_md5.id_copy
+                #vado a recuperare le informazioni necessarie e le rinomino per comodita'
+                filemd5 = self.filemd5_down[id_md5]
+                IPP2P = self.IPP2P_down[id_md5][id_copy]
+                PP2P = self.P2P_down[id_md5][id_copy]
+                #mi salvo anche il nome del file cosi' uso quello per salvare il file nel mio pc
+                filename = self.filename_down[id_md5]
+
+                #apro una socket verso il peer da cui devo scaricare
+                #"iodown" perche' io faccio il download da lui
+                iodown_host = IPP2P
+                iodown_port = int(PP2P)
+                iodown_addr = iodown_host, iodown_port
+                iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
+                iodown_socket.connect(iodown_addr)
+                print "Connection with peer da cui voglio scaricare enstablished"
+
+                # SPEDISCO IL PRIMO MESSAGGIO
+                iodown_socket.send("RETR" + filemd5)
+
+                # Acknowledge "ARET" dal peer
+                ack = iodown_socket.recv(10)
+                print ack
+
+                if ack[:4]=="ARET":
+
+                    print "il download sta per avvenire..."
+
+                    fout = open(filename,"ab") #a di append
+
+                    num_chunk = ack[4:10]
+                    print "il numero di chunk che devo scaricare e' " + num_chunk
+
+                    for i in range (1,num_chunk): #i e' il numero di chunk
+                        print "sto trattando il chunk numero " + i
+
+                        #devo leggere altri byte ora
+                        #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
+
+                        lungh = int(iodown_socket.recv(5))
+                        print lungh
+
+                        #devo leggere altri byte ora
+                        #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
+
+                        data = iodown_socket.recv(5)
+                        print data
+
+                        #lo devo mettere sul mio file che ho nel mio pc
+
+                        fout.write(data) #scrivo sul file in append
+
+                    #ho finito di ricevere il file
+                    fout.close() #chiudo il file perche' ho finito di scaricarlo
+
+
+                    #dopo il download comunico alla directory che ho fatto questo download
+                    #come al solito devo mandargli IP e porta del peer da cui ho scaricato formattati
+
+                    # Formattazione indirizzo IP peer per invio alla directory
+                    IPP2P_split = IPP2P.split(".")
+                    IPP2P_1 = '%(#)03d' % {"#" : int(IPP2P_split[0])}
+                    IPP2P_2 = '%(#)03d' % {"#" : int(IPP2P_split[1])}
+                    IPP2P_3 = '%(#)03d' % {"#" : int(IPP2P_split[2])}
+                    IPP2P_4 = '%(#)03d' % {"#" : int(IPP2P_split[3])}
+                    IPP2P_form = IPP2P_1 + "." + IPP2P_2 + "." + IPP2P_3 + "." + IPP2P_4 #IP formattato per bene
+
+                    # Formattazione porta
+                    PP2P_form = '%(#)05d' % {"#" : int(PP2P)} #porta formattata per bene
+
+                    self.dir_socket.send("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
+
+                    # Acknowledge "ARRE" dalla directory
+                    ack = self.dir_socket.recv(9)
+                    print ack
+
+                    if ack[:4]=="ARRE":
+
+                        print "OK, ack received\n" # DEBUG
+                        num_down = ack[4:9]
+                        print "Number of download: " + num_down + "\n"
+
+                        # Check num downloads
+                        if int(num_down) < 1:
+                            print "qualcosa e' andato storto"
+                        else:
+                            print "ok"
+
+
+                    else :
+                        print "KO, ack parsing failed\n"
+                        print "Adding file failed!\n"
+
+
+                else:
+                    print "KO, ack parsing failed\n"
+                    print "download non puo' avvenire"
 
 
 
@@ -196,6 +420,10 @@ class NapsterClient(object):
             print "OK, ack received\n"
             num_delete = ack[4:7]
             print "Number of deleted files: " + num_delete + "\n"
+
+            #TODO: e' necessario che io vada a controllare questo num_delete?
+            #nel senso: devo mettere un contatore nell'upload che mi tiene il conto dei file che uploado
+            #e poi andarlo a confrontare con questo?
 
             self.dir_socket.close() #chiudo la socket verso la directory
 
@@ -222,15 +450,14 @@ class NapsterClient(object):
 
             print "Do you want to do login? (Y/N)\n"
 
-        else: #ovvero se sono loggato
+        else: #allora sono loggato
 
             print "Choose between the following options, typing the number:\n"
 
             print "1. Add file"
             print "2. Delete file"
-            print "3. Find"
-            print "4. Download"
-            print "5. Logout\n"
+            print "3. Find and Download file"
+            print "4. Logout\n"
 
         choice = raw_input("Choose an option: ")
 
@@ -245,8 +472,7 @@ class NapsterClient(object):
             '1' : self.addfile,
             '2' : self.delfile,
             '3' : self.find,
-            '4' : self.download,
-            '5' : self.logout
+            '4' : self.logout
 
         }
 
@@ -271,5 +497,3 @@ if __name__ == "__main__":
     while nc.stop==False:
 
         nc.doYourStuff() #stampa del menu ed esecuzione dell'operazione scelta
-
-    print "Fine\n"

@@ -8,7 +8,6 @@ import hashlib #per calcolare l'md5 dei file
 
 class NapsterClient(object):
 
-
     def __init__(self):
 
         print "Init Napster client\n"
@@ -21,7 +20,7 @@ class NapsterClient(object):
         # PEER
         self.myP2P_port = 6500 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
 
-        self.logged = True #non sono loggato
+        self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
 
 
@@ -70,6 +69,7 @@ class NapsterClient(object):
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
+
 
         # Acknowledge "ALGI" dalla directory
         ack = self.dir_socket.recv(20)
@@ -176,9 +176,6 @@ class NapsterClient(object):
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
 
-
-
-
     def find(self):
         print "Find...\n"
 
@@ -211,8 +208,9 @@ class NapsterClient(object):
                 self.filename_down = []
                 self.num_copy_down = []
                 #matrici:
-                self.IPP2P_down = [][]
-                self.PP2P_down = [][]
+                self.IPP2P_down = [[]]
+                self.PP2P_down = [[]]
+                #TODO: verificare che le matrici si istanzino davvero cosi'
 
                 for i in range(1,num_idmd5): #i=numero di identificativo md5
 

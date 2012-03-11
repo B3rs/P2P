@@ -1,6 +1,7 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import DownloadMe
+from napster_client_threads import PeerHandlers
+from napster_client_threads import ListenToPeers
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -22,6 +23,7 @@ class NapsterClient(object):
 
         self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
+        self.fileTable = []
     # end of __init__ method
 
 
@@ -64,10 +66,14 @@ class NapsterClient(object):
         # Formattazione porta
         self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
-        #metto a disposizione una porta per il peer to peer
-        self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.peer_socket.bind(self.my_IP,self.myP2P_port)
-        self.peer_socket.listen(100) #socket per chi vorra' fare download da me
+        # Metto a disposizione una porta per il peer to peer
+        #self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        #self.peer_socket.bind(self.my_IP,self.myP2P_port)
+        #self.peer_socket.listen(100) #socket per chi vorra' fare download da me
+
+        # CREO LA SOCKET PER GLI ALTRI PEERS
+        myserver = ListenToPeers()
+        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri Ã¨ corretto
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -146,6 +152,9 @@ class NapsterClient(object):
                 print "Central Directory hasn't add your file"
             else:
                 print "Added copy"
+                # registro nella mia personale "tabella" il file aggiunto, e il suo md5
+                fileadded = [filename,md5file]
+                self.fileTable.append(fileadded)
 
 
         else :

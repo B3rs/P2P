@@ -1,7 +1,6 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import PeerHandlers
-from napster_client_threads import ListenToPeers
+from napster_client_threads import DownloadMe
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -23,8 +22,7 @@ class NapsterClient(object):
 
         self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
-
-        self.fileTable = []
+    # end of __init__ method
 
 
     def md5_for_file(self,fileName):
@@ -40,9 +38,11 @@ class NapsterClient(object):
             md5.update(data)
         print md5.digest()
         return md5.digest()
+    # end of md5_for_file method
+
+
 
     def login(self):
-
 
         print "Login...\n"
 
@@ -64,14 +64,10 @@ class NapsterClient(object):
         # Formattazione porta
         self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
-        # Metto a disposizione una porta per il peer to peer
-        # self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        # self.peer_socket.bind(self.my_IP,self.myP2P_port)
-        # self.peer_socket.listen(100) #socket per chi vorra' fare download da me
-
-        # CREO LA SOCKET PER GLI ALTRI PEERS
-        myserver = ListenToPeers()
-        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri è corretto
+        #metto a disposizione una porta per il peer to peer
+        self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.peer_socket.bind(self.my_IP,self.myP2P_port)
+        self.peer_socket.listen(100) #socket per chi vorra' fare download da me
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -101,12 +97,23 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             self.logged=False #non sono loggato
+    # end of login method
 
 
     def nologin(self):
         print "You're about to exit the program... Bye!\n"
         self.stop = True
+    # end of nologin method
 
+    def checkfile(self, filename): #routine di controllo esistenza del file
+        try :
+            f = open(filename)
+            f.close()
+        except IOError :
+            print "Peer can't verify file presence"
+        except Exception:
+            print "Unexpected error:", sys.exc_info()[0]
+    # end of checkfile method
 
     def addfile(self):
         print "Add file...\n"
@@ -119,8 +126,7 @@ class NapsterClient(object):
 
         print "Filename in format '%100s': " + filename_form
 
-        #TODO: controllare se il file esiste veramente
-        #direi che basterebbe fare una open e vedere se va a buon fine
+        self.checkfile(filename) #soluzione proposta da maury
 
         # SPEDISCO IL PACCHETTO
         self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
@@ -140,13 +146,14 @@ class NapsterClient(object):
                 print "Central Directory hasn't add your file"
             else:
                 print "Added copy"
-                # registro nella mia personale "tabella" il file aggiunto, e il suo md5
-                fileadded = [filename,md5file]
-                self.fileTable.append(fileadded)
+
 
         else :
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
+    # end of addfile method
+
+
 
 
     def delfile(self):
@@ -179,11 +186,12 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
+    # end of delfile method
 
     def find(self):
         print "Find...\n"
 
-        ricerca = raw_input("Inserisci una stringa di ricerca: ")
+        ricerca = raw_input("Type a search string: ")
 
         ricerca_form = '%(#)020s' % {"#" : ricerca} #formatto la stringa di ricerca
 
@@ -202,7 +210,7 @@ class NapsterClient(object):
 
             if num_idmd5==0:
 
-                print "Spiacente. Non ci sono risultati per la tua ricerca"
+                print "Sorry. No match found for your search"
 
             else:
 
@@ -275,16 +283,17 @@ class NapsterClient(object):
         else:
 
             print "KO, ack parsing failed\n"
+    # end of find method
 
 
     def download(self):
-        print "Download...\n"
+        print "Download section...\n"
 
         choice = "0.0"
 
         while id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
 
-            choice = raw_input("Choose a copy da scaricare: ")
+            choice = raw_input("Choose a copy to download: ")
 
             #mi dovrebbe arrivare dall'utente una cosa del tipo: "id_md5.id_copy"
 
@@ -299,7 +308,7 @@ class NapsterClient(object):
 
             if id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
 
-                print "hai sbagliato a digitare la tua scelta"
+                print "Warning: You mistyped your choice"
 
             else: #scelta corretta quindi inizio con il download vero e proprio
 
@@ -320,7 +329,8 @@ class NapsterClient(object):
                 iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
                 iodown_socket.connect(iodown_addr)
-                print "Connection with peer da cui voglio scaricare enstablished"
+                print "Connection with peer enstablished.\n"
+                print "Download will start shortly! Be patient"
 
                 # SPEDISCO IL PRIMO MESSAGGIO
                 iodown_socket.send("RETR" + filemd5)
@@ -331,15 +341,16 @@ class NapsterClient(object):
 
                 if ack[:4]=="ARET":
 
-                    print "il download sta per avvenire..."
+                    print "Download is coming..."
+                    #TODO: verificare che non sia una traduzione troppo porno
 
                     fout = open(filename,"ab") #a di append
 
                     num_chunk = ack[4:10]
-                    print "il numero di chunk che devo scaricare e' " + num_chunk
+                    print "The #chunk is " + num_chunk + "\n"
 
                     for i in range (1,num_chunk): #i e' il numero di chunk
-                        print "sto trattando il chunk numero " + i
+                        print "Watching chunk number " + i + "\n"
 
                         #devo leggere altri byte ora
                         #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
@@ -389,7 +400,7 @@ class NapsterClient(object):
 
                         # Check num downloads
                         if int(num_down) < 1:
-                            print "qualcosa e' andato storto"
+                            print "Warning: Verified a mismatch in the number of download"
                         else:
                             print "ok"
 
@@ -401,7 +412,9 @@ class NapsterClient(object):
 
                 else:
                     print "KO, ack parsing failed\n"
-                    print "download non puo' avvenire"
+                    print "Download not available"
+    # end of download method
+
 
 
     def logout(self):
@@ -424,6 +437,10 @@ class NapsterClient(object):
             #nel senso: devo mettere un contatore nell'upload che mi tiene il conto dei file che uploado
             #e poi andarlo a confrontare con questo?
 
+            #TODO: verificare questa soluzione: occorre istanziare la variabile num_upload che si incrementa ad ogni upload andato a buon fine
+            #if num_delete != self.num_upload :
+            #    print "Warning: The number of copies deleted differs from those uploaded \n"
+
             self.dir_socket.close() #chiudo la socket verso la directory
 
             #inoltre devo smettere di ascoltare su IP e porta del P2p
@@ -433,9 +450,14 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             self.logged=True #sono ancora loggato
+    # end of logout method
+
+
+
 
     def error(self):
         print "Option not valid: try again!\n"
+    # end of error method
 
 
     def doYourStuff(self):
@@ -479,7 +501,7 @@ class NapsterClient(object):
         else: #sono loggato
 
             optLog.get(choice,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
-
+    # end of doYourStuff method
 
 
 

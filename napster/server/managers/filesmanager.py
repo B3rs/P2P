@@ -6,8 +6,9 @@ class FilesManager(object):
 
     @classmethod
     def find_file_by_query(cls, query):
-        # TODO
-        pass
+        #words = query.split(" ")
+        #TODO devo implementare il group by md5
+        return File.objects(name__icontains = query)
 
     @classmethod
     def find_file_by_hash_and_sessionid(cls, hash, session_id):

@@ -49,7 +49,7 @@ class ServiceThread(Thread):
         while 1:
             try:
                 #TODO: cambiare questo perche la recv tenta di leggere byte anche se non ce ne sono e va in loop, che si fa?
-                #TODO: Luca la chiamata a recv è bloccante... se non ci sono dati il while è bloccato!
+                #TODO: Luca la chiamata a recv e' bloccante... se non ci sono dati il while e' bloccato in teoria!
 
                 self._socket.setblocking(1)
                 command = str(self._socket.recv(4))

@@ -321,14 +321,15 @@ class NapsterClient(object):
 
                     if answer=="N":
 
-                        print "You are being redirected to the main menu\n"
+                        sys.stdout.write("You are being redirected to the main menu")
                         self.dots()
                         #non chiamo il metodo download() e continuo col mio normale flusso di lavoro
                         #ossia tornero' al menu principale
 
                     elif answer=="Y":
 
-                        print "Ok, continuiamo su questa strada allora. Si svolazza!"
+                        sys.stdout.write("You are being redirected to the download section")
+                        self.dots()
 
                         self.download()
 

@@ -5,12 +5,18 @@ from napster_client_threads import ListenToPeers
 
 import socket
 import hashlib #per calcolare l'md5 dei file
+import time # per le funzioni di wait -> uso le sleep, che mi freezano il processo
+import sys # mi consente di usare il metodo sys.stdout.write per scrivere sulla stessa riga
 
 
 class NapsterClient(object):
 
     def __init__(self):
 
+        """
+        This method set the program parameters, such as IPP2P:P2P to allow others connection from/to other peers
+        and IP address of Centralized Directory
+        """
         print "Init Napster client\n"
 
         # DIRECTORY
@@ -26,10 +32,25 @@ class NapsterClient(object):
         self.fileTable = []
     # end of __init__ method
 
+# Definition of auxiliary methods
+
+    def dots(self):
+        """
+        this silly method print the sequence ... after a sentence
+        """
+        i = 0
+        while i<3:
+            sys.stdout.write(".")
+            time.sleep(0.5)
+            i = i + 1
+    # end of method dots
 
     def md5_for_file(self,fileName):
 
-        print "Funzione che calcola l'md5 di un file"
+        """
+        md5_for_file method get md5 checksum from a fileName given as parameter in function call
+        """
+        print "Funzione che calcola l'md5 di un file" #TODO: DEBUG MODE
 
         f = open(fileName)
         md5 = hashlib.md5()
@@ -43,16 +64,31 @@ class NapsterClient(object):
     # end of md5_for_file method
 
 
+    def checkfile(self, filename):
+        """
+        this method verify the presence of file into file system through his path, specified as parameter in function call
+        """
+        try :
+            f = open(filename)
+            f.close()
+        except IOError :
+            print "Peer can't verify file presence"
+        except Exception:
+            print "Unexpected error:", sys.exc_info()[0]
+    # end of checkfile method
 
     def login(self):
 
+        """
+        login method control steps to join peer at P2P network
+        """
         print "Login...\n"
 
         #mi connetto alla directory tramite la socket self.dir_socket
         self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.dir_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
         self.dir_socket.connect(self.dir_addr)
-        print "Connection with directory enstablished"
+        print "Connection with directory enstablished\n"
 
         # Formattazione indirizzo IP per invio alla directory
         self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
@@ -107,21 +143,21 @@ class NapsterClient(object):
 
 
     def nologin(self):
-        print "You're about to exit the program... Bye!\n"
+        """
+        nologin method stop the program execution
+        """
+        sys.stdout.write("You're about to exit the program")
+        self.dots()
+        print "Bye"
         self.stop = True
     # end of nologin method
 
-    def checkfile(self, filename): #routine di controllo esistenza del file
-        try :
-            f = open(filename)
-            f.close()
-        except IOError :
-            print "Peer can't verify file presence"
-        except Exception:
-            print "Unexpected error:", sys.exc_info()[0]
-    # end of checkfile method
+
 
     def addfile(self):
+        """
+        addfile method allows user to add a new file at Directory's Database
+        """
         print "Add file...\n"
 
         filename = raw_input("Insert the name of the file to add: ")
@@ -166,6 +202,9 @@ class NapsterClient(object):
 
 
     def delfile(self):
+        """
+        delfile method allows P2P user to remove a file that has previously shared into the network
+        """
         print "Delete file...\n"
 
         filename = raw_input("Insert the name of the file to delete: ")
@@ -198,6 +237,12 @@ class NapsterClient(object):
     # end of delfile method
 
     def find(self):
+        """
+        this method allows at peer to specify a search string.
+        If this matches a section of file name, the centralized directory says to peer the numbers of md5 checksum's
+        occurrences and, for any of this, give the md5 hash, the file name and the copies number,
+        while for any copy of file found in network lists IP & PORT of the peers that host searched file
+        """
         print "Find...\n"
 
         ricerca = raw_input("Type a search string: ")
@@ -276,13 +321,15 @@ class NapsterClient(object):
 
                     if answer=="N":
 
-                        print "Ok, verrai riportato nel menu principale"
+                        sys.stdout.write("You are being redirected to the main menu")
+                        self.dots()
                         #non chiamo il metodo download() e continuo col mio normale flusso di lavoro
                         #ossia tornero' al menu principale
 
                     elif answer=="Y":
 
-                        print "Ok, continuiamo su questa strada allora. Si svolazza!"
+                        sys.stdout.write("You are being redirected to the download section")
+                        self.dots()
 
                         self.download()
 
@@ -296,6 +343,9 @@ class NapsterClient(object):
 
 
     def download(self):
+        """
+        download method allow peer to make a download from any other peer into the network
+        """
         print "Download section...\n"
 
         choice = "0.0"
@@ -428,6 +478,9 @@ class NapsterClient(object):
 
     def logout(self):
 
+        """
+        this method allows user to logout from P2P network
+        """
         print "Logout...\n"
 
         self.dir_socket.send("LOGO" + self.session_ID) #invio la stringa di logout alla directory
@@ -469,8 +522,12 @@ class NapsterClient(object):
     # end of error method
 
 
+
     def doYourStuff(self):
 
+        """
+        This methods allow user to navigate into menus
+        """
         if self.logged==False:
 
             print "Do you want to do login? (Y/N)\n"

@@ -37,7 +37,7 @@ class FilesManager(object):
 
     @classmethod
     def create_file(cls, name, hash, user):
-        file = cls.find_files_by_hash(hash).first()
+        file = cls.find_file_by_hash_and_sessionid(hash, user.session_id)
         if file is None:
             # Create new file
             newFile = File(name = name, hash = hash, session_id = user.session_id)

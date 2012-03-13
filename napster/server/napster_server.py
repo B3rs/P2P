@@ -129,7 +129,7 @@ class ServiceThread(Thread):
 
             except:
                 condition = False
-
+        self._socket.close()
         print "exiting thread"
 
 

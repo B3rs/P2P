@@ -1,6 +1,6 @@
 __author__ = 'ingiulio'
 
-import napster_client_threads
+#import napster_client_threads
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "192.168.1.103" # indirizzo della directory
+        self.dir_host = "192.168.1.102" # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
@@ -58,10 +58,13 @@ class NapsterClient(object):
             if not data:
                 break
             md5.update(data)
-        print md5.hexdigest()
-        md5_utf8 = unicode(md5.hexdigest(),"utf-8")
-        print md5_utf8
-        return md5_utf8
+        md5_bytes = md5.digest()
+        print md5_bytes
+        #print md5.hexdigest()
+        #md5_utf8 = unicode(md5.hexdigest(),"utf-8")
+        #print md5_utf8
+        #return md5_utf8
+        return md5_bytes
 
     # end of md5_for_file method
 
@@ -105,8 +108,8 @@ class NapsterClient(object):
         self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
-        myserver = ListenToPeers()
-        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
+        #myserver = ListenToPeers()
+        #myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -130,7 +133,7 @@ class NapsterClient(object):
                 self.logged=False #non sono loggato
             else:
                 self.logged=True
-                DownloadMe().start() #thread che gestisce il download da parte dei peer
+                #DownloadMe().start() #thread che gestisce il download da parte dei peer
 
 
         else :
@@ -169,7 +172,9 @@ class NapsterClient(object):
         #TODO maury: il flusso delle operazioni deve bloccarsi se il file non esiste
 
         # SPEDISCO IL PACCHETTO
-        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
+        self.dir_socket.send("ADDF"+self.session_ID)
+        self.dir_socket.send(md5file)
+        self.dir_socket.send(filename_form)
 
         # Acknowledge "AADD" dalla directory
         ack = self.dir_socket.recv(7)

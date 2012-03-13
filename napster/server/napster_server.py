@@ -3,6 +3,7 @@ from managers.usersmanager import UsersManager
 import socket, os
 from threading import Thread
 from custom_utils.logging import klog
+from custom_utils.hashing import read_md5
 
 
 class ServiceThread(Thread):
@@ -70,7 +71,7 @@ class ServiceThread(Thread):
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_hash = str(self._socket.recv(16))
+                    file_hash = read_md5(self._socket.recv(16))
                     file_name = str(self._socket.recv(100))
                     klog("Received a ADDF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                     copy_num = self.add_file(peer_session_id, file_hash, file_name)
@@ -80,7 +81,7 @@ class ServiceThread(Thread):
 
                 elif command == "DELF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_hash = str(self._socket.recv(16))
+                    file_hash = read_md5(self._socket.recv(16))
                     copy_num = str(self.remove_file(peer_session_id, file_hash))
                     klog("Received a DELF, from: %s. Hash: %s. Remaining files with same hash: %d" %(peer_session_id, file_hash, copy_num))
                     self._socket.send("ADEL"+"{0:03d}".format(copy_num))
@@ -112,10 +113,10 @@ class ServiceThread(Thread):
 
                 elif command == "RREG":
                     peer_session_id = str(self._socket.recv(16))
-                    file_md5 = str(self._socket.recv(16))
+                    file_hash = read_md5(self._socket.recv(16))
                     peer_ip = str(self._socket.recv(15))
                     peer_port = str(self._socket.recv(5))
-                    download_num = self.register_download(peer_session_id, file_md5, peer_ip, peer_port)
+                    download_num = self.register_download(peer_session_id, file_hash, peer_ip, peer_port)
                     self._socket.send("ARRE"+"{0:03d}".format(download_num))
 
                 elif command == "LOGO":

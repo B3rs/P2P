@@ -55,6 +55,20 @@ class PeerHandler(threading.Thread):
 
             # TODO
             # dividere il file in chuncks
+            file = open(filename)
+            file.seek(0,0)
+            buff = file.read(128)
+            chunk_sent = 0
+            while len(buff) == 128 :
+                ListenToPeers.peer_socket.send(buff)
+                chunk_sent = chunk_sent +1
+                print "Sent " + chunk_sent + " chunks"
+                file.seek(1,128)
+                buff = file.read(128)
+            ListenToPeers.peer_socket.send(buff)
+
+            print "End of upload"
+
             # inviare risposta al client
             # registrare sulla directory il download
             self.socketclient.send()

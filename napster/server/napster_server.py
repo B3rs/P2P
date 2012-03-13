@@ -73,10 +73,10 @@ class ServiceThread(Thread):
                     file_hash = str(self._socket.recv(16))
                     file_name = str(self._socket.recv(100))
                     klog("Received a ADDF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
-                    copy_num = str(self.add_file(peer_session_id, file_hash, file_name))
+                    copy_num = self.add_file(peer_session_id, file_hash, file_name)
                     klog("Files with same hash: %d" %( copy_num))
                     self._socket.send("AADD"+"{0:03d}".format(copy_num))
-                    klog("Sent AADD to: %s. Files copy num: %s" %(peer_session_id, copy_num))
+                    klog("Sent AADD to: %s. Files copy num: %d" %(peer_session_id, copy_num))
 
                 elif command == "DELF":
                     peer_session_id = str(self._socket.recv(16))
@@ -127,8 +127,9 @@ class ServiceThread(Thread):
                 elif command == "":
                     condition = False
 
-            except:
+            except Exception, ex:
                 condition = False
+                print ex
         self._socket.close()
         print "exiting thread"
 

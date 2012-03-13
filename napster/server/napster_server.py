@@ -53,6 +53,11 @@ class ServiceThread(Thread):
                 #TODO: cambiare questo perche la recv tenta di leggere byte anche se non ce ne sono e va in loop, che si fa?
                 #TODO: Luca la chiamata a recv e' bloccante... se non ci sono dati il while e' bloccato in teoria!
 
+
+                # TODO Qui si da per scontato che tutti i messaggi ricevuti dal client siano corretti se avanza tempo implementare check sulla sintassi
+
+                self._socket.setblocking(1) # <--------
+                
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":
@@ -60,8 +65,8 @@ class ServiceThread(Thread):
                     peer_port = str(self._socket.recv(5))
                     session_id = str(self.login_user(peer_ip, peer_port))
                     klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
-                    self._socket.send("ALOG"+session_id)
-                    klog("Sent ALOG to: %s, port: %s" %(peer_ip, peer_port))
+                    self._socket.send("ALGI"+session_id)
+                    klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))

@@ -60,15 +60,16 @@ class ServiceThread(Thread):
                     peer_port = str(self._socket.recv(5))
                     session_id = str(self.login_user(peer_ip, peer_port))
                     klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
-                    self._socket.send("ALOG"+session_id)
-                    klog("Sent ALOG to: %s, port: %s" %(peer_ip, peer_port))
+                    self._socket.send("ALGI"+session_id)
+                    klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))
                     file_hash = str(self._socket.recv(16))
                     file_name = str(self._socket.recv(100))
+                    klog("Received a ADDF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                     copy_num = str(self.add_file(peer_session_id, file_hash, file_name))
-                    klog("Received a ADDF, from: %s. Hash: %s. Filename: %s. Files with same hash: %d" %(peer_session_id, file_hash, file_name, copy_num))
+                    klog("Files with same hash: %d" %( copy_num))
                     self._socket.send("AADD"+"{0:03d}".format(copy_num))
                     klog("Sent AADD to: %s. Files copy num: %s" %(peer_session_id, copy_num))
 

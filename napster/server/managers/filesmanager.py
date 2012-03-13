@@ -6,8 +6,9 @@ class FilesManager(object):
 
     @classmethod
     def find_file_by_query(cls, query):
-        # TODO
-        pass
+        #words = query.split(" ")
+        #TODO devo implementare il group by md5
+        return File.objects(name__icontains = query)
 
     @classmethod
     def find_file_by_hash_and_sessionid(cls, hash, session_id):
@@ -36,7 +37,7 @@ class FilesManager(object):
 
     @classmethod
     def create_file(cls, name, hash, user):
-        file = cls.find_file_by_hash(hash)
+        file = cls.find_files_by_hash(hash).first()
         if file is None:
             # Create new file
             newFile = File(name = name, hash = hash, session_id = user.session_id)
@@ -61,4 +62,6 @@ class FilesManager(object):
         mongodbmanager.connect()
         files = cls.find_files_for_user(user)
         if files is not None:
+            count = files.count()
             files.delete()
+            return count

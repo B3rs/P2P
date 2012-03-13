@@ -36,8 +36,9 @@ class ServiceThread(Thread):
         return FilesManager.count_files_by_hash(hash)
 
     def find_file(self, session_id, query_string):
-        print "tdb"
-        #return varia roba
+        if query_string != "":
+            return FilesManager.find_file_by_query(query_string)
+        return False
 
     def register_download(self, session_id, md5, peer_ip, peer_port):
         pass
@@ -45,9 +46,18 @@ class ServiceThread(Thread):
 
     def run(self):
         print "thread started"
-        while 1:
+        self._socket.setblocking(1)
+        condition = True
+        while condition:
             try:
                 #TODO: cambiare questo perche la recv tenta di leggere byte anche se non ce ne sono e va in loop, che si fa?
+                #TODO: Luca la chiamata a recv e' bloccante... se non ci sono dati il while e' bloccato in teoria!
+
+
+                # TODO Qui si da per scontato che tutti i messaggi ricevuti dal client siano corretti se avanza tempo implementare check sulla sintassi
+
+                self._socket.setblocking(1) # <--------
+                
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":
@@ -55,8 +65,8 @@ class ServiceThread(Thread):
                     peer_port = str(self._socket.recv(5))
                     session_id = str(self.login_user(peer_ip, peer_port))
                     klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
-                    self._socket.send("ALOG"+session_id)
-                    klog("Sent ALOG to: %s, port: %s" %(peer_ip, peer_port))
+                    self._socket.send("ALGI"+session_id)
+                    klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))
@@ -64,7 +74,7 @@ class ServiceThread(Thread):
                     file_name = str(self._socket.recv(100))
                     copy_num = str(self.add_file(peer_session_id, file_hash, file_name))
                     klog("Received a ADDF, from: %s. Hash: %s. Filename: %s. Files with same hash: %d" %(peer_session_id, file_hash, file_name, copy_num))
-                    self._socket.send("AADD"+copy_num)
+                    self._socket.send("AADD"+"{0:03d}".format(copy_num))
                     klog("Sent AADD to: %s. Files copy num: %s" %(peer_session_id, copy_num))
 
                 elif command == "DELF":
@@ -72,15 +82,32 @@ class ServiceThread(Thread):
                     file_hash = str(self._socket.recv(16))
                     copy_num = str(self.remove_file(peer_session_id, file_hash))
                     klog("Received a DELF, from: %s. Hash: %s. Remaining files with same hash: %d" %(peer_session_id, file_hash, copy_num))
-                    self._socket.send("ADEL"+copy_num)
+                    self._socket.send("ADEL"+"{0:03d}".format(copy_num))
                     klog("Sent ADEL to: %s" %(peer_session_id))
 
                 elif command == "FIND":
                     peer_session_id = str(self._socket.recv(16))
                     query_string = str(self._socket.recv(20))
-                    result = self.find_file(peer_session_id, query_string)
-                    print "tbd"
-                    #self._socket.send("AFIN"+)
+
+                    files = self.find_file(peer_session_id, query_string)
+
+                    string = "AFIN"+"{0:03d}".format(len(files))
+
+                    counter = 4 + 3
+
+                    for file in files:
+                        copyes = FilesManager.find_files_by_hash(file.hash)
+                        string += str(file.hash) + str("{0:100s}".format(file.name)) + str("{0:03d}".format(len(copyes)))
+                        counter += 16 + 100+ 3
+                        for copy in copyes:
+                            user = UsersManager.find_user_by_session_id(copy.session_id)
+                            string += str(user.ip) + str("{0:05d}".format(user.port))
+                            counter += 15 + 5
+
+                    if len(string) == counter:
+                        self._socket.send(string)
+                    else:
+                        klog("errore nella ricerca... attendevo %s caratteri e ne genero %s" %(str(counter), str(len(string))))
 
                 elif command == "RREG":
                     peer_session_id = str(self._socket.recv(16))
@@ -88,18 +115,21 @@ class ServiceThread(Thread):
                     peer_ip = str(self._socket.recv(15))
                     peer_port = str(self._socket.recv(5))
                     download_num = self.register_download(peer_session_id, file_md5, peer_ip, peer_port)
-                    self._socket.send("ARRE"+download_num)
+                    self._socket.send("ARRE"+"{0:03d}".format(download_num))
 
                 elif command == "LOGO":
                     peer_session_id = str(self._socket.recv(16))
                     delete_num = self.logout_user(peer_session_id)
                     klog("Received a LOGO, from session_id: %s" %(session_id))
-                    self._socket.send("ALGO"+delete_num)
+                    self._socket.send("ALGO"+"{0:03d}".format(delete_num))
                     klog("Sent ALGO to session_id: %s" %(session_id))
+                elif command == "":
+                    condition = False
 
-            except Exception, e:
-                print e
-                break
+            except:
+                condition = False
+
+        print "exiting thread"
 
 
 class NapsterServer(object):
@@ -119,8 +149,8 @@ class NapsterServer(object):
     def start(self):
         print "Starting server...."
         self.server_socket.listen(10)
-        print "Started, waiting for connection"
         while 1:
+            print "Waiting for connection "
             (socket_client, address) = self.server_socket.accept()
             s = ServiceThread(socket_client)
             s.start()

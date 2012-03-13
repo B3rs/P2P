@@ -18,7 +18,7 @@ class ListenToPeers(threading.Thread):
 
         while 1:
 
-            # entro nel while con la socket ("peer_socket") già in listen
+            # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
 
             (SocketClient,AddrClient) = NapsterClient.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
@@ -45,7 +45,7 @@ class PeerHandler(threading.Thread):
         if request[:4] == "RETR":
             print "ok, mi hai chiesto il file, controllo l'md5"
 
-            md5tofind = request[4:20] #TODO va bene così o mi arriva formattato?
+            md5tofind = request[4:20] #TODO va bene cosi o mi arriva formattato?
 
             # ricerca della corrispondenza
             for i in NapsterClient.fileTable:

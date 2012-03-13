@@ -1,7 +1,6 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import PeerHandlers
-from napster_client_threads import ListenToPeers
+import napster_client_threads
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -20,9 +19,9 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "192.168.0.194" # indirizzo della directory
-        self.dir_port = 800 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
-        self.dir_addr = self.dir_host, self.dir_port
+        self.dir_host = "127.0.0.1" # indirizzo della directory
+        self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
         self.myP2P_port = 6500 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
@@ -109,7 +108,7 @@ class NapsterClient(object):
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
         myserver = ListenToPeers()
-        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri Ã¨ corretto
+        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)

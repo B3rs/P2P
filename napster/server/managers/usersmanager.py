@@ -2,7 +2,7 @@ import mongodbmanager
 from custom_utils import hashing
 from models.user import User
 
-class UsersManager:
+class UsersManager(object):
 
     @classmethod
     def find_user_by_session_id(cls, session_id):
@@ -16,6 +16,7 @@ class UsersManager:
 
         new_user = User(ip=str(ip), port=port, session_id=hashing.generate_session_id())
         new_user.save()
+        return new_user
 
     @classmethod
     def delete_user(cls, user):

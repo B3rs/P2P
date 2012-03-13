@@ -1,4 +1,4 @@
-import mongoengine
+from mongoengine import Document, StringField
 
 class File(Document):
     name = StringField()

@@ -46,14 +46,18 @@ class ServiceThread(Thread):
 
     def run(self):
         print "thread started"
-        while 1:
+        self._socket.setblocking(1)
+        condition = True
+        while condition:
             try:
                 #TODO: cambiare questo perche la recv tenta di leggere byte anche se non ce ne sono e va in loop, che si fa?
                 #TODO: Luca la chiamata a recv e' bloccante... se non ci sono dati il while e' bloccato in teoria!
 
+
                 # TODO Qui si da per scontato che tutti i messaggi ricevuti dal client siano corretti se avanza tempo implementare check sulla sintassi
 
-                self._socket.setblocking(1)
+                self._socket.setblocking(1) # <--------
+                
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":
@@ -119,10 +123,13 @@ class ServiceThread(Thread):
                     klog("Received a LOGO, from session_id: %s" %(session_id))
                     self._socket.send("ALGO"+"{0:03d}".format(delete_num))
                     klog("Sent ALGO to session_id: %s" %(session_id))
+                elif command == "":
+                    condition = False
 
-            except Exception, e:
-                print e
-                break
+            except:
+                condition = False
+
+        print "exiting thread"
 
 
 class NapsterServer(object):
@@ -142,8 +149,8 @@ class NapsterServer(object):
     def start(self):
         print "Starting server...."
         self.server_socket.listen(10)
-        print "Started, waiting for connection"
         while 1:
+            print "Waiting for connection "
             (socket_client, address) = self.server_socket.accept()
             s = ServiceThread(socket_client)
             s.start()

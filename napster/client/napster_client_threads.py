@@ -113,7 +113,7 @@ class PeerHandler(threading.Thread):
 
 
 
-
+"""
     data = client_socket.recv(1024) ### aspetto un ack dal client
 
     f = open(fileToSend, "rb")
@@ -123,4 +123,4 @@ class PeerHandler(threading.Thread):
     client_socket.send(data)
     client_socket.close()
 
-
+"""

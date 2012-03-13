@@ -401,7 +401,6 @@ class NapsterClient(object):
                 if ack[:4]=="ARET":
 
                     print "Download is coming..."
-                    #TODO: verificare che non sia una traduzione troppo porno
 
                     fout = open(filename,"ab") #a di append
 
@@ -495,13 +494,9 @@ class NapsterClient(object):
             num_delete = ack[4:7]
             print "Number of deleted files: " + num_delete + "\n"
 
-            #TODO: e' necessario che io vada a controllare questo num_delete?
-            #nel senso: devo mettere un contatore nell'upload che mi tiene il conto dei file che uploado
-            #e poi andarlo a confrontare con questo?
 
-            #TODO: verificare questa soluzione: occorre istanziare la variabile num_upload che si incrementa ad ogni upload andato a buon fine
-            #if num_delete != self.num_upload :
-            #    print "Warning: The number of copies deleted differs from those uploaded \n"
+            if int(num_delete) != len(self.fileTable) :
+                print "Warning: The number of copies deleted differs from those uploaded \n"
 
             self.dir_socket.close() #chiudo la socket verso la directory
 

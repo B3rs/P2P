@@ -3,7 +3,7 @@ from managers.usersmanager import UsersManager
 import socket, os
 from threading import Thread
 from custom_utils.logging import klog
-from custom_utils.hashing import read_md5
+from custom_utils.hashing import decode_md5, encode_md5
 
 
 class ServiceThread(Thread):
@@ -71,7 +71,7 @@ class ServiceThread(Thread):
 
                 elif command == "ADDF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_hash = read_md5(self._socket.recv(16))
+                    file_hash = encode_md5(self._socket.recv(16))
                     file_name = str(self._socket.recv(100))
                     klog("Received a ADDF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                     copy_num = self.add_file(peer_session_id, file_hash, file_name)
@@ -81,7 +81,7 @@ class ServiceThread(Thread):
 
                 elif command == "DELF":
                     peer_session_id = str(self._socket.recv(16))
-                    file_hash = read_md5(self._socket.recv(16))
+                    file_hash = encode_md5(self._socket.recv(16))
                     copy_num = self.remove_file(peer_session_id, file_hash)
                     klog("Received a DELF, from: %s. Hash: %s. Remaining files with same hash: %d" %(peer_session_id, file_hash, copy_num))
                     self._socket.send("ADEL"+"{0:03d}".format(copy_num))
@@ -89,17 +89,20 @@ class ServiceThread(Thread):
 
                 elif command == "FIND":
                     peer_session_id = str(self._socket.recv(16))
-                    query_string = str(self._socket.recv(20))
+                    # We recieve a lot of spaces in the query string, due to the codification rules
+                    # with .lstrip we remove the leading spaces strip
+                    query_string = str(self._socket.recv(20)).lstrip()
 
                     files = self.find_files(peer_session_id, query_string)
                     string = "AFIN"+"{0:03d}".format(len(files))
 
-                    counter = 4 + 3
+                    counter = 4 + 3 # AFIN is 4 + 3 that is the number of bytes for the number of copies
 
                     for file in files:
                         copyes = FilesManager.find_files_by_hash(file.hash)
-                        string += str(file.hash) + str("{0:100s}".format(file.name)) + str("{0:03d}".format(len(copyes)))
+                        string += decode_md5(file.hash) + str("{0:100s}".format(file.name)) + str("{0:03d}".format(len(copyes)))
                         counter += 16 + 100+ 3
+
                         for copy in copyes:
                             user = UsersManager.find_user_by_session_id(copy.session_id)
                             string += str(user.ip) + str("{0:05d}".format(user.port))
@@ -112,7 +115,7 @@ class ServiceThread(Thread):
 
                 elif command == "RREG":
                     peer_session_id = str(self._socket.recv(16))
-                    file_hash = read_md5(self._socket.recv(16))
+                    file_hash = encode_md5(self._socket.recv(16))
                     peer_ip = str(self._socket.recv(15))
                     peer_port = str(self._socket.recv(5))
                     download_num = self.register_download(peer_session_id, file_hash, peer_ip, peer_port)

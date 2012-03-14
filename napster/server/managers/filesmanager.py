@@ -5,7 +5,7 @@ from models.user import User
 class FilesManager(object):
 
     @classmethod
-    def find_file_by_query(cls, query):
+    def find_files_by_query(cls, query):
         #words = query.split(" ")
         #TODO devo implementare il group by md5
         return File.objects(name__icontains = query)

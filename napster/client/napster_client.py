@@ -309,7 +309,7 @@ class NapsterClient(object):
                         #la lunghezza di questo pezzo e' 20*num_copy[i]
 
 
-                #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca
+                #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca eseguita
 
                 answer="Z" #la inizializzo ad una lettera a caso
 

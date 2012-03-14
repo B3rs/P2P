@@ -58,7 +58,7 @@ class ServiceThread(Thread):
                 # TODO Qui si da per scontato che tutti i messaggi ricevuti dal client siano corretti se avanza tempo implementare check sulla sintassi
 
                 self._socket.setblocking(1) # <--------
-                
+
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":
@@ -82,7 +82,7 @@ class ServiceThread(Thread):
                 elif command == "DELF":
                     peer_session_id = str(self._socket.recv(16))
                     file_hash = read_md5(self._socket.recv(16))
-                    copy_num = str(self.remove_file(peer_session_id, file_hash))
+                    copy_num = self.remove_file(peer_session_id, file_hash)
                     klog("Received a DELF, from: %s. Hash: %s. Remaining files with same hash: %d" %(peer_session_id, file_hash, copy_num))
                     self._socket.send("ADEL"+"{0:03d}".format(copy_num))
                     klog("Sent ADEL to: %s" %(peer_session_id))
@@ -90,6 +90,8 @@ class ServiceThread(Thread):
                 elif command == "FIND":
                     peer_session_id = str(self._socket.recv(16))
                     query_string = str(self._socket.recv(20))
+
+                    print "Locally searching for matches to the query " + query_string
 
                     files = self.find_file(peer_session_id, query_string)
 
@@ -132,6 +134,7 @@ class ServiceThread(Thread):
                 condition = False
                 print ex
         self._socket.close()
+        # TODO do some cleanup if the socket dies? Remove user document and all its files?
         print "exiting thread"
 
 

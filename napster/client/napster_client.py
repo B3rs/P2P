@@ -1,6 +1,6 @@
 __author__ = 'ingiulio'
 
-from napster_client_threads import ListenToPeers
+#from napster_client_threads import ListenToPeers
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "192.168.1.103" # indirizzo della directory
+        self.dir_host = "192.168.1.106" # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
@@ -59,6 +59,7 @@ class NapsterClient(object):
                 break
             md5.update(data)
         print md5.digest()
+        print md5.hexdigest()
         return md5.digest()
 
     # end of md5_for_file method
@@ -103,8 +104,8 @@ class NapsterClient(object):
         self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
-        myserver = ListenToPeers()
-        myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
+        #myserver = ListenToPeers()
+        #myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -128,7 +129,7 @@ class NapsterClient(object):
                 self.logged=False #non sono loggato
             else:
                 self.logged=True
-                DownloadMe().start() #thread che gestisce il download da parte dei peer
+                #DownloadMe().start() #thread che gestisce il download da parte dei peer
 
 
         else :
@@ -309,7 +310,7 @@ class NapsterClient(object):
                         #la lunghezza di questo pezzo e' 20*num_copy[i]
 
 
-                #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca
+                #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca eseguita
 
                 answer="Z" #la inizializzo ad una lettera a caso
 

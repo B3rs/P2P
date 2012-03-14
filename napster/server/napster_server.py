@@ -57,7 +57,7 @@ class ServiceThread(Thread):
                 # TODO Qui si da per scontato che tutti i messaggi ricevuti dal client siano corretti se avanza tempo implementare check sulla sintassi
 
                 self._socket.setblocking(1) # <--------
-                
+
                 command = str(self._socket.recv(4))
 
                 if command == "LOGI":

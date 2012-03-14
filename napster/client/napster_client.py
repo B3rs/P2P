@@ -19,7 +19,8 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "192.168.1.106" # indirizzo della directory
+        self.dir_host = "192.168.1.115" # indirizzo della directory
+        #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
@@ -496,6 +497,12 @@ class NapsterClient(object):
 
             if int(num_delete) != len(self.fileTable) :
                 print "Warning: The number of copies deleted differs from those uploaded \n"
+                #TODO: il numero dei file cancellati in realta' deve essere uguale a quelli uploadati
+                # MENO quelli cancellati da me medesimo durante l'esecuzione del programma
+                # se non solo uguale a quelli uploadati!
+                # quindi se vogliamo davvero fare questo controllo va messo un contatore
+                # per il numero dei file cancellati e fare la differenza
+                #io me ne fregherei sinceramente di questo controllo! Siete d'accordo?
 
             self.dir_socket.close() #chiudo la socket verso la directory
 

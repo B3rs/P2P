@@ -1,3 +1,5 @@
+from twisted.internet import address
+
 __author__ = 'ingiulio'
 
 import socket # networking module
@@ -5,6 +7,7 @@ import sys
 import threading
 import time
 import os
+from napster_client import NapsterClient #TODO controllare
 
 class ListenToPeers(threading.Thread):
 
@@ -74,40 +77,30 @@ class PeerHandler(threading.Thread):
             file = open(filename, "rb")
             #TODO: calcolare il numero di chunk
             tot_dim=filesize(filename)
-            num_of_chunks = int(tot_dim / chunk_dim) #TODO: VERIFICARE SE LA DIVISIONE NON "MANGIA" UN CHUNK
+            num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
+            resto = tot_dim % chunk_dim #eventuale resto della divisione
+            if resto != 0.0:
+                num_of_chunks+=1
+
             num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
             file.seek(0,0) #sposto la testina di lettura ad inizio file
             buff = file.read(chunk_dim)
             chunk_sent = 0
+            ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
             while len(buff) == chunk_dim :
-                chunk_dim_form = '%(#)05d' % {"#" : int(buff)}
-                ListenToPeers.peer_socket.send("ARET" + num_chunks_form +chunk_dim_form + buff) #TODO: controllare il pacchetto
+                chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
+                ListenToPeers.peer_socket.send(chunk_dim_form + buff)
                 chunk_sent = chunk_sent +1
-                print "Sent " + chunk_sent + " chunks to " + self.addrclient[0]
-                #file.seek(1,chunk_dim)
+                print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
                 buff = file.read(chunk_dim)
-            dim_last_chunk = len(buff)
-            ListenToPeers.peer_socket.send("ARET" + num_chunks_form + dim_last_chunk + buff) #TODO: controllare il pacchetto
-
-            print "End of upload"
-            # registrare sulla directory il download
-            self.socketclient.send()
+            if len(buff) != 0:
+                chunk_last_form = '%(#)05d' % {"#" : len(buff)}
+                ListenToPeers.peer_socket.send(chunk_last_form + buff)
 
 
-            # quando ho recuperato il file lo devo mandare al peer in questo modo:
-            # ARET[4B].#chunk[6B].{Lenchunk_i[5B].data[LB]}(i=1..#chunk)
-            # decidendo io il numero dei chunk e la loro lunghezza
-            # poi basta, non devo fare nient'altro
+            print "End of upload to "+self.addrclient[0]+ " of "+filename
+            file.close()
 
-
-
-    data = client_socket.recv(1024) ### aspetto un ack dal client
-
-    f = open(fileToSend, "rb")
-    data = f.read()
-    f.close()
-
-    client_socket.send(data)
-    client_socket.close()
-
-
+        else:
+            print "ack parsing failed, for RETR\n"
+        

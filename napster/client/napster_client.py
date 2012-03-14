@@ -20,6 +20,7 @@ class NapsterClient(object):
 
         # DIRECTORY
         self.dir_host = "192.168.1.115" # indirizzo della directory
+        #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
@@ -256,8 +257,8 @@ class NapsterClient(object):
         if ack[:4]=="AFIN":
 
             print "OK, ack received\n" # DEBUG
-            num_idmd5 = ack[4:7]
-            print "Number of different md5: " + num_idmd5 + "\n"
+            num_idmd5 = int(ack[4:7])
+            print "Number of different md5: " + str(num_idmd5) + "\n"
 
             if num_idmd5==0:
 
@@ -282,12 +283,12 @@ class NapsterClient(object):
                     ackmd5 = self.dir_socket.recv(119)
                     print ackmd5
 
-                    print "md5 n." + i
+                    print "md5 n.%d" %(i)
 
                     self.filemd5_down[i] = ackmd5[:16] #lungo 16
                     self.filename_down[i] = ackmd5[16:116] #lungo 100
                     self.num_copy_down[i] = ackmd5[116:119] #lungo 3
-                    print "md5 n." + i + self.filemd5_down[i] + self.filename_down[i] + self.num_copy_down[i]
+                    print "md5 n." + str(i) + self.filemd5_down[i] + self.filename_down[i] + self.num_copy_down[i]
                     #la lunghezza di questo pezzo e' sempre 119
 
                     for j in range(1,self.num_copy_down[i]): #j=numero di copia per quello stesso md5
@@ -299,12 +300,12 @@ class NapsterClient(object):
                         ackcopy = self.dir_socket.recv(20*self.num_copy_down[i])
                         print ackcopy
 
-                        print "copy n." + j
-                        print "identificativo con cui scaricarla " + i + "." + "j"
+                        print "copy n. %d" %(j)
+                        print "identificativo con cui scaricarla %d,%d" %(i,j)
 
                         self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
                         self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
-                        print "    copy n." + i + self.IPP2P_down[i][j] + self.PP2P_down[i][j]
+                        print "    copy n." + str(i) + self.IPP2P_down[i][j] + self.PP2P_down[i][j]
                         #la lunghezza di questo pezzo e' 20*num_copy[i]
 
 
@@ -495,6 +496,12 @@ class NapsterClient(object):
 
             if int(num_delete) != len(self.fileTable) :
                 print "Warning: The number of copies deleted differs from those uploaded \n"
+                #TODO: il numero dei file cancellati in realta' deve essere uguale a quelli uploadati
+                # MENO quelli cancellati da me medesimo durante l'esecuzione del programma
+                # se non solo uguale a quelli uploadati!
+                # quindi se vogliamo davvero fare questo controllo va messo un contatore
+                # per il numero dei file cancellati e fare la differenza
+                #io me ne fregherei sinceramente di questo controllo! Siete d'accordo?
 
             self.dir_socket.close() #chiudo la socket verso la directory
 

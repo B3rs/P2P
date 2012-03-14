@@ -382,6 +382,7 @@ class NapsterClient(object):
                 iodown_host = IPP2P
                 iodown_port = int(PP2P)
                 iodown_addr = iodown_host, iodown_port
+                #TODO: inserire controllo eccezioni per la caduta della connessione col peer
                 iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
                 iodown_socket.connect(iodown_addr)

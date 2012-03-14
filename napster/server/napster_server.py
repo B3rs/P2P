@@ -36,9 +36,9 @@ class ServiceThread(Thread):
             FilesManager.delete_file(file)
         return FilesManager.count_files_by_hash(hash)
 
-    def find_file(self, session_id, query_string):
+    def find_files(self, session_id, query_string):
         if query_string != "":
-            return FilesManager.find_file_by_query(query_string)
+            return FilesManager.find_files_by_query(query_string)
         return False
 
     def register_download(self, session_id, md5, peer_ip, peer_port):
@@ -91,10 +91,7 @@ class ServiceThread(Thread):
                     peer_session_id = str(self._socket.recv(16))
                     query_string = str(self._socket.recv(20))
 
-                    print "Locally searching for matches to the query " + query_string
-
-                    files = self.find_file(peer_session_id, query_string)
-
+                    files = self.find_files(peer_session_id, query_string)
                     string = "AFIN"+"{0:03d}".format(len(files))
 
                     counter = 4 + 3

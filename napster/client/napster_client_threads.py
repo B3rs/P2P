@@ -97,7 +97,7 @@ class PeerHandler(threading.Thread):
                         try:
                             ListenToPeers.peer_socket.send(chunk_dim_form + buff)
                         except IOError: #this exception includes the socket.error child!
-                            print "Connection error due to peer's die!\n"
+                            print "Connection error due to the death of your peer!!!\n"
                             raise ConnException
                         else:
                             chunk_sent = chunk_sent +1

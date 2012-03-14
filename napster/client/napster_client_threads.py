@@ -4,7 +4,7 @@ import socket # networking module
 import sys
 import threading
 import time
-from napster_client import NapsterClient
+import os
 
 class ListenToPeers(threading.Thread):
 
@@ -53,6 +53,8 @@ class PeerHandler(threading.Thread):
 
         print "Sono un thread che si occupa di un altro peer"
 
+        chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
+
         # mi metto in receive della string "RETR"
         request = self.socketclient.recv()
         if request[:4] == "RETR":
@@ -67,40 +69,27 @@ class PeerHandler(threading.Thread):
                     filename = NapsterClient.fileTable[i[0]]
 
 
-            #filename e' il nome del file da inviare
-            dim = filesize(filename) #questa e' la dimensione totale del file
-            f = open(filename, "rb")
-
-            # TODO maury: se vuoi verifica che il file esista ancora
-
-            print "la dimensione del file e' " + str(dim)
-            lun_chunk = 128
-            num_chunk = dim / lun_chunk #numero di chunk
-            buff = [lun_chunk] #buffer di lunghezzo 128
-            while True:
-                lun_buff = 0
-                buff = f.read(lun_chunk)
-                lun_buff = len
-                #append
-                if not buff:
-                    break
-
             # dividere il file in chuncks
-            file = open(filename)
-            file.seek(0,0)
-            buff = file.read(128)
+
+            file = open(filename, "rb")
+            #TODO: calcolare il numero di chunk
+            tot_dim=filesize(filename)
+            num_of_chunks = int(tot_dim / chunk_dim) #TODO: VERIFICARE SE LA DIVISIONE NON "MANGIA" UN CHUNK
+            num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
+            file.seek(0,0) #sposto la testina di lettura ad inizio file
+            buff = file.read(chunk_dim)
             chunk_sent = 0
-            while len(buff) == 128 :
-                ListenToPeers.peer_socket.send(buff)
+            while len(buff) == chunk_dim :
+                chunk_dim_form = '%(#)05d' % {"#" : int(buff)}
+                ListenToPeers.peer_socket.send("ARET" + num_chunks_form +chunk_dim_form + buff) #TODO: controllare il pacchetto
                 chunk_sent = chunk_sent +1
-                print "Sent " + chunk_sent + " chunks"
-                file.seek(1,128)
-                buff = file.read(128)
-            ListenToPeers.peer_socket.send(buff)
+                print "Sent " + chunk_sent + " chunks to " + self.addrclient[0]
+                #file.seek(1,chunk_dim)
+                buff = file.read(chunk_dim)
+            dim_last_chunk = len(buff)
+            ListenToPeers.peer_socket.send("ARET" + num_chunks_form + dim_last_chunk + buff) #TODO: controllare il pacchetto
 
             print "End of upload"
-
-            # inviare risposta al client
             # registrare sulla directory il download
             self.socketclient.send()
 
@@ -112,8 +101,6 @@ class PeerHandler(threading.Thread):
 
 
 
-
-"""
     data = client_socket.recv(1024) ### aspetto un ack dal client
 
     f = open(fileToSend, "rb")
@@ -123,4 +110,4 @@ class PeerHandler(threading.Thread):
     client_socket.send(data)
     client_socket.close()
 
-"""
+

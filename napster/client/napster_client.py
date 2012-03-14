@@ -51,17 +51,20 @@ class NapsterClient(object):
         """
         print "Funzione che calcola l'md5 di un file" #TODO: DEBUG MODE
 
-        f = open(fileName)
-        md5 = hashlib.md5()
-        while True:
-            data = f.read(128)
-            if not data:
-                break
-            md5.update(data)
-        print md5.digest()
-        print md5.hexdigest()
-        return md5.digest()
-
+        try:
+            f = open(fileName)
+        except Exception, expt:
+            print "Error: %s" % expt
+        else :
+            md5 = hashlib.md5()
+            while True:
+                data = f.read(128)
+                if not data:
+                    break
+                md5.update(data)
+            print md5.digest()
+            print md5.hexdigest()
+            return md5.digest()
     # end of md5_for_file method
 
 

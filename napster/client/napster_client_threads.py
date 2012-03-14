@@ -59,7 +59,7 @@ class PeerHandler(threading.Thread):
         chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
 
         # mi metto in receive della string "RETR"
-        request = self.socketclient.recv()
+        request = self.socketclient.recv(20)
         if request[:4] == "RETR":
             print "ok, mi hai chiesto il file, controllo l'md5"
 
@@ -74,33 +74,39 @@ class PeerHandler(threading.Thread):
 
             # dividere il file in chuncks
 
-            file = open(filename, "rb")
-            #TODO: calcolare il numero di chunk
-            tot_dim=filesize(filename)
-            num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
-            resto = tot_dim % chunk_dim #eventuale resto della divisione
-            if resto != 0.0:
-                num_of_chunks+=1
+            try :
+                file = open(filename, "rb")
+            except Exception,expt:
+                print "Error: %s" %expt + "\n"
+                print "An error occured, file upload unavailable for peer " + self.addrclient[0] + "\n"
+            else :
+                tot_dim=filesize(filename)
+                num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
+                resto = tot_dim % chunk_dim #eventuale resto della divisione
+                if resto != 0.0:
+                    num_of_chunks+=1
 
-            num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
-            file.seek(0,0) #sposto la testina di lettura ad inizio file
-            buff = file.read(chunk_dim)
-            chunk_sent = 0
-            ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
-            while len(buff) == chunk_dim :
-                chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
-                ListenToPeers.peer_socket.send(chunk_dim_form + buff)
-                chunk_sent = chunk_sent +1
-                print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
-                buff = file.read(chunk_dim)
-            if len(buff) != 0:
-                chunk_last_form = '%(#)05d' % {"#" : len(buff)}
-                ListenToPeers.peer_socket.send(chunk_last_form + buff)
+                num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
+                file.seek(0,0) #sposto la testina di lettura ad inizio file
+                try :
+                    buff = file.read(chunk_dim)
+                    chunk_sent = 0
+                    ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
+                    while len(buff) == chunk_dim :
+                        chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
+                        ListenToPeers.peer_socket.send(chunk_dim_form + buff)
+                        chunk_sent = chunk_sent +1
+                        print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
+                        buff = file.read(chunk_dim)
+                    if len(buff) != 0:
+                        chunk_last_form = '%(#)05d' % {"#" : len(buff)}
+                        ListenToPeers.peer_socket.send(chunk_last_form + buff)
 
-
-            print "End of upload to "+self.addrclient[0]+ " of "+filename
-            file.close()
-
+                except EOFError:
+                    print "You have read a EOF char"
+                else :
+                    print "End of upload to "+self.addrclient[0]+ " of "+filename
+                    file.close()
         else:
             print "ack parsing failed, for RETR\n"
         

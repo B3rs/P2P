@@ -74,11 +74,10 @@ class NapsterClient(object):
         """
         try :
             f = open(filename)
+        except Exception, expt :
+            print "Peer can't verify file presence -> %s" % expt + "\n"
+        else:
             f.close()
-        except IOError :
-            print "Peer can't verify file presence"
-        except Exception:
-            print "Unexpected error:", sys.exc_info()[0]
     # end of checkfile method
 
     def login(self):
@@ -89,55 +88,60 @@ class NapsterClient(object):
         print "Login...\n"
 
         #mi connetto alla directory tramite la socket self.dir_socket
-        self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.dir_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
-        self.dir_socket.connect(self.dir_addr)
-        print "Connection with directory enstablished\n"
+        try:
+            self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.dir_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
+            self.dir_socket.connect(self.dir_addr)
+        except IOError, expt: #IOError exception includes a sub-exception socket.error
+            print "Error occured in Connection with Directory -> %s" % expt + "\n"
+        else:
+            print "Connection with directory enstablished\n"
 
-        # Formattazione indirizzo IP per invio alla directory
-        self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
-        my_IP_split = self.my_IP.split(".")
-        IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
-        IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
-        IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
-        IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
-        self.myIPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+            # Formattazione indirizzo IP per invio alla directory
+            self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
+            my_IP_split = self.my_IP.split(".")
+            IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
+            IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
+            IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
+            IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
+            self.myIPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
 
-        # Formattazione porta
-        self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
+            # Formattazione porta
+            self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
-        # CREO LA SOCKET PER GLI ALTRI PEERS
-        #myserver = ListenToPeers()
-        #myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
+            # CREO LA SOCKET PER GLI ALTRI PEERS
+            #myserver = ListenToPeers()
+            #myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
 
-        # SPEDISCO IL PRIMO MESSAGGIO
-        self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
+            # SPEDISCO IL PRIMO MESSAGGIO
+            self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
 
 
-        # Acknowledge "ALGI" dalla directory
-        ack = self.dir_socket.recv(20)
-        print ack
+            # Acknowledge "ALGI" dalla directory
+            ack = self.dir_socket.recv(20)
+            print ack
 
-        if ack[:4]=="ALGI":
+            if ack[:4]=="ALGI":
 
-            print "OK, ack received\n"
-            self.session_ID = ack[4:20]
-            print "Session ID: " + self.session_ID + "\n"
-            #non ho ancora controllato il SESSIONID
+                print "OK, ack received\n"
+                self.session_ID = ack[4:20]
+                print "Session ID: " + self.session_ID + "\n"
+                #non ho ancora controllato il SESSIONID
 
-            # Check login non riuscito
-            if self.session_ID=="0000000000000000":
-                print "Login failed: try again!"
-                self.dir_socket.close()
+                # Check login non riuscito
+                if self.session_ID=="0000000000000000":
+                    print "Login failed: try again!"
+                    self.dir_socket.close()
+                    self.logged=False #non sono loggato
+                else:
+                    self.logged=True
+                    #DownloadMe().start() #thread che gestisce il download da parte dei peer
+
+
+            else :
+                print "KO, ack parsing failed\n"
                 self.logged=False #non sono loggato
-            else:
-                self.logged=True
-                #DownloadMe().start() #thread che gestisce il download da parte dei peer
-
-
-        else :
-            print "KO, ack parsing failed\n"
-            self.logged=False #non sono loggato
+        # end of exception's else
     # end of login method
 
 
@@ -147,7 +151,7 @@ class NapsterClient(object):
         """
         sys.stdout.write("You're about to exit the program")
         self.dots()
-        print "Bye"
+        print "Bye!\n"
         self.stop = True
     # end of nologin method
 
@@ -168,10 +172,9 @@ class NapsterClient(object):
         print "Filename in format '%100s': " + filename_form
 
         self.checkfile(filename) #soluzione proposta da maury
-        #TODO maury: il flusso delle operazioni deve bloccarsi se il file non esiste
 
         # SPEDISCO IL PACCHETTO
-        self.dir_socket.send("ADDF"+self.session_ID)
+        self.dir_socket.send("ADDF" + self.session_ID)
         self.dir_socket.send(md5file)
         self.dir_socket.send(filename_form)
 
@@ -180,7 +183,6 @@ class NapsterClient(object):
         print ack
 
         if ack[:4]=="AADD":
-
             print "OK, ack received\n" # DEBUG
             num_copy = ack[4:7]
             print "Number of copies: " + num_copy + "\n"
@@ -193,14 +195,10 @@ class NapsterClient(object):
                 # registro nella mia personale "tabella" il file aggiunto, e il suo md5
                 fileadded = [filename,md5file]
                 self.fileTable.append(fileadded)
-
-
         else :
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
     # end of addfile method
-
-
 
 
     def delfile(self):
@@ -221,8 +219,7 @@ class NapsterClient(object):
         print ack
 
         if ack[:4]=="ADEL":
-
-            print "OK, ack received\n" # DEBUG
+            print "OK, ack  'ADEL' received\n" # DEBUG
             num_copy = ack[4:7]
             print "Number of copies left: " + num_copy + "\n"
 
@@ -231,8 +228,6 @@ class NapsterClient(object):
                 print "Warning: an error occured during file deleting\n"
             else:
                 print "The specified copy has been removed\n"
-
-
         else :
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
@@ -247,12 +242,12 @@ class NapsterClient(object):
         """
         print "Find...\n"
 
-        ricerca = raw_input("Type a search string: ")
+        search = raw_input("Type a search string: ")
 
-        ricerca_form = '%(#)020s' % {"#" : ricerca} #formatto la stringa di ricerca
+        search_form = '%(#)020s' % {"#" : search} #formatto la stringa di ricerca
 
         # SPEDISCO IL PACCHETTO
-        self.dir_socket.send("FIND" + self.session_ID + ricerca_form)
+        self.dir_socket.send("FIND" + self.session_ID + search_form)
 
         # Acknowledge "AFIN" from directory
         ack = self.dir_socket.recv(7) #leggo i primi 7B, poi il resto lo leggo dopo perche' non ha lunghezza fissa
@@ -410,7 +405,7 @@ class NapsterClient(object):
                     print "The #chunk is " + num_chunk + "\n"
 
                     for i in range (1,num_chunk): #i e' il numero di chunk
-                        print "Watching chunk number " + i + "\n"
+                        print "Watching chunk number " + str(i) + "\n"
 
                         #devo leggere altri byte ora
                         #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk

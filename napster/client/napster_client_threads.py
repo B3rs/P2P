@@ -94,16 +94,24 @@ class PeerHandler(threading.Thread):
                     ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
                     while len(buff) == chunk_dim :
                         chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
-                        ListenToPeers.peer_socket.send(chunk_dim_form + buff)
-                        chunk_sent = chunk_sent +1
-                        print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
-                        buff = file.read(chunk_dim)
+                        try:
+                            ListenToPeers.peer_socket.send(chunk_dim_form + buff)
+                        except IOError: #this exception includes the socket.error child!
+                            print "Connection error due to peer's die!\n"
+                            raise ConnException
+                        else:
+                            chunk_sent = chunk_sent +1
+                            print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
+                            buff = file.read(chunk_dim)
                     if len(buff) != 0:
                         chunk_last_form = '%(#)05d' % {"#" : len(buff)}
                         ListenToPeers.peer_socket.send(chunk_last_form + buff)
 
                 except EOFError:
                     print "You have read a EOF char"
+                except ConnException:
+                    print "Your friend is a bad peer, and a bad developer!\n"
+
                 else :
                     print "End of upload to "+self.addrclient[0]+ " of "+filename
                     file.close()

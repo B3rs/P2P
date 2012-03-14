@@ -1,6 +1,6 @@
 __author__ = 'ingiulio'
 
-import napster_client_threads
+from napster_client_threads import ListenToPeers
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "127.0.0.1" # indirizzo della directory
+        self.dir_host = "192.168.1.103" # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
@@ -60,6 +60,7 @@ class NapsterClient(object):
             md5.update(data)
         print md5.digest()
         return md5.digest()
+
     # end of md5_for_file method
 
 
@@ -101,11 +102,6 @@ class NapsterClient(object):
         # Formattazione porta
         self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
-        # Metto a disposizione una porta per il peer to peer
-        #self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        #self.peer_socket.bind(self.my_IP,self.myP2P_port)
-        #self.peer_socket.listen(100) #socket per chi vorra' fare download da me
-
         # CREO LA SOCKET PER GLI ALTRI PEERS
         myserver = ListenToPeers()
         myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
@@ -118,7 +114,7 @@ class NapsterClient(object):
         ack = self.dir_socket.recv(20)
         print ack
 
-        if ack[:4]=="ALGI": # se non funziona ALGI usare ALOG
+        if ack[:4]=="ALGI":
 
             print "OK, ack received\n"
             self.session_ID = ack[4:20]
@@ -168,9 +164,12 @@ class NapsterClient(object):
         print "Filename in format '%100s': " + filename_form
 
         self.checkfile(filename) #soluzione proposta da maury
+        #TODO maury: il flusso delle operazioni deve bloccarsi se il file non esiste
 
         # SPEDISCO IL PACCHETTO
-        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
+        self.dir_socket.send("ADDF"+self.session_ID)
+        self.dir_socket.send(md5file)
+        self.dir_socket.send(filename_form)
 
         # Acknowledge "AADD" dalla directory
         ack = self.dir_socket.recv(7)
@@ -400,7 +399,6 @@ class NapsterClient(object):
                 if ack[:4]=="ARET":
 
                     print "Download is coming..."
-                    #TODO: verificare che non sia una traduzione troppo porno
 
                     fout = open(filename,"ab") #a di append
 
@@ -494,13 +492,9 @@ class NapsterClient(object):
             num_delete = ack[4:7]
             print "Number of deleted files: " + num_delete + "\n"
 
-            #TODO: e' necessario che io vada a controllare questo num_delete?
-            #nel senso: devo mettere un contatore nell'upload che mi tiene il conto dei file che uploado
-            #e poi andarlo a confrontare con questo?
 
-            #TODO: verificare questa soluzione: occorre istanziare la variabile num_upload che si incrementa ad ogni upload andato a buon fine
-            #if num_delete != self.num_upload :
-            #    print "Warning: The number of copies deleted differs from those uploaded \n"
+            if int(num_delete) != len(self.fileTable) :
+                print "Warning: The number of copies deleted differs from those uploaded \n"
 
             self.dir_socket.close() #chiudo la socket verso la directory
 

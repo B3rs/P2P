@@ -260,7 +260,7 @@ class NapsterClient(object):
             num_idmd5 = int(ack[4:7])
             print "Number of different md5: " + str(num_idmd5) + "\n"
 
-            if num_idmd5==0:
+            if num_idmd5 == 0:
 
                 print "Sorry. No match found for your search"
 
@@ -283,7 +283,7 @@ class NapsterClient(object):
                     ackmd5 = self.dir_socket.recv(119)
                     print ackmd5
 
-                    print "md5 n.%d" %(i)
+                    print "md5 n.%d" % i
 
                     self.filemd5_down[i] = ackmd5[:16] #lungo 16
                     self.filename_down[i] = ackmd5[16:116] #lungo 100
@@ -330,10 +330,7 @@ class NapsterClient(object):
                         self.dots()
 
                         self.download()
-
                     #se l'utente non ha digitato ne' "Y" ne' "N" dovrebbe rifarmi la domanda un'altra volta
-
-
         else:
 
             print "KO, ack parsing failed\n"
@@ -383,93 +380,102 @@ class NapsterClient(object):
                 iodown_host = IPP2P
                 iodown_port = int(PP2P)
                 iodown_addr = iodown_host, iodown_port
-                #TODO: inserire controllo eccezioni per la caduta della connessione col peer
                 iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
-                iodown_socket.connect(iodown_addr)
-                print "Connection with peer enstablished.\n"
-                print "Download will start shortly! Be patient"
+                try: # e' necessario tenere sotto controllo la connessione, perche' puo' disconnettersi il peer o non essere disponibile
 
-                # SPEDISCO IL PRIMO MESSAGGIO
-                iodown_socket.send("RETR" + filemd5)
-
-                # Acknowledge "ARET" dal peer
-                ack = iodown_socket.recv(10)
-                print ack
-
-                if ack[:4]=="ARET":
-
-                    print "Download is coming..."
-
-                    fout = open(filename,"ab") #a di append
-
-                    num_chunk = ack[4:10]
-                    print "The #chunk is " + num_chunk + "\n"
-
-                    for i in range (1,num_chunk): #i e' il numero di chunk
-                        print "Watching chunk number " + str(i) + "\n"
-
-                        #devo leggere altri byte ora
-                        #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
-
-                        lungh = int(iodown_socket.recv(5))
-                        print lungh
-
-                        #devo leggere altri byte ora
-                        #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
-
-                        data = iodown_socket.recv(5)
-                        print data
-
-                        #lo devo mettere sul mio file che ho nel mio pc
-
-                        fout.write(data) #scrivo sul file in append
-
-                    #ho finito di ricevere il file
-                    fout.close() #chiudo il file perche' ho finito di scaricarlo
-
-
-                    #dopo il download comunico alla directory che ho fatto questo download
-                    #come al solito devo mandargli IP e porta del peer da cui ho scaricato formattati
-
-                    # Formattazione indirizzo IP peer per invio alla directory
-                    IPP2P_split = IPP2P.split(".")
-                    IPP2P_1 = '%(#)03d' % {"#" : int(IPP2P_split[0])}
-                    IPP2P_2 = '%(#)03d' % {"#" : int(IPP2P_split[1])}
-                    IPP2P_3 = '%(#)03d' % {"#" : int(IPP2P_split[2])}
-                    IPP2P_4 = '%(#)03d' % {"#" : int(IPP2P_split[3])}
-                    IPP2P_form = IPP2P_1 + "." + IPP2P_2 + "." + IPP2P_3 + "." + IPP2P_4 #IP formattato per bene
-
-                    # Formattazione porta
-                    PP2P_form = '%(#)05d' % {"#" : int(PP2P)} #porta formattata per bene
-
-                    self.dir_socket.send("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
-
-                    # Acknowledge "ARRE" dalla directory
-                    ack = self.dir_socket.recv(9)
-                    print ack
-
-                    if ack[:4]=="ARRE":
-
-                        print "OK, ack received\n" # DEBUG
-                        num_down = ack[4:9]
-                        print "Number of download: " + num_down + "\n"
-
-                        # Check num downloads
-                        if int(num_down) < 1:
-                            print "Warning: Verified a mismatch in the number of download"
-                        else:
-                            print "ok"
-
-
-                    else :
-                        print "KO, ack parsing failed\n"
-                        print "Adding file failed!\n"
-
-
+                    iodown_socket.connect(iodown_addr)
+                except IOError: #IOError exception includes socket.error
+                    print "Connection with " + IPP2P + "not available"
                 else:
-                    print "KO, ack parsing failed\n"
-                    print "Download not available"
+                    print "Connection with peer enstablished.\n"
+                    print "Download will start shortly! Be patient"
+
+                    # SPEDISCO IL PRIMO MESSAGGIO
+                    iodown_socket.send("RETR" + filemd5)
+                    try:
+                        # Acknowledge "ARET" dal peer
+                        ack = iodown_socket.recv(10)
+                    except IOError:
+                        print "Connection error. The peer " + IPP2P + " is death\n"
+                    else:
+                        print ack
+
+                        if ack[:4]=="ARET":
+
+                            print "Download incoming..."
+
+                            fout = open(filename,"ab") #a di append
+
+                            num_chunk = ack[4:10]
+                            print "The number of chunks is " + num_chunk + "\n"
+
+                            for i in range (1,num_chunk): #i e' il numero di chunk
+                                print "Watching chunk number " + str(i) + "\n"
+
+                                #devo leggere altri byte ora
+                                #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
+                                try:
+                                    lungh = int(iodown_socket.recv(5))
+                                    print lungh
+
+                                    #devo leggere altri byte ora
+                                    #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
+
+                                    data = iodown_socket.recv(lungh)
+                                    print data
+
+                                    #lo devo mettere sul mio file che ho nel mio pc
+
+                                    fout.write(data) #scrivo sul file in append
+                                except IOError, expt:
+                                    print "Connection or File-access error -> %s" % expt
+                                    break
+                            #ho finito di ricevere il file
+                            fout.close() #chiudo il file perche' ho finito di scaricarlo
+
+
+                            #dopo il download comunico alla directory che ho fatto questo download
+                            #come al solito devo mandargli IP e porta del peer da cui ho scaricato formattati
+
+                            # Formattazione indirizzo IP peer per invio alla directory
+                            IPP2P_split = IPP2P.split(".")
+                            IPP2P_1 = '%(#)03d' % {"#" : int(IPP2P_split[0])}
+                            IPP2P_2 = '%(#)03d' % {"#" : int(IPP2P_split[1])}
+                            IPP2P_3 = '%(#)03d' % {"#" : int(IPP2P_split[2])}
+                            IPP2P_4 = '%(#)03d' % {"#" : int(IPP2P_split[3])}
+                            IPP2P_form = IPP2P_1 + "." + IPP2P_2 + "." + IPP2P_3 + "." + IPP2P_4 #IP formattato per bene
+
+                            # Formattazione porta
+                            PP2P_form = '%(#)05d' % {"#" : int(PP2P)} #porta formattata per bene
+
+                            self.dir_socket.send("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
+
+                            # Acknowledge "ARRE" dalla directory
+                            ack = self.dir_socket.recv(9)
+                            print ack
+
+                            if ack[:4]=="ARRE":
+
+                                print "OK, ack received\n" # DEBUG
+                                num_down = ack[4:9]
+                                print "Number of download: " + num_down + "\n"
+
+                                # Check num downloads
+                                if int(num_down) < 1:
+                                    print "Warning: Verified a mismatch in the number of download"
+                                else:
+                                    print "ok"
+
+
+                            else :
+                                print "KO, ack parsing failed\n"
+                                print "Adding file failed!\n"
+
+
+                        else:
+                            print "KO, ack parsing failed\n"
+                            print "Download not available"
     # end of download method
 
 

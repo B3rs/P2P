@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "169.254.64.169" # indirizzo della directory
+        self.dir_host = "169.254.175.171" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -111,8 +111,8 @@ class NapsterClient(object):
             self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
             # CREO LA SOCKET PER GLI ALTRI PEERS
-            myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
-            myserver.start() # controllare se il passaggio dei parametri e' corretto
+            self.myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
+            self.myserver.start() # controllare se il passaggio dei parametri e' corretto
 
             # SPEDISCO IL PRIMO MESSAGGIO
             self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -195,6 +195,9 @@ class NapsterClient(object):
                 # registro nella mia personale "tabella" il file aggiunto, e il suo md5
                 fileadded = [filename,md5file]
                 self.fileTable.append(fileadded)
+                self.myserver.gimmeFile(self.fileTable)
+                # il metodo gimmeFile passa la tabella fileTable aggiornata
+                # alla classe ListenToPeers del file napster_client_threads
         else :
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
@@ -395,7 +398,7 @@ class NapsterClient(object):
                 #"iodown" perche' io faccio il download da lui
                 iodown_host = IPP2P
                 iodown_port = int(PP2P)
-                iodown_addr = iodown_host, iodown_port
+                iodown_addr = (iodown_host, iodown_port)
                 iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
                 try: # e' necessario tenere sotto controllo la connessione, perche' puo' disconnettersi il peer o non essere disponibile
@@ -426,7 +429,7 @@ class NapsterClient(object):
                             num_chunk = ack[4:10]
                             print "The number of chunks is " + num_chunk + "\n"
 
-                            for i in range (1,num_chunk): #i e' il numero di chunk
+                            for i in range (1,int(num_chunk)): #i e' il numero di chunk
                                 print "Watching chunk number " + str(i) + "\n"
 
                                 #devo leggere altri byte ora

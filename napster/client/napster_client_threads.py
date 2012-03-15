@@ -83,9 +83,9 @@ class PeerHandler(threading.Thread):
             # ricerca della corrispondenza
             for i in self.fileTable:
                 print "md5 " + i[1]
-                print "nomefile " + i[0]
+                print "filename " + i[0]
                 if i[1] == md5tofind:
-                    print "trovato file!"
+                    print "file found!"
                     filename = i[0]
                     print filename
 
@@ -115,7 +115,7 @@ class PeerHandler(threading.Thread):
                         try:
                             self.socketclient.send(chunk_dim_form + buff)
                         except IOError: #this exception includes the socket.error child!
-                            print "Connection error due to the death of your peer!!!\n"
+                            print "Connection error due to the death of the peer!!!\n"
                             raise ConnException
                         else:
                             chunk_sent = chunk_sent +1

@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "192.168.1.115" # indirizzo della directory
+        self.dir_host = "169.254.216.25" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -178,6 +178,7 @@ class NapsterClient(object):
         self.dir_socket.send("ADDF" + self.session_ID)
         self.dir_socket.send(md5file)
         self.dir_socket.send(filename_form)
+        # a Fede Ferrioli danno problemi questre 3 send (preferirebbe una unica)
 
         # Acknowledge "AADD" dalla directory
         ack = self.dir_socket.recv(7)
@@ -274,39 +275,56 @@ class NapsterClient(object):
                 #matrici:
                 self.IPP2P_down = [[]]
                 self.PP2P_down = [[]]
+                tempIP = []
+                tempPort = []
                 #TODO: verificare che le matrici si istanzino davvero cosi'
 
-                for i in range(1,num_idmd5): #i=numero di identificativo md5
+                for i in range(0,num_idmd5): #i=numero di identificativo md5
 
                     #devo leggere altri byte ora
                     #ne leggo 119 perche' 119 e' la lunghezza del pezzo di cui so la lunghezza
                     ackmd5 = self.dir_socket.recv(119)
-                    print ackmd5
 
-                    print "md5 n.%d" % i
+                    print "md5 n.%d" % int(i+1)
 
-                    self.filemd5_down[i] = ackmd5[:16] #lungo 16
-                    self.filename_down[i] = ackmd5[16:116] #lungo 100
-                    self.num_copy_down[i] = ackmd5[116:119] #lungo 3
-                    print "md5 n." + str(i) + self.filemd5_down[i] + self.filename_down[i] + self.num_copy_down[i]
-                    #la lunghezza di questo pezzo e' sempre 119
+                    #per aggiungere qualcosa in un array devo fare append
 
-                    for j in range(1,self.num_copy_down[i]): #j=numero di copia per quello stesso md5
+                    self.filemd5_down.append(ackmd5[:16]) #lungo 16
+                    self.filename_down.append(ackmd5[16:116]) #lungo 100
+                    self.num_copy_down.append(ackmd5[116:119]) #lungo 3
+                    # ricordarsi che pero' parto dalla posizione 0 nell'array
 
-                        #devo leggere altri byte ora
-                        #ne leggo 20*numero_di_copie
-                        #perche' per ogni copia devo leggere 20 byte
+                    print "md5: " + self.filemd5_down[i]
+                    print "filename: " + self.filename_down[i]
+                    print "n.copy: " + self.num_copy_down[i]
 
-                        ackcopy = self.dir_socket.recv(20*self.num_copy_down[i])
-                        print ackcopy
+                    for j in range(0,int(self.num_copy_down[i])): #j=numero di copia per quello stesso md5
 
-                        print "copy n. %d" %(j)
-                        print "identificativo con cui scaricarla %d,%d" %(i,j)
+                        ackcopy = self.dir_socket.recv(20)
+                        print "    ackcopy: " + ackcopy
 
-                        self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
-                        self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
-                        print "    copy n." + str(i) + self.IPP2P_down[i][j] + self.PP2P_down[i][j]
-                        #la lunghezza di questo pezzo e' 20*num_copy[i]
+                        print "    copy n.%d" % int(j+1)
+                        print "    identificativo con cui scaricarla %d.%d" %(int(i+1),int(j+1))
+
+                        #self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
+                        tempIP.append(ackcopy[:15])
+
+                        #self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
+                        tempPort.append(ackcopy[15:20])
+
+                        print "    IP: " + tempIP[j]
+                        print "    porta: " + tempPort[j]
+
+
+                    self.IPP2P_down.append(tempIP) #dovrei aver costruito un vettorone lungo
+                    self.PP2P_down.append(tempPort)
+
+                    print self.IPP2P_down
+                    print self.PP2P_down
+
+                    #ora svuoto l'array tempIP e tempPort cosi' sono pronta per la prossima volta
+                    del tempIP[0:len(tempIP)]
+                    del tempPort[0:len(tempPort)]
 
 
                 #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca eseguita
@@ -315,7 +333,7 @@ class NapsterClient(object):
 
                 while answer!="Y" and answer!="N":
 
-                    answer = raw_input("Vuoi scaricare una di queste copie? (Y/N)")
+                    answer = raw_input("Vuoi scaricare una di queste copie? (Y/N): ")
 
                     if answer=="N":
 

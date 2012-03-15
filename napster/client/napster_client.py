@@ -6,6 +6,7 @@ import socket
 import hashlib #per calcolare l'md5 dei file
 import time # per le funzioni di wait -> uso le sleep, che mi freezano il processo
 import sys # mi consente di usare il metodo sys.stdout.write per scrivere sulla stessa riga
+import copy
 
 
 class NapsterClient(object):
@@ -19,7 +20,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "169.254.216.25" # indirizzo della directory
+        self.dir_host = "0.0.0.0" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -258,28 +259,26 @@ class NapsterClient(object):
         if ack[:4]=="AFIN":
 
             print "OK, ack received\n" # DEBUG
-            num_idmd5 = int(ack[4:7])
-            print "Number of different md5: " + str(num_idmd5) + "\n"
+            self.num_idmd5 = int(ack[4:7])
+            print "Number of different md5: " + str(self.num_idmd5) + "\n"
 
-            if num_idmd5 == 0:
+            if self.num_idmd5 == 0:
 
                 print "Sorry. No match found for your search"
 
             else:
 
                 #creo gli array che mi serviranno dopo
-                #array:
                 self.filemd5_down = []
                 self.filename_down = []
                 self.num_copy_down = []
-                #matrici:
-                self.IPP2P_down = [[]]
-                self.PP2P_down = [[]]
+                self.IPP2P_down = []
+                self.PP2P_down = []
                 tempIP = []
                 tempPort = []
-                #TODO: verificare che le matrici si istanzino davvero cosi'
 
-                for i in range(0,num_idmd5): #i=numero di identificativo md5
+                # per ogni md5 trovato, eseguo un ciclo
+                for i in range(0,self.num_idmd5): #i=numero di identificativo md5
 
                     #devo leggere altri byte ora
                     #ne leggo 119 perche' 119 e' la lunghezza del pezzo di cui so la lunghezza
@@ -287,24 +286,20 @@ class NapsterClient(object):
 
                     print "md5 n.%d" % int(i+1)
 
-                    #per aggiungere qualcosa in un array devo fare append
-
                     self.filemd5_down.append(ackmd5[:16]) #lungo 16
                     self.filename_down.append(ackmd5[16:116]) #lungo 100
                     self.num_copy_down.append(ackmd5[116:119]) #lungo 3
                     # ricordarsi che pero' parto dalla posizione 0 nell'array
 
-                    print "md5: " + self.filemd5_down[i]
-                    print "filename: " + self.filename_down[i]
-                    print "n.copy: " + self.num_copy_down[i]
+                    print "md5: " + self.filemd5_down[i] + ", filename: " + self.filename_down[i] + ", n.copy: " + self.num_copy_down[i]
 
+                    # per ogni copia di quel particolare file-md5 [i], faccio un giro
                     for j in range(0,int(self.num_copy_down[i])): #j=numero di copia per quello stesso md5
 
                         ackcopy = self.dir_socket.recv(20)
-                        print "    ackcopy: " + ackcopy
+                        #di questi 20, 15 sono l'indirizzo, 5 sono la porta
 
-                        print "    copy n.%d" % int(j+1)
-                        print "    identificativo con cui scaricarla %d.%d" %(int(i+1),int(j+1))
+                        print "    copy n.%d" % int(j+1) + ", identificativo con cui scaricarla %d.%d" %(int(i+1),int(j+1))
 
                         #self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
                         tempIP.append(ackcopy[:15])
@@ -312,19 +307,15 @@ class NapsterClient(object):
                         #self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
                         tempPort.append(ackcopy[15:20])
 
-                        print "    IP: " + tempIP[j]
-                        print "    porta: " + tempPort[j]
+                        print "    IP: " + tempIP[j] + ", porta: " + tempPort[j]
 
-
-                    self.IPP2P_down.append(tempIP) #dovrei aver costruito un vettorone lungo
-                    self.PP2P_down.append(tempPort)
-
-                    print self.IPP2P_down
-                    print self.PP2P_down
+                    self.IPP2P_down.append(copy.deepcopy(tempIP))
+                    self.PP2P_down.append(copy.deepcopy(tempPort))
 
                     #ora svuoto l'array tempIP e tempPort cosi' sono pronta per la prossima volta
-                    del tempIP[0:len(tempIP)]
+
                     del tempPort[0:len(tempPort)]
+                    del tempIP[0:len(tempIP)]
 
 
                 #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca eseguita
@@ -361,9 +352,13 @@ class NapsterClient(object):
         """
         print "Download section...\n"
 
-        choice = "0.0"
+        id_md5 = 0 #fake inizializzazione
+        id_copy = 0
 
-        while id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
+        #TODO: controllare che l'utente inserisca numeri e non stringhe
+
+
+        while id_md5<1 or id_md5>int(self.num_idmd5) or id_copy<1 or id_copy>int(self.num_copy_down[id_md5-1]):
 
             choice = raw_input("Choose a copy to download: ")
 
@@ -377,8 +372,7 @@ class NapsterClient(object):
             #contro se la sua risposta e' in un formato giusto
             #ovvero controllo che id_md5 sia tra 1 e il numero di md5
             #e che id_copy sia tra 1 e numero di copie per quell'md5
-
-            if id_md5<1 or id_md5>self.num_idmd5 or id_copy<1 or id_copy>self.num_copy_down[i]:
+            if id_md5<1 or id_md5>int(self.num_idmd5) or id_copy<1 or id_copy>int(self.num_copy_down[id_md5-1]):
 
                 print "Warning: You mistyped your choice"
 
@@ -387,11 +381,18 @@ class NapsterClient(object):
 
                 #l'utente vuole scaricare la copia id_md5.id_copy
                 #vado a recuperare le informazioni necessarie e le rinomino per comodita'
-                filemd5 = self.filemd5_down[id_md5]
-                IPP2P = self.IPP2P_down[id_md5][id_copy]
-                PP2P = self.P2P_down[id_md5][id_copy]
+                filemd5 = self.filemd5_down[int(id_md5-1)]
+                print "md5 da recuperare: " + filemd5
+
+                IPP2P = self.IPP2P_down[int(id_md5-1)][int(id_copy-1)]
+                print "IP del peer: " + IPP2P
+
+                PP2P = self.PP2P_down[int(id_md5-1)][int(id_copy-1)]
+                print "PORTA del peer: " + PP2P
+
                 #mi salvo anche il nome del file cosi' uso quello per salvare il file nel mio pc
-                filename = self.filename_down[id_md5]
+                filename = self.filename_down[int(id_md5-1)]
+                print "nome del file: " + filename
 
                 #apro una socket verso il peer da cui devo scaricare
                 #"iodown" perche' io faccio il download da lui

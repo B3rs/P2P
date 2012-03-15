@@ -299,7 +299,7 @@ class NapsterClient(object):
                         ackcopy = self.dir_socket.recv(20)
                         #di questi 20, 15 sono l'indirizzo, 5 sono la porta
 
-                        print "    copy n.%d" % int(j+1) + ", identificativo con cui scaricarla %d.%d" %(int(i+1),int(j+1))
+                        print "    copy n.%d" % int(j+1) + ", identifier for download %d.%d" %(int(i+1),int(j+1))
 
                         #self.IPP2P_down[i][j] = ackcopy[:15] #lungo 15
                         tempIP.append(ackcopy[:15])
@@ -307,7 +307,7 @@ class NapsterClient(object):
                         #self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
                         tempPort.append(ackcopy[15:20])
 
-                        print "    IP: " + tempIP[j] + ", porta: " + tempPort[j]
+                        print "    IP: " + tempIP[j] + ", port: " + tempPort[j]
 
                     self.IPP2P_down.append(copy.deepcopy(tempIP))
                     self.PP2P_down.append(copy.deepcopy(tempPort))
@@ -324,7 +324,7 @@ class NapsterClient(object):
 
                 while answer!="Y" and answer!="N":
 
-                    answer = raw_input("Vuoi scaricare una di queste copie? (Y/N): ")
+                    answer = raw_input("Do you want download some of this copies? (Y/N): ")
 
                     if answer=="N":
 
@@ -382,17 +382,17 @@ class NapsterClient(object):
                 #l'utente vuole scaricare la copia id_md5.id_copy
                 #vado a recuperare le informazioni necessarie e le rinomino per comodita'
                 filemd5 = self.filemd5_down[int(id_md5-1)]
-                print "md5 da recuperare: " + filemd5
+                print "md5 to retrieve: " + filemd5
 
                 IPP2P = self.IPP2P_down[int(id_md5-1)][int(id_copy-1)]
-                print "IP del peer: " + IPP2P
+                print "Peer's IP: " + IPP2P
 
                 PP2P = self.PP2P_down[int(id_md5-1)][int(id_copy-1)]
-                print "PORTA del peer: " + PP2P
+                print "Peer's PORT: " + PP2P
 
                 #mi salvo anche il nome del file cosi' uso quello per salvare il file nel mio pc
                 filename = self.filename_down[int(id_md5-1)]
-                print "nome del file: " + filename
+                print "Filename: " + filename
 
                 #apro una socket verso il peer da cui devo scaricare
                 #"iodown" perche' io faccio il download da lui

@@ -18,6 +18,10 @@ class ListenToPeers(threading.Thread):
         self.my_IP = my_IP
         self.myP2P_port = myP2P_port
 
+    def gimmeFile(self, fileTable):
+
+        self.fileTable = fileTable
+
     def run(self):
 
         self.address = (self.my_IP, self.myP2P_port)
@@ -34,22 +38,25 @@ class ListenToPeers(threading.Thread):
 
             (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
 
-            print "il client " + address[0] + " si e' connesso"
+            print "il client " + self.address[0] + " si e' connesso"
 
-            peer=PeerHandler(SocketClient,AddrClient)
+            peer = PeerHandler(SocketClient,AddrClient,self.fileTable)
             peer.start()
 
 
 class PeerHandler(threading.Thread):
 
 
-    def __init__(self, socketclient, addrclient):
+    def __init__(self, socketclient, addrclient, fileTable):
+
+        threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
         self.socketclient = socketclient
         self.addrclient = addrclient
+        self.fileTable = fileTable
 
-    def filesize(n):
+    def filesize(self, n):
 
         ### calcolo della dimensione del file
 
@@ -74,10 +81,13 @@ class PeerHandler(threading.Thread):
             md5tofind = request[4:20]
 
             # ricerca della corrispondenza
-            for i in NapsterClient.fileTable:
-                if (NapsterClient.fileTable[i[1]])== md5tofind:
-                    print "trovato file!"
-                    filename = NapsterClient.fileTable[i[0]]
+            for i in self.fileTable:
+                print "md5 " + i[1]
+                print "filename " + i[0]
+                if i[1] == md5tofind:
+                    print "file found!"
+                    filename = i[0]
+                    print filename
 
 
             # dividere il file in chuncks
@@ -88,7 +98,7 @@ class PeerHandler(threading.Thread):
                 print "Error: %s" %expt + "\n"
                 print "An error occured, file upload unavailable for peer " + self.addrclient[0] + "\n"
             else :
-                tot_dim=filesize(filename)
+                tot_dim=self.filesize(filename)
                 num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
                 resto = tot_dim % chunk_dim #eventuale resto della divisione
                 if resto != 0.0:
@@ -99,13 +109,13 @@ class PeerHandler(threading.Thread):
                 try :
                     buff = file.read(chunk_dim)
                     chunk_sent = 0
-                    ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
+                    self.socketclient.send("ARET" + num_chunks_form)
                     while len(buff) == chunk_dim :
                         chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
                         try:
-                            ListenToPeers.peer_socket.send(chunk_dim_form + buff)
+                            self.socketclient.send(chunk_dim_form + buff)
                         except IOError: #this exception includes the socket.error child!
-                            print "Connection error due to the death of your peer!!!\n"
+                            print "Connection error due to the death of the peer!!!\n"
                             raise ConnException
                         else:
                             chunk_sent = chunk_sent +1
@@ -113,7 +123,7 @@ class PeerHandler(threading.Thread):
                             buff = file.read(chunk_dim)
                     if len(buff) != 0:
                         chunk_last_form = '%(#)05d' % {"#" : len(buff)}
-                        ListenToPeers.peer_socket.send(chunk_last_form + buff)
+                        self.socketclient.send(chunk_last_form + buff)
 
                 except EOFError:
                     print "You have read a EOF char"

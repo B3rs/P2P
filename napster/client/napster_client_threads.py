@@ -1,5 +1,3 @@
-from twisted.internet import address
-
 __author__ = 'ingiulio'
 
 import socket # networking module
@@ -7,16 +5,26 @@ import sys
 import threading
 import time
 import os
-from napster_client import NapsterClient #TODO controllare
+from twisted.internet import address
+import napster_client #TODO controllare
 
 class ListenToPeers(threading.Thread):
 
+    def __init__(self, my_IP, myP2P_port):
 
-    def run(self, my_IP, myP2P_port):
+        print "metodo init"
 
-    # Metto a disposizione una porta per il peer to peer
+        threading.Thread.__init__(self)
+        self.my_IP = my_IP
+        self.myP2P_port = myP2P_port
+
+    def run(self):
+
+        self.address = (self.my_IP, self.myP2P_port)
+
+        # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.peer_socket.bind(my_IP,myP2P_port)
+        self.peer_socket.bind(self.address)
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
 
         while 1:
@@ -24,7 +32,7 @@ class ListenToPeers(threading.Thread):
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
 
-            (SocketClient,AddrClient) = NapsterClient.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+            (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
 
             print "il client " + address[0] + " si e' connesso"
 

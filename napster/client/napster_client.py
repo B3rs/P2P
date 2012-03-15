@@ -1,7 +1,6 @@
 __author__ = 'ingiulio'
 
-#from napster_client_threads import ListenToPeers
-
+import napster_client_threads
 import socket
 import hashlib #per calcolare l'md5 dei file
 import time # per le funzioni di wait -> uso le sleep, che mi freezano il processo
@@ -20,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "0.0.0.0" # indirizzo della directory
+        self.dir_host = "169.254.64.169" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -112,8 +111,8 @@ class NapsterClient(object):
             self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
             # CREO LA SOCKET PER GLI ALTRI PEERS
-            #myserver = ListenToPeers()
-            #myserver.start(self.my_IP,self.myP2P_port) # controllare se il passaggio dei parametri e' corretto
+            myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
+            myserver.start() # controllare se il passaggio dei parametri e' corretto
 
             # SPEDISCO IL PRIMO MESSAGGIO
             self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
@@ -137,8 +136,6 @@ class NapsterClient(object):
                     self.logged=False #non sono loggato
                 else:
                     self.logged=True
-                    #DownloadMe().start() #thread che gestisce il download da parte dei peer
-
 
             else :
                 print "KO, ack parsing failed\n"

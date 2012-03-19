@@ -19,7 +19,7 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "169.254.175.171" # indirizzo della directory
+        self.dir_host = "0.0.0.0" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -424,12 +424,20 @@ class NapsterClient(object):
 
                             print "Download incoming..."
 
-                            fout = open(filename,"ab") #a di append
+                            #pulisco il filename dagli spazi vuoti
+                            filename_clean=str(filename).lstrip(' ')
+                            print filename_clean
+
+                            fout = open(filename_clean,"a") #a di append, TODO verificare la b di binary mode
 
                             num_chunk = ack[4:10]
-                            print "The number of chunks is " + num_chunk + "\n"
 
-                            for i in range (1,int(num_chunk)): #i e' il numero di chunk
+                            #pulisco il numero di chunks dagli 0
+                            num_chunk_clean = str(num_chunk).lstrip('0')
+
+                            print "The number of chunks is " + num_chunk_clean + "\n"
+
+                            for i in range (1,int(num_chunk_clean)): #i e' il numero di chunk
                                 print "Watching chunk number " + str(i) + "\n"
 
                                 #devo leggere altri byte ora
@@ -446,7 +454,7 @@ class NapsterClient(object):
 
                                     #lo devo mettere sul mio file che ho nel mio pc
 
-                                    fout.write(data) #scrivo sul file in append
+                                    fout.write(str(data)) #scrivo sul file in append
                                 except IOError, expt:
                                     print "Connection or File-access error -> %s" % expt
                                     break

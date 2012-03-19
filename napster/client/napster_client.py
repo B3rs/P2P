@@ -7,7 +7,6 @@ import time # per le funzioni di wait -> uso le sleep, che mi freezano il proces
 import sys # mi consente di usare il metodo sys.stdout.write per scrivere sulla stessa riga
 import copy
 
-
 class NapsterClient(object):
 
     def __init__(self):
@@ -19,9 +18,9 @@ class NapsterClient(object):
         print "Init Napster client\n"
 
         # DIRECTORY
-        self.dir_host = "0.0.0.0" # indirizzo della directory
+        self.dir_host = "169.254.131.44" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9997 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -91,7 +90,6 @@ class NapsterClient(object):
         #mi connetto alla directory tramite la socket self.dir_socket
         try:
             self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.dir_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
             self.dir_socket.connect(self.dir_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
             print "Error occured in Connection with Directory -> %s" % expt + "\n"
@@ -173,10 +171,7 @@ class NapsterClient(object):
         self.checkfile(filename) #soluzione proposta da maury
 
         # SPEDISCO IL PACCHETTO
-        self.dir_socket.send("ADDF" + self.session_ID)
-        self.dir_socket.send(md5file)
-        self.dir_socket.send(filename_form)
-        # a Fede Ferrioli danno problemi questre 3 send (preferirebbe una unica)
+        self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
 
         # Acknowledge "AADD" dalla directory
         ack = self.dir_socket.recv(7)
@@ -400,7 +395,6 @@ class NapsterClient(object):
                 iodown_port = int(PP2P)
                 iodown_addr = (iodown_host, iodown_port)
                 iodown_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                iodown_socket.setsockopt( socket.SOL_SOCKET, socket.SO_REUSEADDR, 1 )
                 try: # e' necessario tenere sotto controllo la connessione, perche' puo' disconnettersi il peer o non essere disponibile
 
                     iodown_socket.connect(iodown_addr)
@@ -412,6 +406,7 @@ class NapsterClient(object):
 
                     # SPEDISCO IL PRIMO MESSAGGIO
                     iodown_socket.send("RETR" + filemd5)
+
                     try:
                         # Acknowledge "ARET" dal peer
                         ack = iodown_socket.recv(10)
@@ -428,7 +423,7 @@ class NapsterClient(object):
                             filename_clean=str(filename).lstrip(' ')
                             print filename_clean
 
-                            fout = open(filename_clean,"a") #a di append, TODO verificare la b di binary mode
+                            fout = open(filename_clean,"ab") #a di append, TODO verificare la b di binary mode
 
                             num_chunk = ack[4:10]
 
@@ -437,29 +432,43 @@ class NapsterClient(object):
 
                             print "The number of chunks is " + num_chunk_clean + "\n"
 
-                            for i in range (1,int(num_chunk_clean)): #i e' il numero di chunk
-                                print "Watching chunk number " + str(i) + "\n"
+                            for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
+
+                                print "Watching chunk number " + str(int(i+1))
 
                                 #devo leggere altri byte ora
                                 #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
                                 try:
-                                    lungh = int(iodown_socket.recv(5))
+
+                                    lungh_form = iodown_socket.recv(5) #ricevo lunghezza chunck formattata
+                                    print lungh_form
+
+                                    lungh_clean = str(lungh_form).lstrip('0') #tolgo gli zeri
+
+                                    lungh = int(lungh_clean) #converto in intero
                                     print lungh
 
                                     #devo leggere altri byte ora
                                     #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
 
                                     data = iodown_socket.recv(lungh)
-                                    print data
+                                    print "ho ricevuto i byte"
 
                                     #lo devo mettere sul mio file che ho nel mio pc
 
-                                    fout.write(str(data)) #scrivo sul file in append
+                                    fout.write(data) #scrivo sul file in append
+
+                                    print ""
+
                                 except IOError, expt:
+
                                     print "Connection or File-access error -> %s" % expt
                                     break
                             #ho finito di ricevere il file
+
                             fout.close() #chiudo il file perche' ho finito di scaricarlo
+
+                            iodown_socket.close() #chiudo la socket verso il peer da cui ho scaricato
 
 
                             #dopo il download comunico alla directory che ho fatto questo download
@@ -476,7 +485,7 @@ class NapsterClient(object):
                             # Formattazione porta
                             PP2P_form = '%(#)05d' % {"#" : int(PP2P)} #porta formattata per bene
 
-                            self.dir_socket.send("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
+                            self.dir_socket.sendall("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
 
                             # Acknowledge "ARRE" dalla directory
                             ack = self.dir_socket.recv(9)
@@ -496,12 +505,12 @@ class NapsterClient(object):
 
 
                             else :
-                                print "KO, ack parsing failed\n"
-                                print "Adding file failed!\n"
+                                print "KO, ack ARRE parsing failed\n"
+                                print "Downloading file failed!\n"
 
 
                         else:
-                            print "KO, ack parsing failed\n"
+                            print "KO, ack ARET parsing failed\n"
                             print "Download not available"
     # end of download method
 
@@ -526,19 +535,10 @@ class NapsterClient(object):
             num_delete = ack[4:7]
             print "Number of deleted files: " + num_delete + "\n"
 
-
-            if int(num_delete) != len(self.fileTable) :
-                print "Warning: The number of copies deleted differs from those uploaded \n"
-                #TODO: il numero dei file cancellati in realta' deve essere uguale a quelli uploadati
-                # MENO quelli cancellati da me medesimo durante l'esecuzione del programma
-                # se non solo uguale a quelli uploadati!
-                # quindi se vogliamo davvero fare questo controllo va messo un contatore
-                # per il numero dei file cancellati e fare la differenza
-                #io me ne fregherei sinceramente di questo controllo! Siete d'accordo?
-
             self.dir_socket.close() #chiudo la socket verso la directory
 
-            #inoltre devo smettere di ascoltare su IP e porta del P2p
+            self.myserver.peer_socket.close() #chiudo la socket in ascolto su IP e porta per il download
+            self.myserver.stop = True #dico al while del multithread di stopparsi
 
             self.logged=False #non sono piu' loggato
 

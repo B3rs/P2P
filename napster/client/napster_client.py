@@ -15,7 +15,7 @@ class NapsterClient(object):
         This method set the program parameters, such as IPP2P:P2P to allow others connection from/to other peers
         and IP address of Centralized Directory
         """
-        print "Init Napster client\n"
+        print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
         self.dir_host = "169.254.131.44" # indirizzo della directory
@@ -452,7 +452,7 @@ class NapsterClient(object):
                                     #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
 
                                     data = iodown_socket.recv(lungh)
-                                    print "ho ricevuto i byte"
+                                    print "ho ricevuto i byte" #TODO debug mode
 
                                     #lo devo mettere sul mio file che ho nel mio pc
 

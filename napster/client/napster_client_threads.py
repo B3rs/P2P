@@ -5,7 +5,7 @@ import sys
 import threading
 import time
 import os
-from twisted.internet import address
+#from twisted.internet import address
 import napster_client #TODO controllare
 
 class ListenToPeers(threading.Thread):
@@ -17,6 +17,7 @@ class ListenToPeers(threading.Thread):
         threading.Thread.__init__(self)
         self.my_IP = my_IP
         self.myP2P_port = myP2P_port
+        self.stop = False
 
     def gimmeFile(self, fileTable):
 
@@ -24,14 +25,18 @@ class ListenToPeers(threading.Thread):
 
     def run(self):
 
+        print "-metodo run" #TODO debug
         self.address = (self.my_IP, self.myP2P_port)
 
         # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        print "creata peer socket" #TODO debug
         self.peer_socket.bind(self.address)
+        print "ho fatto il bind"
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
+        print "in ascolto del peer"
 
-        while 1:
+        while not self.stop:
 
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
@@ -66,6 +71,7 @@ class PeerHandler(threading.Thread):
         F.seek(0,0)
         F.close()
         return sz
+    # end of filesize method
 
     def run(self):
 
@@ -109,30 +115,29 @@ class PeerHandler(threading.Thread):
                 try :
                     buff = file.read(chunk_dim)
                     chunk_sent = 0
-                    self.socketclient.send("ARET" + num_chunks_form)
+                    self.socketclient.sendall("ARET" + num_chunks_form)
                     while len(buff) == chunk_dim :
                         chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
                         try:
-                            self.socketclient.send(chunk_dim_form + buff)
+
+                            print chunk_dim_form
+                            self.socketclient.sendall(str(chunk_dim_form) + buff)
+                            chunk_sent = chunk_sent +1
+                            print "Sent " + str(chunk_sent) + " chunks to " + str(self.addrclient[0])#TODO debug
+                            buff = file.read(chunk_dim)
                         except IOError: #this exception includes the socket.error child!
                             print "Connection error due to the death of the peer!!!\n"
-                            raise ConnException
-                        else:
-                            chunk_sent = chunk_sent +1
-                            print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
-                            buff = file.read(chunk_dim)
                     if len(buff) != 0:
+                        print "coda del file" #TODO debug
                         chunk_last_form = '%(#)05d' % {"#" : len(buff)}
-                        self.socketclient.send(chunk_last_form + buff)
-
-                except EOFError:
-                    print "You have read a EOF char"
-                except ConnException:
-                    print "Your friend is a bad peer, and a bad developer!\n"
-
-                else :
+                        self.socketclient.sendall(chunk_last_form + buff)
                     print "End of upload to "+self.addrclient[0]+ " of "+filename
                     file.close()
+                    print "ho chiuso il file" #TODO debug
+                except EOFError:
+                    print "You have read a EOF char"
         else:
             print "ack parsing failed, for RETR\n"
-        
+        self.socketclient.close()
+
+    # end of run method

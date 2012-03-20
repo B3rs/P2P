@@ -28,10 +28,29 @@ class NapsterClient(object):
 
         self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
-        self.fileTable = []
+        self.fileTable = [] #tabella in cui memorizzo la corrispondenza tra file e md5
     # end of __init__ method
 
 # Definition of auxiliary methods
+
+    def openConn(self):
+        #mi connetto alla directory tramite la socket self.dir_socket
+        try:
+            self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.dir_socket.connect(self.dir_addr)
+        except IOError, expt: #IOError exception includes a sub-exception socket.error
+            print "Error occured in Connection with Directory -> %s" % expt + "\n"
+        print "Connection with directory established\n"
+
+
+    def closeConn(self):
+        #mi disconnetto dalla directory
+        try:
+            self.dir_socket.close()
+        except IOError, expt: #IOError exception includes a sub-exception socket.error
+            print "Error occured in Disconnection with Directory -> %s" % expt + "\n"
+        print "Disconnection with directory established\n"
+
 
     def dots(self):
         """
@@ -87,58 +106,52 @@ class NapsterClient(object):
         """
         print "Login...\n"
 
-        #mi connetto alla directory tramite la socket self.dir_socket
-        try:
-            self.dir_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.dir_socket.connect(self.dir_addr)
-        except IOError, expt: #IOError exception includes a sub-exception socket.error
-            print "Error occured in Connection with Directory -> %s" % expt + "\n"
-        else:
-            print "Connection with directory enstablished\n"
+        self.openConn() #apro la socket con la directory
 
-            # Formattazione indirizzo IP per invio alla directory
-            self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
-            my_IP_split = self.my_IP.split(".")
-            IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
-            IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
-            IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
-            IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
-            self.myIPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+        # Formattazione indirizzo IP per invio alla directory
+        self.my_IP = self.dir_socket.getsockname()[0] #IP non ancora formattato
+        my_IP_split = self.my_IP.split(".")
+        IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
+        IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
+        IP_3 = '%(#)03d' % {"#" : int(my_IP_split[2])}
+        IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
+        self.myIPP2P_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
 
-            # Formattazione porta
-            self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
+        # Formattazione porta
+        self.myPP2P_form = '%(#)05d' % {"#" : int(self.myP2P_port)} #porta formattata per bene
 
-            # CREO LA SOCKET PER GLI ALTRI PEERS
-            self.myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
-            self.myserver.start() # controllare se il passaggio dei parametri e' corretto
+        # CREO LA SOCKET PER GLI ALTRI PEERS
+        self.myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
+        self.myserver.start() # controllare se il passaggio dei parametri e' corretto
 
-            # SPEDISCO IL PRIMO MESSAGGIO
-            self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
+        # SPEDISCO IL PRIMO MESSAGGIO
+        self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)
 
 
-            # Acknowledge "ALGI" dalla directory
-            ack = self.dir_socket.recv(20)
-            print ack
+        # Acknowledge "ALGI" dalla directory
+        ack = self.dir_socket.recv(20)
+        print ack
 
-            if ack[:4]=="ALGI":
+        if ack[:4]=="ALGI":
 
-                print "OK, ack received\n"
-                self.session_ID = ack[4:20]
-                print "Session ID: " + self.session_ID + "\n"
-                #non ho ancora controllato il SESSIONID
+            print "OK, ack received\n"
+            self.session_ID = ack[4:20]
+            print "Session ID: " + self.session_ID + "\n"
+            #non ho ancora controllato il SESSIONID
 
-                # Check login non riuscito
-                if self.session_ID=="0000000000000000":
-                    print "Login failed: try again!"
-                    self.dir_socket.close()
-                    self.logged=False #non sono loggato
-                else:
-                    self.logged=True
-
-            else :
-                print "KO, ack parsing failed\n"
+            # Check login non riuscito
+            if self.session_ID=="0000000000000000":
+                print "Login failed: try again!"
                 self.logged=False #non sono loggato
-        # end of exception's else
+            else:
+                self.logged=True
+
+        else :
+            print "KO, ack parsing failed\n"
+            self.logged=False #non sono loggato
+
+        self.closeConn()
+
     # end of login method
 
 
@@ -159,6 +172,8 @@ class NapsterClient(object):
         addfile method allows user to add a new file at Directory's Database
         """
         print "Add file...\n"
+
+        self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to add: ")
 
@@ -196,6 +211,8 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
+
+        self.closeConn()
     # end of addfile method
 
 
@@ -204,6 +221,8 @@ class NapsterClient(object):
         delfile method allows P2P user to remove a file that has previously shared into the network
         """
         print "Delete file...\n"
+
+        self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to delete: ")
 
@@ -229,6 +248,8 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
+
+        self.closeConn()
     # end of delfile method
 
     def find(self):
@@ -239,6 +260,8 @@ class NapsterClient(object):
         while for any copy of file found in network lists IP & PORT of the peers that host searched file
         """
         print "Find...\n"
+
+        self.openConn() #apro la socket con la directory
 
         search = raw_input("Type a search string: ")
 
@@ -338,6 +361,8 @@ class NapsterClient(object):
         else:
 
             print "KO, ack parsing failed\n"
+
+        self.closeConn()
     # end of find method
 
 
@@ -523,6 +548,8 @@ class NapsterClient(object):
         """
         print "Logout...\n"
 
+        self.openConn() #apro la socket con la directory
+
         self.dir_socket.send("LOGO" + self.session_ID) #invio la stringa di logout alla directory
 
         # Acknowledge "ALGO" dalla directory
@@ -545,6 +572,8 @@ class NapsterClient(object):
         else :
             print "KO, ack parsing failed\n"
             self.logged=True #sono ancora loggato
+
+        self.closeConn()
     # end of logout method
 
 

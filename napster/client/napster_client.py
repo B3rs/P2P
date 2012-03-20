@@ -18,9 +18,9 @@ class NapsterClient(object):
         print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
-        self.dir_host = "169.254.131.44" # indirizzo della directory
+        self.dir_host = "10.42.43.12" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9997 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9996 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -143,14 +143,16 @@ class NapsterClient(object):
             if self.session_ID=="0000000000000000":
                 print "Login failed: try again!"
                 self.logged=False #non sono loggato
+                self.closeConn()
             else:
                 self.logged=True
 
         else :
             print "KO, ack parsing failed\n"
             self.logged=False #non sono loggato
+            self.closeConn()
 
-        self.closeConn()
+        #self.closeConn()
 
     # end of login method
 
@@ -173,7 +175,7 @@ class NapsterClient(object):
         """
         print "Add file...\n"
 
-        self.openConn() #apro la socket con la directory
+        #self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to add: ")
 
@@ -212,7 +214,7 @@ class NapsterClient(object):
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
 
-        self.closeConn()
+        #self.closeConn()
     # end of addfile method
 
 
@@ -222,7 +224,7 @@ class NapsterClient(object):
         """
         print "Delete file...\n"
 
-        self.openConn() #apro la socket con la directory
+        #self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to delete: ")
 
@@ -249,7 +251,7 @@ class NapsterClient(object):
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
 
-        self.closeConn()
+        #self.closeConn()
     # end of delfile method
 
     def find(self):
@@ -261,7 +263,7 @@ class NapsterClient(object):
         """
         print "Find...\n"
 
-        self.openConn() #apro la socket con la directory
+        #self.openConn() #apro la socket con la directory
 
         search = raw_input("Type a search string: ")
 
@@ -362,7 +364,7 @@ class NapsterClient(object):
 
             print "KO, ack parsing failed\n"
 
-        self.closeConn()
+        #self.closeConn()
     # end of find method
 
 
@@ -548,7 +550,7 @@ class NapsterClient(object):
         """
         print "Logout...\n"
 
-        self.openConn() #apro la socket con la directory
+        #self.openConn() #apro la socket con la directory
 
         self.dir_socket.send("LOGO" + self.session_ID) #invio la stringa di logout alla directory
 

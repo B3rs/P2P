@@ -124,9 +124,9 @@ class ServiceThread(Thread):
                 elif command == "LOGO":
                     peer_session_id = str(self._socket.recv(16))
                     delete_num = self.logout_user(peer_session_id)
-                    klog("Received a LOGO, from session_id: %s" %(session_id))
+                    klog("Received a LOGO, from session_id: %s" %(peer_session_id))
                     self._socket.send("ALGO"+"{0:03d}".format(delete_num))
-                    klog("Sent ALGO to session_id: %s" %(session_id))
+                    klog("Sent ALGO to session_id: %s" %(peer_session_id))
                 elif command == "":
                     condition = False
 

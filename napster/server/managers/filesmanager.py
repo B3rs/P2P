@@ -6,9 +6,21 @@ class FilesManager(object):
 
     @classmethod
     def find_files_by_query(cls, query):
+        mongodbmanager.connect()
         #words = query.split(" ")
         #TODO devo implementare il group by md5
-        return File.objects(name__icontains = query)
+        #files =  File.objects(name__icontains = query).distinct('hash') #this do not work
+        files =  File.objects(name__icontains = query)
+
+        #do manual distinct
+        returning_files = []
+        returning_files_hashes = []
+        for f in files:
+            if f.hash not in returning_files_hashes:
+                returning_files.append(f)
+                returning_files_hashes.append(f.hash)
+
+        return returning_files
 
     @classmethod
     def find_file_by_hash_and_sessionid(cls, hash, session_id):
@@ -37,6 +49,7 @@ class FilesManager(object):
 
     @classmethod
     def create_file(cls, name, hash, user):
+        mongodbmanager.connect()
         file = cls.find_file_by_hash_and_sessionid(hash, user.session_id)
         if file is None:
             # Create new file
@@ -65,3 +78,14 @@ class FilesManager(object):
             count = files.count()
             files.delete()
             return count
+
+    @classmethod
+    def increase_download_count_for_file(cls, file):
+        mongodbmanager.connect()
+        file.download_count += 1
+        file.save()
+
+    @classmethod
+    def delete_all(cls):
+        mongodbmanager.connect()
+        File.drop_collection()

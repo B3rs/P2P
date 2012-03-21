@@ -149,7 +149,7 @@ class NapsterServer(object):
         )
         self.server_socket.bind(
             ("0.0.0.0", #socket.gethostname()
-             9999)
+             9998)
         )
 
     def start(self):

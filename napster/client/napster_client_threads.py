@@ -17,7 +17,6 @@ class ListenToPeers(threading.Thread):
         threading.Thread.__init__(self)
         self.my_IP = my_IP
         self.myP2P_port = myP2P_port
-        self.stop = False
 
     def gimmeFile(self, fileTable):
 
@@ -36,7 +35,7 @@ class ListenToPeers(threading.Thread):
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
         print "in ascolto del peer"
 
-        while not self.stop:
+        while 1:
 
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo

@@ -25,7 +25,7 @@ class ListenToPeers(threading.Thread):
 
     def run(self):
 
-        print "-metodo run" #TODO debug
+        print "ListentoPeers Run method" #TODO debug
         self.address = (self.my_IP, self.myP2P_port)
 
         # Metto a disposizione una porta per il peer to peer
@@ -40,8 +40,19 @@ class ListenToPeers(threading.Thread):
 
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
+            try:
 
-            (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+                (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+                self.peer_socket.settimeout(60.0) #imposto il timeout della accept bloccante
+                self.inService = True
+            except socket.timeout, expt:
+                print "Socket's timeout -> %s" %expt
+                if not inService :
+                    self.peer_socket.close()
+                    print "Socket to peer was closed with success!"
+                    break #TODO: verificare se va bene il break
+                else:
+                    print "Timeout occured, but I can't close socket, because is in service!"
 
             print "il client " + self.address[0] + " si e' connesso"
 
@@ -139,5 +150,6 @@ class PeerHandler(threading.Thread):
         else:
             print "ack parsing failed, for RETR\n"
         self.socketclient.close()
+        ListenToPeers.inService = False
 
     # end of run method

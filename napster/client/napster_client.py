@@ -18,9 +18,9 @@ class NapsterClient(object):
         print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
-        self.dir_host = "169.254.55.66" # indirizzo della directory
+        self.dir_host = "192.168.1.105" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9998 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -584,7 +584,7 @@ class NapsterClient(object):
             self.dir_socket.close() #chiudo la socket verso la directory
 
             self.myserver.peer_socket.close() #chiudo la socket in ascolto su IP e porta per il download
-            self.myserver.stop = True #dico al while del multithread di stopparsi
+            #con questa chiusura dovrebbe sbloccarsi automaticamente l'accept nel file napster_client_threads
 
             self.logged=False #non sono piu' loggato
 

@@ -15,12 +15,11 @@ class NapsterClient(object):
         This method set the program parameters, such as IPP2P:P2P to allow others connection from/to other peers
         and IP address of Centralized Directory
         """
-        print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
-        self.dir_host = "169.254.17.236" # indirizzo della directory
+        self.dir_host = "10.42.43.1" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9995 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9998 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -40,7 +39,6 @@ class NapsterClient(object):
             self.dir_socket.connect(self.dir_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
             print "Error occured in Connection with Directory -> %s" % expt + "\n"
-        print "Connection with directory established\n"
 
 
     def closeConn(self):
@@ -49,7 +47,6 @@ class NapsterClient(object):
             self.dir_socket.close()
         except IOError, expt: #IOError exception includes a sub-exception socket.error
             print "Error occured in Disconnection with Directory -> %s" % expt + "\n"
-        print "Disconnection with directory established\n"
 
 
     def dots(self):
@@ -82,7 +79,6 @@ class NapsterClient(object):
                     break
                 md5.update(data)
             print md5.digest()
-            print md5.hexdigest()
             return md5.digest()
     # end of md5_for_file method
 
@@ -143,11 +139,9 @@ class NapsterClient(object):
 
         # Acknowledge "ALGI" dalla directory
         ack = self.dir_socket.recv(20)
-        print ack
 
         if ack[:4]=="ALGI":
 
-            print "OK, ack received\n"
             self.session_ID = ack[4:20]
             print "Session ID: " + self.session_ID + "\n"
             #non ho ancora controllato il SESSIONID
@@ -160,7 +154,7 @@ class NapsterClient(object):
                 self.logged=True
 
         else :
-            print "KO, ack parsing failed\n"
+            print "KO, ack ALGI parsing failed\n"
             self.logged=False #non sono loggato
 
         self.closeConn()
@@ -462,7 +456,7 @@ class NapsterClient(object):
                             print "Download incoming..."
 
                             #pulisco il filename dagli spazi vuoti
-                            filename_clean=str(filename).lstrip(' ')
+                            filename_clean=str(filename).strip(' ')
                             print filename_clean
 
                             fout = open(filename_clean,"ab") #a di append, b di binary mode
@@ -475,7 +469,7 @@ class NapsterClient(object):
                             print "The number of chunks is " + num_chunk_clean + "\n"
 
                             for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
-                                #TODO controllare se va bene così o ci va davvero il -1
+                                #TODO controllare se va bene cosi' o ci va davvero il -1
 
                                 print "Watching chunk number " + str(int(i+1))
 

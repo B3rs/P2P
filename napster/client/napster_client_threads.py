@@ -14,6 +14,19 @@ class ListenToPeers(threading.Thread):
         self.myP2P_port = myP2P_port
         self.check = True
 
+    def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
+
+        lettiTot = socket.recv(numToRead)
+        num = len(lettiTot)
+
+        while (num < numToRead):
+            letti = socket.recv(numToRead - num)
+            num = num + len(letti)
+            lettiTot = lettiTot + letti
+
+        return lettiTot #restituisco la stringa letta
+    # end of sockread method
+
     def gimmeFile(self, fileTable):
 
         self.fileTable = fileTable
@@ -34,6 +47,8 @@ class ListenToPeers(threading.Thread):
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
         print "in ascolto del peer"
 
+        a=0
+
         while self.check == True:
 
             # entro nel while con la socket ("peer_socket") gia' in listen
@@ -50,7 +65,8 @@ class ListenToPeers(threading.Thread):
                 peer.start()
 
             except Exception,expt:
-                print "timeout!!!!"
+                a=a+1
+
 
 
         self.peer_socket.close()
@@ -87,7 +103,9 @@ class PeerHandler(threading.Thread):
         chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
 
         # mi metto in receive della string "RETR"
-        request = self.socketclient.recv(20)
+        #request = self.socketclient.recv(20)
+        request = self.sockread(socketclient, 20)
+
         if request[:4] == "RETR":
             print "ok, mi hai chiesto il file, controllo l'md5"
 

@@ -84,6 +84,19 @@ class PeerHandler(threading.Thread):
         self.addrclient = addrclient
         self.fileTable = fileTable
 
+    def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
+
+        lettiTot = socket.recv(numToRead)
+        num = len(lettiTot)
+
+        while (num < numToRead):
+            letti = socket.recv(numToRead - num)
+            num = num + len(letti)
+            lettiTot = lettiTot + letti
+
+        return lettiTot #restituisco la stringa letta
+        # end of sockread method
+
     def filesize(self, n):
 
         ### calcolo della dimensione del file
@@ -104,7 +117,7 @@ class PeerHandler(threading.Thread):
 
         # mi metto in receive della string "RETR"
         #request = self.socketclient.recv(20)
-        request = self.sockread(socketclient, 20)
+        request = self.sockread(self.socketclient, 20)
 
         if request[:4] == "RETR":
             print "ok, mi hai chiesto il file, controllo l'md5"

@@ -17,7 +17,7 @@ class NapsterClient(object):
         """
 
         # DIRECTORY
-        self.dir_host = "10.42.43.1" # indirizzo della directory
+        self.dir_host = "0.0.0.0" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9998 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
@@ -507,7 +507,7 @@ class NapsterClient(object):
 
                             fout.close() #chiudo il file perche' ho finito di scaricarlo
 
-                            iodown_socket.close() #chiudo la socket verso il peer da cui ho scaricato
+                            #iodown_socket.close() #chiudo la socket verso il peer da cui ho scaricato
 
 
                             #dopo il download comunico alla directory che ho fatto questo download
@@ -524,9 +524,10 @@ class NapsterClient(object):
                             # Formattazione porta
                             PP2P_form = '%(#)05d' % {"#" : int(PP2P)} #porta formattata per bene
 
+                            self.openConn()
+
                             self.dir_socket.sendall("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
 
-                            self.openConn()
 
                             # Acknowledge "ARRE" dalla directory
                             ack = self.dir_socket.recv(9)

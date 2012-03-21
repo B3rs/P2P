@@ -18,9 +18,9 @@ class NapsterClient(object):
         print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
-        self.dir_host = "10.42.43.12" # indirizzo della directory
+        self.dir_host = "169.254.55.66" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9996 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9999 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -86,6 +86,19 @@ class NapsterClient(object):
             return md5.digest()
     # end of md5_for_file method
 
+    def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
+
+        lettiTot = socket.recv(numToRead)
+        num = len(lettiTot)
+
+        while (num < numToRead):
+            letti = socket.recv(numToRead - num)
+            num = num + len(letti)
+            lettiTot = lettiTot + letti
+
+        return lettiTot #restituisco la stringa letta
+    # end of sockread method
+
 
     def checkfile(self, filename):
         """
@@ -143,16 +156,14 @@ class NapsterClient(object):
             if self.session_ID=="0000000000000000":
                 print "Login failed: try again!"
                 self.logged=False #non sono loggato
-                self.closeConn()
             else:
                 self.logged=True
 
         else :
             print "KO, ack parsing failed\n"
             self.logged=False #non sono loggato
-            self.closeConn()
 
-        #self.closeConn()
+        self.closeConn()
 
     # end of login method
 
@@ -175,7 +186,7 @@ class NapsterClient(object):
         """
         print "Add file...\n"
 
-        #self.openConn() #apro la socket con la directory
+        self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to add: ")
 
@@ -214,7 +225,7 @@ class NapsterClient(object):
             print "KO, ack parsing failed\n"
             print "Adding file failed!\n"
 
-        #self.closeConn()
+        self.closeConn()
     # end of addfile method
 
 
@@ -224,7 +235,7 @@ class NapsterClient(object):
         """
         print "Delete file...\n"
 
-        #self.openConn() #apro la socket con la directory
+        self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to delete: ")
 
@@ -251,7 +262,7 @@ class NapsterClient(object):
             print "KO, ack parsing failed\n"
             print "Removing file failed\n"
 
-        #self.closeConn()
+        self.closeConn()
     # end of delfile method
 
     def find(self):
@@ -263,7 +274,7 @@ class NapsterClient(object):
         """
         print "Find...\n"
 
-        #self.openConn() #apro la socket con la directory
+        self.openConn() #apro la socket con la directory
 
         search = raw_input("Type a search string: ")
 
@@ -302,7 +313,8 @@ class NapsterClient(object):
 
                     #devo leggere altri byte ora
                     #ne leggo 119 perche' 119 e' la lunghezza del pezzo di cui so la lunghezza
-                    ackmd5 = self.dir_socket.recv(119)
+                    #ackmd5 = self.dir_socket.recv(119)
+                    ackmd5 = self.sockread(self.dir_socket, 119)
 
                     print "md5 n.%d" % int(i+1)
 
@@ -316,7 +328,8 @@ class NapsterClient(object):
                     # per ogni copia di quel particolare file-md5 [i], faccio un giro
                     for j in range(0,int(self.num_copy_down[i])): #j=numero di copia per quello stesso md5
 
-                        ackcopy = self.dir_socket.recv(20)
+                        #ackcopy = self.dir_socket.recv(20)
+                        ackcopy = self.sockread(self.dir_socket, 20)
                         #di questi 20, 15 sono l'indirizzo, 5 sono la porta
 
                         print "    copy n.%d" % int(j+1) + ", identifier for download %d.%d" %(int(i+1),int(j+1))
@@ -364,7 +377,7 @@ class NapsterClient(object):
 
             print "KO, ack parsing failed\n"
 
-        #self.closeConn()
+        self.closeConn()
     # end of find method
 
 
@@ -436,7 +449,8 @@ class NapsterClient(object):
 
                     try:
                         # Acknowledge "ARET" dal peer
-                        ack = iodown_socket.recv(10)
+                        #ack = iodown_socket.recv(10)
+                        ack = self.sockread(iodown_socket, 10)
                     except IOError:
                         print "Connection error. The peer " + IPP2P + " is death\n"
                     else:
@@ -459,7 +473,8 @@ class NapsterClient(object):
 
                             print "The number of chunks is " + num_chunk_clean + "\n"
 
-                            for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
+                            for i in range (0,int(num_chunk_clean)-1): #i e' il numero di chunk
+                                #TODO controllare che col -1 vada bene
 
                                 print "Watching chunk number " + str(int(i+1))
 
@@ -467,7 +482,8 @@ class NapsterClient(object):
                                 #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
                                 try:
 
-                                    lungh_form = iodown_socket.recv(5) #ricevo lunghezza chunck formattata
+                                    #lungh_form = iodown_socket.recv(5) #ricevo lunghezza chunck formattata
+                                    lungh_form = self.sockread(iodown_socket, 5)
                                     print lungh_form
 
                                     lungh_clean = str(lungh_form).lstrip('0') #tolgo gli zeri
@@ -478,7 +494,8 @@ class NapsterClient(object):
                                     #devo leggere altri byte ora
                                     #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
 
-                                    data = iodown_socket.recv(lungh)
+                                    #data = iodown_socket.recv(lungh)
+                                    data = self.sockread(iodown_socket, lungh)
                                     print "ho ricevuto i byte" #TODO debug mode
 
                                     #lo devo mettere sul mio file che ho nel mio pc
@@ -550,7 +567,7 @@ class NapsterClient(object):
         """
         print "Logout...\n"
 
-        #self.openConn() #apro la socket con la directory
+        self.openConn() #apro la socket con la directory
 
         self.dir_socket.send("LOGO" + self.session_ID) #invio la stringa di logout alla directory
 

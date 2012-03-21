@@ -9,6 +9,10 @@ class UsersManager(object):
         mongodbmanager.connect()
         return User.objects(session_id=session_id).first()
 
+    @classmethod
+    def find_user_by_ip_and_port(cls, ip, port):
+        mongodbmanager.connect()
+        return User.objects(ip = ip, port = port).first()
 
     @classmethod
     def create_user(cls, ip, port):
@@ -23,3 +27,8 @@ class UsersManager(object):
         mongodbmanager.connect()
         user.delete()
 
+
+    @classmethod
+    def delete_all(cls):
+        mongodbmanager.connect()
+        User.drop_collection()

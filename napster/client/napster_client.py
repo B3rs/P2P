@@ -18,9 +18,9 @@ class NapsterClient(object):
         print "Init Napster client\n" #TODO debug mode
 
         # DIRECTORY
-        self.dir_host = "192.168.1.105" # indirizzo della directory
+        self.dir_host = "169.254.17.236" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 9998 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 9995 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -351,6 +351,8 @@ class NapsterClient(object):
                     del tempIP[0:len(tempIP)]
 
 
+                self.closeConn() #chiudo la socket
+
                 #arrivata qui ho stampato il "menu" con tutti i risultati della ricerca eseguita
 
                 answer="Z" #la inizializzo ad una lettera a caso
@@ -370,14 +372,13 @@ class NapsterClient(object):
 
                         sys.stdout.write("You are being redirected to the download section")
                         self.dots()
-
                         self.download()
                     #se l'utente non ha digitato ne' "Y" ne' "N" dovrebbe rifarmi la domanda un'altra volta
         else:
 
             print "KO, ack parsing failed\n"
 
-        self.closeConn()
+
     # end of find method
 
 
@@ -464,7 +465,7 @@ class NapsterClient(object):
                             filename_clean=str(filename).lstrip(' ')
                             print filename_clean
 
-                            fout = open(filename_clean,"ab") #a di append, TODO verificare la b di binary mode
+                            fout = open(filename_clean,"ab") #a di append, b di binary mode
 
                             num_chunk = ack[4:10]
 
@@ -473,8 +474,8 @@ class NapsterClient(object):
 
                             print "The number of chunks is " + num_chunk_clean + "\n"
 
-                            for i in range (0,int(num_chunk_clean)-1): #i e' il numero di chunk
-                                #TODO controllare che col -1 vada bene
+                            for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
+                                #TODO controllare se va bene così o ci va davvero il -1
 
                                 print "Watching chunk number " + str(int(i+1))
 
@@ -531,6 +532,8 @@ class NapsterClient(object):
 
                             self.dir_socket.sendall("RREG" + self.session_ID + filemd5 + IPP2P_form + PP2P_form)
 
+                            self.openConn()
+
                             # Acknowledge "ARRE" dalla directory
                             ack = self.dir_socket.recv(9)
                             print ack
@@ -552,10 +555,14 @@ class NapsterClient(object):
                                 print "KO, ack ARRE parsing failed\n"
                                 print "Downloading file failed!\n"
 
+                            self.closeConn()
+
 
                         else:
                             print "KO, ack ARET parsing failed\n"
                             print "Download not available"
+
+
     # end of download method
 
 
@@ -583,8 +590,7 @@ class NapsterClient(object):
 
             self.dir_socket.close() #chiudo la socket verso la directory
 
-            self.myserver.peer_socket.close() #chiudo la socket in ascolto su IP e porta per il download
-            #con questa chiusura dovrebbe sbloccarsi automaticamente l'accept nel file napster_client_threads
+            self.myserver.setCheck()
 
             self.logged=False #non sono piu' loggato
 

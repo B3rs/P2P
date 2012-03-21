@@ -1,12 +1,7 @@
 __author__ = 'ingiulio'
 
 import socket # networking module
-import sys
 import threading
-import time
-import os
-#from twisted.internet import address
-import napster_client #TODO controllare
 
 class ListenToPeers(threading.Thread):
 
@@ -17,10 +12,14 @@ class ListenToPeers(threading.Thread):
         threading.Thread.__init__(self)
         self.my_IP = my_IP
         self.myP2P_port = myP2P_port
+        self.check = True
 
     def gimmeFile(self, fileTable):
 
         self.fileTable = fileTable
+
+    def setCheck(self):
+        self.check = False
 
     def run(self):
 
@@ -35,28 +34,26 @@ class ListenToPeers(threading.Thread):
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
         print "in ascolto del peer"
 
-        while 1:
+        while self.check == True:
 
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
+
+            self.peer_socket.settimeout(5.0)
+
             try:
-
                 (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
-                self.peer_socket.settimeout(60.0) #imposto il timeout della accept bloccante
-                self.inService = True
-            except socket.timeout, expt:
-                print "Socket's timeout -> %s" %expt
-                if not inService :
-                    self.peer_socket.close()
-                    print "Socket to peer was closed with success!"
-                    break #TODO: verificare se va bene il break
-                else:
-                    print "Timeout occured, but I can't close socket, because is in service!"
 
-            print "il client " + self.address[0] + " si e' connesso"
+                print "il client " + self.address[0] + " si e' connesso"
 
-            peer = PeerHandler(SocketClient,AddrClient,self.fileTable)
-            peer.start()
+                peer = PeerHandler(SocketClient,AddrClient,self.fileTable)
+                peer.start()
+
+            except Exception,expt:
+                print "timeout!!!!"
+
+
+        self.peer_socket.close()
 
 
 class PeerHandler(threading.Thread):
@@ -149,6 +146,6 @@ class PeerHandler(threading.Thread):
         else:
             print "ack parsing failed, for RETR\n"
         self.socketclient.close()
-        ListenToPeers.inService = False
+        #ListenToPeers.inService = False
 
     # end of run method

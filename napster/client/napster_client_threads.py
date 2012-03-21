@@ -1,5 +1,3 @@
-from twisted.internet import address
-
 __author__ = 'ingiulio'
 
 import socket # networking module
@@ -7,41 +5,74 @@ import sys
 import threading
 import time
 import os
-from napster_client import NapsterClient #TODO controllare
+#from twisted.internet import address
+import napster_client #TODO controllare
 
 class ListenToPeers(threading.Thread):
 
+    def __init__(self, my_IP, myP2P_port):
 
-    def run(self, my_IP, myP2P_port):
+        print "metodo init"
 
-    # Metto a disposizione una porta per il peer to peer
+        threading.Thread.__init__(self)
+        self.my_IP = my_IP
+        self.myP2P_port = myP2P_port
+        self.stop = False
+
+    def gimmeFile(self, fileTable):
+
+        self.fileTable = fileTable
+
+    def run(self):
+
+        print "ListentoPeers Run method" #TODO debug
+        self.address = (self.my_IP, self.myP2P_port)
+
+        # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        self.peer_socket.bind(my_IP,myP2P_port)
+        print "creata peer socket" #TODO debug
+        self.peer_socket.bind(self.address)
+        print "ho fatto il bind"
         self.peer_socket.listen(100) #socket per chi vorra' fare download da me
+        print "in ascolto del peer"
 
-        while 1:
+        while not self.stop:
 
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
+            try:
 
-            (SocketClient,AddrClient) = NapsterClient.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+                (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+                self.peer_socket.settimeout(60.0) #imposto il timeout della accept bloccante
+                self.inService = True
+            except socket.timeout, expt:
+                print "Socket's timeout -> %s" %expt
+                if not inService :
+                    self.peer_socket.close()
+                    print "Socket to peer was closed with success!"
+                    break #TODO: verificare se va bene il break
+                else:
+                    print "Timeout occured, but I can't close socket, because is in service!"
 
-            print "il client " + address[0] + " si e' connesso"
+            print "il client " + self.address[0] + " si e' connesso"
 
-            peer=PeerHandler(SocketClient,AddrClient)
+            peer = PeerHandler(SocketClient,AddrClient,self.fileTable)
             peer.start()
 
 
 class PeerHandler(threading.Thread):
 
 
-    def __init__(self, socketclient, addrclient):
+    def __init__(self, socketclient, addrclient, fileTable):
+
+        threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
         self.socketclient = socketclient
         self.addrclient = addrclient
+        self.fileTable = fileTable
 
-    def filesize(n):
+    def filesize(self, n):
 
         ### calcolo della dimensione del file
 
@@ -51,6 +82,7 @@ class PeerHandler(threading.Thread):
         F.seek(0,0)
         F.close()
         return sz
+    # end of filesize method
 
     def run(self):
 
@@ -59,48 +91,65 @@ class PeerHandler(threading.Thread):
         chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
 
         # mi metto in receive della string "RETR"
-        request = self.socketclient.recv()
+        request = self.socketclient.recv(20)
         if request[:4] == "RETR":
             print "ok, mi hai chiesto il file, controllo l'md5"
 
             md5tofind = request[4:20]
 
             # ricerca della corrispondenza
-            for i in NapsterClient.fileTable:
-                if (NapsterClient.fileTable[i[1]])== md5tofind:
-                    print "trovato file!"
-                    filename = NapsterClient.fileTable[i[0]]
+            for i in self.fileTable:
+                print "md5 " + i[1]
+                print "filename " + i[0]
+                if i[1] == md5tofind:
+                    print "file found!"
+                    filename = i[0]
+                    print filename
 
 
             # dividere il file in chuncks
 
-            file = open(filename, "rb")
-            #TODO: calcolare il numero di chunk
-            tot_dim=filesize(filename)
-            num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
-            resto = tot_dim % chunk_dim #eventuale resto della divisione
-            if resto != 0.0:
-                num_of_chunks+=1
+            try :
+                file = open(filename, "rb")
+            except Exception,expt:
+                print "Error: %s" %expt + "\n"
+                print "An error occured, file upload unavailable for peer " + self.addrclient[0] + "\n"
+            else :
+                tot_dim=self.filesize(filename)
+                num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
+                resto = tot_dim % chunk_dim #eventuale resto della divisione
+                if resto != 0.0:
+                    num_of_chunks+=1
 
-            num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
-            file.seek(0,0) #sposto la testina di lettura ad inizio file
-            buff = file.read(chunk_dim)
-            chunk_sent = 0
-            ListenToPeers.peer_socket.send("ARET" + num_chunks_form)
-            while len(buff) == chunk_dim :
-                chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
-                ListenToPeers.peer_socket.send(chunk_dim_form + buff)
-                chunk_sent = chunk_sent +1
-                print "Sent " + chunk_sent + " chunks to " + self.addrclient[0] #TODO debug
-                buff = file.read(chunk_dim)
-            if len(buff) != 0:
-                chunk_last_form = '%(#)05d' % {"#" : len(buff)}
-                ListenToPeers.peer_socket.send(chunk_last_form + buff)
+                num_chunks_form = '%(#)06d' % {"#" : int(num_of_chunks)}
+                file.seek(0,0) #sposto la testina di lettura ad inizio file
+                try :
+                    buff = file.read(chunk_dim)
+                    chunk_sent = 0
+                    self.socketclient.sendall("ARET" + num_chunks_form)
+                    while len(buff) == chunk_dim :
+                        chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
+                        try:
 
-
-            print "End of upload to "+self.addrclient[0]+ " of "+filename
-            file.close()
-
+                            print chunk_dim_form
+                            self.socketclient.sendall(str(chunk_dim_form) + buff)
+                            chunk_sent = chunk_sent +1
+                            print "Sent " + str(chunk_sent) + " chunks to " + str(self.addrclient[0])#TODO debug
+                            buff = file.read(chunk_dim)
+                        except IOError: #this exception includes the socket.error child!
+                            print "Connection error due to the death of the peer!!!\n"
+                    if len(buff) != 0:
+                        print "coda del file" #TODO debug
+                        chunk_last_form = '%(#)05d' % {"#" : len(buff)}
+                        self.socketclient.sendall(chunk_last_form + buff)
+                    print "End of upload to "+self.addrclient[0]+ " of "+filename
+                    file.close()
+                    print "ho chiuso il file" #TODO debug
+                except EOFError:
+                    print "You have read a EOF char"
         else:
             print "ack parsing failed, for RETR\n"
-        
+        self.socketclient.close()
+        ListenToPeers.inService = False
+
+    # end of run method

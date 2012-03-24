@@ -103,7 +103,7 @@ class NapsterClient(object):
         try :
             f = open(filename)
         except Exception, expt :
-            print "Peer can't verify file presence -> %s" % expt + "\n"
+            print "File does not exist -> %s" % expt + "\n"
         else:
             f.close()
     # end of checkfile method
@@ -190,7 +190,7 @@ class NapsterClient(object):
 
         print "Filename in format '%100s': " + filename_form
 
-        self.checkfile(filename) #soluzione proposta da maury
+        self.checkfile(filename) #controllo l'esistenza del file nel percorso specificato
 
         # SPEDISCO IL PACCHETTO
         self.dir_socket.send("ADDF" + self.session_ID + md5file + filename_form)
@@ -232,6 +232,8 @@ class NapsterClient(object):
         self.openConn() #apro la socket con la directory
 
         filename = raw_input("Insert the name of the file to delete: ")
+
+        self.checkfile(filename) #controllo l'esistenza del file specificato
 
         md5file = self.md5_for_file(filename) #calcolo l'md5 del file
 
@@ -608,7 +610,7 @@ class NapsterClient(object):
     def doYourStuff(self):
 
         """
-        This methods allow user to navigate into menus
+        This methods allow user to navigate into menu and logging in
         """
         if self.logged==False:
 

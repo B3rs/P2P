@@ -131,7 +131,7 @@ class NapsterClient(object):
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
         self.myserver = napster_client_threads.ListenToPeers(self.my_IP, self.myP2P_port)
-        self.myserver.start() # controllare se il passaggio dei parametri e' corretto
+        self.myserver.start()
 
         # SPEDISCO IL PRIMO MESSAGGIO
         self.dir_socket.send("LOGI" + self.myIPP2P_form + self.myPP2P_form)

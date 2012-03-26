@@ -54,7 +54,7 @@ class ListenToPeers(threading.Thread):
             # entro nel while con la socket ("peer_socket") gia' in listen
             # voglio far partire un thread per ogni accept che ricevo
 
-            self.peer_socket.settimeout(5.0)
+            #self.peer_socket.settimeout(5.0)
 
             try:
                 (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo

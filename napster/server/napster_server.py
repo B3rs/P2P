@@ -175,7 +175,7 @@ class NapsterServer(object):
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind(
             ("0.0.0.0", #socket.gethostname()
-             80)
+             8000)
         )
 
     def start(self):

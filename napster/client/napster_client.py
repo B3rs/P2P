@@ -17,13 +17,13 @@ class NapsterClient(object):
         """
 
         # DIRECTORY
-        self.dir_host = "0.0.0.0" # indirizzo della directory
+        self.dir_host = "10.42.43.1" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
         self.dir_port = 9998 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
-        self.myP2P_port = 6500 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
+        self.myP2P_port = 6501 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
 
         self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma

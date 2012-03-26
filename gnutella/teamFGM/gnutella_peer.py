@@ -43,8 +43,8 @@ class GnutellaPeer(object):
         self.n2_port = 9999
 
         #tabelle varie
-        self.neighTable = []
         self.dim_neighTable = 3 #dimensione massima della tabella
+        self.neighTable = [dim_neighTable]
         self.pktTable = []
         #eventualmente aggiungere tabella con i file
 
@@ -124,6 +124,21 @@ class GnutellaPeer(object):
         self.neighTable.append(newline) #inserisco la nuova riga nella tabella dei vicini
         print self.neighTable #TODO debug
 
+    def replaceOLD(self, IP, port):
+        self.new_neighbour = []
+        oldest=self.neighTable[0[2]] #inizializzo la variabile "piu' vecchio alla prima entry della tabella
+        for i in self.neighTable: # i e' un elemento di neighTable
+            tmp=self.neighTable[i[2]]
+            if tmp > oldest :
+                oldest = tmp
+                to_replace = i
+        # ho individuato l'elemento che non uso da piu' tempo e lo rimpiazzo con un neighbour nuovo
+        self.neighTable[to_replace[0]]= IP
+        self.neighTable[to_replace[1]]= port
+        self.neighTable[to_replace[2]]= time.time()
+    #end of method clearOld
+
+
     def generate_pktID(self):
         size=16
         chars = string.ascii_uppercase + string.digits
@@ -138,7 +153,8 @@ class GnutellaPeer(object):
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
             print "Error occured in Connection with neighbour -> %s" % expt + "\n"
-        return neigh_socket
+        else:
+            return neigh_socket
 
 
     def closeConn(self, socket):
@@ -156,14 +172,31 @@ class GnutellaPeer(object):
     def findneigh(self):
 
         print "Find neighbours..."
-
-        neigh_TTL = raw_input("Insert neighbours TTL: ")
-        self.neigh_TTL_form = '%(#)02d' % {"#" : int(neigh_TTL)}
-        print "pktID: " + self.generate_pktID()
+        neigh_TTL = "0" #inizializzazione fittizia per il while di conttollo
+        while int(neigh_TTL) < 1: #verifico che non venga inserito un valore non possibile
+            neigh_TTL = raw_input("Insert neighbours TTL (min=1, typ=2): ")
+        neigh_TTL_form = '%(#)02d' % {"#" : int(neigh_TTL)}
+        pktID =  self.generate_pktID()
+        print "pktID sent for query flooding: " + pktID
         for n in self.neighTable: #n e' un elemento di neighTable
-            socket = self.openConn(self.neighTable[n[0]], self.neighTable[n[1]]) #passo ip e porta
-            #invio il pacchetto....
-            self.closeConn(socket)
+            neigh_sock = self.openConn(self.neighTable[n[0]], self.neighTable[n[1]]) #passo ip e porta
+            neigh_sock.send("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
+            ack=self.sockread(neigh_sock,20)
+            if ack[:16] == "ANEA":
+                print "OK, ack received" #TODO: debug
+                if ack[16:20] == pktID:
+                    data = self.sockread(neigh_sock,20)
+                    neigh_IP = data[:15]
+                    neigh_port = data[15:20]
+                    self.replaceOLD(neigh_IP,neigh_port)
+
+                    #TODO implementare funzione per eventuale aggiunta neighbours alla neighTable
+            else:
+                print "Expecting 'ANEA': ack parsing failed"
+                break
+
+
+            self.closeConn(neigh_sock)
 
 
 

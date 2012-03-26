@@ -181,6 +181,7 @@ class GnutellaPeer(object):
         for n in self.neighTable: #n e' un elemento di neighTable
             neigh_sock = self.openConn(self.neighTable[n[0]], self.neighTable[n[1]]) #passo ip e porta
             neigh_sock.send("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
+            #TODO: verificare che vada bene, perchè posso ricevere anche piu' di una risposta
             ack=self.sockread(neigh_sock,20)
             if ack[:16] == "ANEA":
                 print "OK, ack received" #TODO: debug
@@ -194,8 +195,6 @@ class GnutellaPeer(object):
             else:
                 print "Expecting 'ANEA': ack parsing failed"
                 break
-
-
             self.closeConn(neigh_sock)
 
 

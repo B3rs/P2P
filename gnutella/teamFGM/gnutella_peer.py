@@ -184,7 +184,7 @@ class GnutellaPeer(object):
             ack=self.sockread(neigh_sock,20)
             if ack[:16] == "ANEA":
                 print "OK, ack received" #TODO: debug
-                if ack[16:20] == pktID:
+                if ack[16:20] == pktID: #controllo che il pktID sia lo stesso di quello che ho generato io per la richiesta
                     data = self.sockread(neigh_sock,20)
                     neigh_IP = data[:15]
                     neigh_port = data[15:20]

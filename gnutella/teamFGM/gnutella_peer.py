@@ -44,7 +44,7 @@ class GnutellaPeer(object):
 
         #tabelle varie
         self.dim_neighTable = 3 #dimensione massima della tabella
-        self.neighTable = [dim_neighTable]
+        self.neighTable = []
         self.pktTable = []
         #eventualmente aggiungere tabella con i file
 
@@ -55,18 +55,6 @@ class GnutellaPeer(object):
     # end of __init__ method
 
 # Definition of auxiliary methods
-
-
-    def dots(self):
-        """
-        this silly method print the sequence ... after a sentence
-        """
-        i = 0
-        while i<3:
-            sys.stdout.write(".")
-            time.sleep(0.5)
-            i = i + 1
-    # end of method dots
 
     def md5_for_file(self,fileName):
 
@@ -90,21 +78,21 @@ class GnutellaPeer(object):
             return md5.digest()
     # end of md5_for_file method
 
-    def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
+    def sockRead(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
 
         lettiTot = socket.recv(numToRead)
         num = len(lettiTot)
 
-        while (num < numToRead):
+        while num < numToRead:
             letti = socket.recv(numToRead - num)
             num = num + len(letti)
             lettiTot = lettiTot + letti
 
         return lettiTot #restituisco la stringa letta
-    # end of sockread method
+    # end of sockRead method
 
 
-    def checkfile(self, filename):
+    def checkFile(self, filename):
         """
         this method verify the presence of file into file system through his path, specified as parameter in function call
         """
@@ -114,35 +102,39 @@ class GnutellaPeer(object):
             print "File does not exist -> %s" % expt + "\n"
         else:
             f.close()
-    # end of checkfile method
+    # end of checkFile method
+
 
     def addNeighbour(self, IP, port):
-        newline = []
-        newline.append(IP)
-        newline.append(port)
-        newline.append(time.time()) #numero di secondi dall'epoca (?)
-        self.neighTable.append(newline) #inserisco la nuova riga nella tabella dei vicini
-        print self.neighTable #TODO debug
-
-    def replaceOLD(self, IP, port):
-        self.new_neighbour = []
-        oldest=self.neighTable[0[2]] #inizializzo la variabile "piu' vecchio alla prima entry della tabella
-        for i in self.neighTable: # i e' un elemento di neighTable
-            tmp=self.neighTable[i[2]]
-            if tmp > oldest :
-                oldest = tmp
-                to_replace = i
-        # ho individuato l'elemento che non uso da piu' tempo e lo rimpiazzo con un neighbour nuovo
-        self.neighTable[to_replace[0]]= IP
-        self.neighTable[to_replace[1]]= port
-        self.neighTable[to_replace[2]]= time.time()
-    #end of method clearOld
+        if not sizeof(self.neighTable): #TODO: controllare che si possa fare
+            newline = []
+            newline.append(IP)
+            newline.append(port)
+            newline.append(time.time()) #numero di secondi dall'epoca (?)
+            self.neighTable.append(newline) #inserisco la nuova riga nella tabella dei vicini
+            print self.neighTable #TODO debug
+        elif sizeof(self.neighTable) == self.dim_neighTable :
+            # devo eliminare qualche vicino memorizzato
+            self.new_neighbour = []
+            to_replace = 0
+            oldest=self.neighTable[to_replace[2]] #inizializzo la variabile "piu' vecchio alla prima entry della tabella
+            for i in self.neighTable: # i e' un elemento di neighTable
+                tmp=self.neighTable[i[2]]
+                if tmp > oldest :
+                    oldest = tmp
+                    to_replace = i
+            # ho individuato l'elemento che non uso da piu' tempo e lo rimpiazzo con un neighbour nuovo
+            self.neighTable[to_replace[0]]= IP
+            self.neighTable[to_replace[1]]= port
+            self.neighTable[to_replace[2]]= time.time()
+    #end of method addNeighbour
 
 
     def generate_pktID(self):
         size=16
         chars = string.ascii_uppercase + string.digits
         return ''.join(random.choice(chars) for x in range(size))
+    #end of method generate_pktID
 
     def openConn(self, IP, port):
         #mi connetto al vicino
@@ -155,6 +147,7 @@ class GnutellaPeer(object):
             print "Error occured in Connection with neighbour -> %s" % expt + "\n"
         else:
             return neigh_socket
+    # end of method openConn
 
 
     def closeConn(self, socket):
@@ -163,33 +156,52 @@ class GnutellaPeer(object):
             socket.close()
         except IOError, expt: #IOError exception includes a sub-exception socket.error
             print "Error occured in Disconnection with neighbour -> %s" % expt + "\n"
+    # end of method closeConn
 
 
-    def findfile(self):
+    def findFile(self):
 
-        print ""
+        print "Find files...\n"
+        query_TTL = "0" #inizializzazione fittizia per il while di controllo stdin
+        search = raw_input("Insert a search string: ")
+        search_form = '%(#)020s' % {"#" : search} #formatto la stringa di ricerca
+        while int(query_TTL) < 1 :
+            query_TTL = raw_input("Insert TTL for query request (min=1, typ=4 or 5): ")
+        query_TTL_form = '%(#)02d' % {"#" : int(query_TTL)}
+        pktID = self.generate_pktID()
+        print "pktID generated for query flooding: " + pktID
+        # invio la richiesta di query flooding a tutti i miei vicini
+        for n in self.neighTable: #n e' un elemento di neighTable
+            neigh_sock = self.openConn(self.neighTable[n[0]], self.neighTable[n[1]]) #passo ip e porta
+            neigh_sock.send("QUER" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form + search_form)
 
-    def findneigh(self):
+        # inserire sezione di attesa e controllo risposte
+
+    # end of findFile method
+
+
+    def findNeigh(self):
 
         print "Find neighbours..."
-        neigh_TTL = "0" #inizializzazione fittizia per il while di conttollo
+        neigh_TTL = "0" #inizializzazione fittizia per il while di conttollo stdin
         while int(neigh_TTL) < 1: #verifico che non venga inserito un valore non possibile
             neigh_TTL = raw_input("Insert neighbours TTL (min=1, typ=2): ")
         neigh_TTL_form = '%(#)02d' % {"#" : int(neigh_TTL)}
         pktID =  self.generate_pktID()
-        print "pktID sent for query flooding: " + pktID
+        print "pktID generated for query flooding: " + pktID
+        # invio la richiesta di query flooding a tutti i miei vicini
         for n in self.neighTable: #n e' un elemento di neighTable
             neigh_sock = self.openConn(self.neighTable[n[0]], self.neighTable[n[1]]) #passo ip e porta
             neigh_sock.send("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
-            #TODO: verificare che vada bene, perchè posso ricevere anche piu' di una risposta
-            ack=self.sockread(neigh_sock,20)
+            #TODO: verificare che vada bene così, perchè posso ricevere anche piu' di una risposta
+            ack=self.sockRead(neigh_sock,20)
             if ack[:16] == "ANEA":
                 print "OK, ack received" #TODO: debug
                 if ack[16:20] == pktID: #controllo che il pktID sia lo stesso di quello che ho generato io per la richiesta
-                    data = self.sockread(neigh_sock,20)
+                    data = self.sockRead(neigh_sock,20)
                     neigh_IP = data[:15]
                     neigh_port = data[15:20]
-                    self.replaceOLD(neigh_IP,neigh_port)
+                    self.addNeighbour(neigh_IP,neigh_port)
 
                     #TODO implementare funzione per eventuale aggiunta neighbours alla neighTable
             else:
@@ -197,13 +209,16 @@ class GnutellaPeer(object):
                 break
             self.closeConn(neigh_sock)
 
+    # end of findNeigh method
 
 
 
 
 
-    def goout(self):
+
+    def goOut(self):
         gp.stop=True
+        print "You're about exiting from P2P network"
 
 
     def error(self):
@@ -228,9 +243,9 @@ class GnutellaPeer(object):
 
         opt = {
 
-            '1' : self.findfile,
-            '2' : self.findneigh,
-            '3' : self.goout
+            '1' : self.findFile,
+            '2' : self.findNeigh,
+            '3' : self.goOut
 
         }
 
@@ -247,6 +262,6 @@ if __name__ == "__main__":
     gp = GnutellaPeer() #inizializzazione
 
 
-    while gp.stop==False:
+    while not gp.stop:
 
         gp.doYourStuff() #stampa del menu ed esecuzione dell'operazione scelta

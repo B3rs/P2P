@@ -1,3 +1,5 @@
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
+
 import mongodbmanager
 from custom_utils import hashing
 from models.user import User

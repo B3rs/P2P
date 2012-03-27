@@ -1,1 +1,1 @@
-__author__ = 'luca,<- gay'
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'

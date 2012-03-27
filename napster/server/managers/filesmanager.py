@@ -1,15 +1,14 @@
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import mongodbmanager
 from models.file import File
 from models.user import User
+
 
 class FilesManager(object):
 
     @classmethod
     def find_files_by_query(cls, query):
         mongodbmanager.connect()
-        #words = query.split(" ")
-        #TODO devo implementare il group by md5
-        #files =  File.objects(name__icontains = query).distinct('hash') #this do not work
         files =  File.objects(name__icontains = query)
 
         #do manual distinct

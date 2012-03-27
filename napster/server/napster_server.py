@@ -1,3 +1,5 @@
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
+
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
 import socket, os
@@ -100,7 +102,7 @@ class ServiceThread(Thread):
             elif command == "FIND":
                 peer_session_id = str(self._socket.recv(16))
                 # We recieve a lot of spaces in the query string, due to the codification rules
-                # with .lstrip we remove the leading spaces strip
+                # with .strip we remove the  spaces strip
                 query_string = str(self._socket.recv(20)).strip(' ')
 
                 klog("Received a FIND, from session_id: %s. Query string: %s" %(peer_session_id, query_string))
@@ -149,8 +151,6 @@ class ServiceThread(Thread):
             condition = False
             print ex
 
-
-        # TODO do some cleanup if the socket dies? Remove user document and all its files?
         print "exiting thread"
 
 

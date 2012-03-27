@@ -17,9 +17,9 @@ class NapsterClient(object):
         """
 
         # DIRECTORY
-        self.dir_host = "192.168.1.108" # indirizzo della directory
+        self.dir_host = "192.168.1.123" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 80 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 8000 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -388,8 +388,6 @@ class NapsterClient(object):
         id_md5 = 0 #fake inizializzazione
         id_copy = 0
 
-        #TODO: controllare che l'utente inserisca numeri e non stringhe
-
 
         while id_md5<1 or id_md5>int(self.num_idmd5) or id_copy<1 or id_copy>int(self.num_copy_down[id_md5-1]):
 
@@ -470,7 +468,6 @@ class NapsterClient(object):
                             #print "The number of chunks is " + num_chunk_clean + "\n"
 
                             for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
-                                #TODO controllare se va bene cosi' o ci va davvero il -1
 
                                 #print "Watching chunk number " + str(int(i+1))
 

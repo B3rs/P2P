@@ -159,7 +159,7 @@ class ListenToPeers(threading.Thread):
         self.peer_socket.listen(5) #socket per chi vorra' fare download da me
         #print "in ascolto del peer"
 
-        a=0
+        a=0 #TODO debug
 
         while self.check == True:
 
@@ -177,7 +177,7 @@ class ListenToPeers(threading.Thread):
                 peer.start()
 
             except Exception,expt:
-                a=a+1
+                a=a+1 #TODO debug
 
 
 

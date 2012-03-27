@@ -37,16 +37,15 @@ class ServiceThread(Thread):
         return FilesManager.count_files_by_hash(hash)
 
     def find_files(self, session_id, query_string):
+        files = []
         user = UsersManager.find_user_by_session_id(session_id)
         if user:
             if query_string != "":
                 #Exlude all the file that are owened by the current user
-                files = []
                 for f in FilesManager.find_files_by_query(query_string):
                     if f.session_id != session_id:
                         files.append(f)
-                return files
-        return False
+        return files
 
     def register_download(self, peer_client_session_id, hash, peer_server_ip, peer_server_port):
         user_client = UsersManager.find_user_by_session_id(peer_client_session_id)
@@ -70,15 +69,20 @@ class ServiceThread(Thread):
             if command == "LOGI":
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
-                session_id = str(self.login_user(peer_ip, peer_port))
-                klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
-                self._socket.send("ALGI"+session_id)
-                klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
+
+                if UsersManager.find_user_by_ip(peer_ip) is not None:
+                    self._socket.send("ALGI"+"0"*16)
+                    klog("Sent ALGI"+"0"*16+"to: %s" %(peer_ip))
+                else:
+                    session_id = str(self.login_user(peer_ip, peer_port))
+                    klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
+                    self._socket.send("ALGI"+session_id)
+                    klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
 
             elif command == "ADDF":
                 peer_session_id = str(self._socket.recv(16))
                 file_hash = encode_md5(self._socket.recv(16))
-                file_name = str(self._socket.recv(100))
+                file_name = str(self._socket.recv(100)).strip(' ')
                 klog("Received a ADDF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                 copy_num = self.add_file(peer_session_id, file_hash, file_name)
                 klog("Files with same hash: %d" %( copy_num))
@@ -97,7 +101,9 @@ class ServiceThread(Thread):
                 peer_session_id = str(self._socket.recv(16))
                 # We recieve a lot of spaces in the query string, due to the codification rules
                 # with .lstrip we remove the leading spaces strip
-                query_string = str(self._socket.recv(20)).lstrip()
+                query_string = str(self._socket.recv(20)).strip(' ')
+
+                klog("Received a FIND, from session_id: %s. Query string: %s" %(peer_session_id, query_string))
 
                 files = self.find_files(peer_session_id, query_string)
                 string = "AFIN"+"{0:03d}".format(len(files))
@@ -116,6 +122,7 @@ class ServiceThread(Thread):
 
                 if len(string) == counter:
                     self._socket.send(string)
+                    klog("Sent %s" %(string))
                 else:
                     klog("errore nella ricerca... attendevo %s caratteri e ne genero %s" %(str(counter), str(len(string))))
 
@@ -160,9 +167,10 @@ class NapsterServer(object):
             socket.AF_INET,
             socket.SOCK_STREAM
         )
+        self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server_socket.bind(
             ("0.0.0.0", #socket.gethostname()
-             9998)
+             80)
         )
 
     def start(self):

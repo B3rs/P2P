@@ -17,9 +17,9 @@ class NapsterClient(object):
         """
 
         # DIRECTORY
-        self.dir_host = "192.168.1.100" # indirizzo della directory
+        self.dir_host = "192.168.1.108" # indirizzo della directory
         #self.dir_host = raw_input("Inserisci l'indirizzo della directory") # indirizzo della directory
-        self.dir_port = 8000 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
+        self.dir_port = 80 # porta di connessione alla directory - DA SPECIFICHE: sarebbe la 80
         self.dir_addr = (self.dir_host, self.dir_port)
 
         # PEER
@@ -313,10 +313,10 @@ class NapsterClient(object):
 
                     self.filemd5_down.append(ackmd5[:16]) #lungo 16
                     nomedelfile = ackmd5[16:116]
-                    nomedelfile.strip(" ")
+                    nomedelfile = nomedelfile.strip(" ")
                     self.filename_down.append(nomedelfile) #lungo 100
                     numerodicopie = ackmd5[116:119]
-                    numerodicopie.lstrip("0")
+                    numerodicopie = numerodicopie.lstrip("0")
                     self.num_copy_down.append(numerodicopie) #lungo 3
                     # ricordarsi che pero' parto dalla posizione 0 nell'array
 
@@ -337,7 +337,7 @@ class NapsterClient(object):
                         #self.PP2P_down[i][j] = ackcopy[15:20] #lungo 5
                         tempPort.append(ackcopy[15:20])
 
-                        print "        IP: " + tempIP[j] + ", port: " + tempPort[j]
+                        print "        IP: " + tempIP[j] + ", port: " + tempPort[j] + "\n"
 
                     self.IPP2P_down.append(copy.deepcopy(tempIP))
                     self.PP2P_down.append(copy.deepcopy(tempPort))

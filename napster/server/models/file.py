@@ -1,3 +1,5 @@
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
+
 from mongoengine import Document, StringField, IntField
 
 class File(Document):

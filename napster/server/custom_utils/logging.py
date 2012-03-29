@@ -1,8 +1,7 @@
-__author_ = "gio"
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 DEBUG = True
 
-''' In honour of our Kunerango baby, a very complicated logging method '''
 def klog(var):
     if DEBUG:
         print var

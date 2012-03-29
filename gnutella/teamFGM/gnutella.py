@@ -1,4 +1,6 @@
-__author__ = 'ingiulio'
+__author__ = 'Frencina'
+
+import gnutella_thread
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -7,7 +9,6 @@ import copy
 import string
 import random
 import time
-import gnutella_thread
 
 class GnutellaPeer(object):
 
@@ -33,8 +34,8 @@ class GnutellaPeer(object):
         self.stop = False #non voglio uscire subito dal programma
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
-        #self.myserver = gnutella_threads.ListenToPeers(self.my_IP, self.my_port)
-        #self.myserver.start()
+        self.myserver = gnutella_thread.ListenToPeers(self.my_IP, self.my_port)
+        self.myserver.start()
 
         #vicini onnipresenti
         self.n1_IP = "0.0.0.0"
@@ -46,7 +47,7 @@ class GnutellaPeer(object):
         self.dim_neighTable = 3 #dimensione massima della tabella
         self.neighTable = []
         self.pktTable = []
-        #eventualmente aggiungere tabella con i file
+        #eventualmente aggiungere tabella con i file TODO cercare dinamic nel file system yoyo
 
         #li vado a mettere dentro a neighTable
         self.addNeighbour(self.n1_IP,self.n1_port)
@@ -129,6 +130,8 @@ class GnutellaPeer(object):
         else:
             print "Errore nella gestione di neighTable"
         print self.neighTable #TODO debug
+        self.myserver.gimmeNeigh(self.neighTable) #aggiorno la tabella neighTable di gnutella_thread
+        #TODO fare stessa cosa anche per gimmePkt
     #end of method addNeighbour
 
 
@@ -205,6 +208,7 @@ class GnutellaPeer(object):
 
     def goOut(self):
         gp.stop=True
+        self.myserver.setCheck()
         print "You're about exiting from P2P network"
 
 

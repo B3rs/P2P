@@ -34,7 +34,7 @@ class GnutellaPeer(object):
         self.stop = False #non voglio uscire subito dal programma
 
         # CREO LA SOCKET PER GLI ALTRI PEERS
-        self.myserver = gnutella_thread.ListenToPeers(self.my_IP, self.my_port)
+        self.myserver = gnutella_thread.ListenToPeers(self.my_IP, self.my_IP_form, self.my_port, self.my_port_form)
         self.myserver.start()
 
         #vicini onnipresenti
@@ -131,7 +131,7 @@ class GnutellaPeer(object):
             print "Errore nella gestione di neighTable"
         print self.neighTable #TODO debug
         self.myserver.gimmeNeigh(self.neighTable) #aggiorno la tabella neighTable di gnutella_thread
-        #TODO fare stessa cosa anche per gimmePkt
+
     #end of method addNeighbour
 
 

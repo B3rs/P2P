@@ -7,7 +7,7 @@ import threading
 
 class Dispatcher(threading.Thread):
 
-    def __init__(self, socketclient, addrclient, neighTable, pktTable):
+    def __init__(self, socketclient, addrclient, neighTable, pktTable, my_IP, my_IP_form, my_port, my_port_form):
 
         threading.Thread.__init__(self)
 
@@ -16,6 +16,10 @@ class Dispatcher(threading.Thread):
         self.addrclient = addrclient
         self.neighTable = neighTable
         self.pktTable = pktTable
+        self.my_IP = my_IP
+        self.my_IP_form = my_IP_form
+        self.my_port = my_port
+        self.my_port_form = my_IP_form
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
 
@@ -48,11 +52,11 @@ class Dispatcher(threading.Thread):
         print request
 
         if request=="QUER":
-            myservice = gnutella_service.Query(self.socketclient, self.addrclient, self.neighTable, self.pktTable)
+            myservice = gnutella_service.Query(self.socketclient, self.addrclient, self.neighTable, self.pktTable, self.my_IP, self.my_IP_form, self.my_port, self.my_port_form)
             myservice.start()
 
         elif request=="AQUE":
-            myservice = gnutella_service.AckQuery(self.socketclient, self.addrclient, self.neighTable, self.pktTable)
+            myservice = gnutella_service.AckQuery(self.socketclient, self.addrclient, self.neighTable, self.pktTable) #da completare
             myservice.start()
 
         elif request=="NEAR":
@@ -72,15 +76,18 @@ class Dispatcher(threading.Thread):
 
     # end of run method
 
+
 class ListenToPeers(threading.Thread):
 
-    def __init__(self, my_IP, myP2P_port):
+    def __init__(self, my_IP, my_IP_form, my_port, my_port_form):
 
         #print "metodo init"
 
         threading.Thread.__init__(self)
         self.my_IP = my_IP
-        self.myP2P_port = myP2P_port
+        self.my_IP_form = my_IP_form
+        self.my_port = my_port
+        self.my_port_form = my_port_form
         self.check = True
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
@@ -109,7 +116,7 @@ class ListenToPeers(threading.Thread):
 
     def run(self):
 
-        self.address = (self.my_IP, self.myP2P_port)
+        self.address = (self.my_IP, self.my_port)
 
         # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -125,7 +132,7 @@ class ListenToPeers(threading.Thread):
 
                 print "client " + AddrClient[0] + " connected"
 
-                dispatcher = Dispatcher(SocketClient,AddrClient,self.neighTable,self.pktTable)
+                dispatcher = Dispatcher(SocketClient,AddrClient,self.neighTable,self.pktTable,self.my_IP,self.my_IP_form,self.my_port,self.my_port_form)
                 dispatcher.start()
 
             except Exception,expt:

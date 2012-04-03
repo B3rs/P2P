@@ -1,7 +1,6 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import mongodbmanager
 from models.file import File
-from models.user import User
 
 
 class FilesManager(object):

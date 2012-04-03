@@ -46,10 +46,10 @@ class GnutellaPeer(object):
 
         #tabella vicini
         neighService = gnutella_service.Service()
-        print "aggiungo vicino n.1"
+        print "Adding root #1"
         neighService.addNeighbour(self.n1_IP,self.n1_port)
         print neighService.getNeighTable()
-        print "aggiungo vicino n.2"
+        print "Adding root #2"
         neighService.addNeighbour(self.n2_IP,self.n2_port)
         print neighService.getNeighTable()
 
@@ -81,7 +81,7 @@ class GnutellaPeer(object):
         #mi connetto al vicino
         neigh_addr = (IP, port)
         try:
-            print "mi connetto al vicino" #TODO debug
+            print "Connecting with Neighbour " + IP #TODO debug
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -109,7 +109,7 @@ class GnutellaPeer(object):
             neigh_TTL = raw_input("Insert neighbours TTL (min=1, typ=2): ")
         neigh_TTL_form = '%(#)02d' % {"#" : int(neigh_TTL)}
         pktID =  self.generate_pktID()
-        print "pktID generated for query flooding neighbours: " + pktID
+        print "pktID generated for find neighbours: " + pktID
         # invio la richiesta di query flooding a tutti i miei vicini
         nearService = gnutella_service.Service()
 
@@ -143,7 +143,7 @@ class GnutellaPeer(object):
             query_TTL = raw_input("Insert TTL for query request (min=1, typ=4 or 5): ")
         query_TTL_form = '%(#)02d' % {"#" : int(query_TTL)}
         pktID = self.generate_pktID()
-        print "pktID generated for query flooding files: " + pktID
+        print "pktID generated for file research: " + pktID
         # invio la richiesta di query flooding a tutti i miei vicini
         querService = gnutella_service.Service()
 
@@ -175,7 +175,7 @@ class GnutellaPeer(object):
         downTable = downService.getDownTable()
         for i in range(0,len(downTable)):
             if int(id) == downTable[i][0]:
-                print "si e' scelto di scaricare il file " + downTable[i][4]
+                print "You have chosen to download file named '" + downTable[i][4] + "'\n"
                 filemd5 = downTable[i][3]
                 filename = downTable[i][4]
                 pktid = downTable[i][5]

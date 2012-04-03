@@ -1,7 +1,7 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from managers.filesmanager import FilesManager
-import socket, os
+import socket, os, sys
 from threading import Thread
 from custom_utils.logging import klog
 from custom_utils.hashing import decode_md5, encode_md5
@@ -192,10 +192,17 @@ class GnutellaPeer(object):
             socket.SOCK_STREAM
         )
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        
+        if len(sys.argv) > 1 and sys.argv[1] != None:
+            port = sys.argv[1]
+        else:
+            port = 9999
+        
         self.server_socket.bind(
-            ("0.0.0.0", #socket.gethostname()
-             80)
+            ("0.0.0.0", int(port))
         )
+
+        print "Port: %s" %(port)
 
     def start(self):
         print "Starting server...."

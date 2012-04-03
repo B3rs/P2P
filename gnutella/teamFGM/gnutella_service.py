@@ -26,11 +26,21 @@ class Service():
     #io faro' in frettissima a recuperarlo
     #filename e' il primo campo, filemd5 il secondo
 
+    downTable = []
+
+    myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time)
+
     def getPktTable(self): #prova
         return self.pktTable
 
     def setPktTable(self,pktTable): #prova
         self.pktTable = pktTable
+
+    def getMyQueryTable(self): #prova
+            return self.myQueryTable
+
+    def setMyQueryTable(self,myQueryTable): #prova
+        self.myQueryTable = myQueryTable
 
     def getNeighDim(self):
         return self.dim_neighTable
@@ -49,6 +59,12 @@ class Service():
 
     def setFileTable(self,fileTable): #prova
         self.fileTable = fileTable
+
+    def getDownTable(self): #prova
+            return self.downTable
+
+    def setDownTable(self,downTable): #prova
+        self.downTable = downTable
 
     def addNeighbour(self, IP, port):
 
@@ -208,13 +224,13 @@ class Service():
 
 class Query(threading.Thread, Service): #ereditarieta' multipla
 
-    def __init__(self, my_IP_form, my_port_form): #da aggiungere socketclient, addrclient
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
-        #self.socketclient = socketclient
-        #self.addrclient = addrclient
+        self.socketclient = socketclient
+        self.addrclient = addrclient
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -304,13 +320,24 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
                     #siccome e' probabile che poi il peer vorra' fare il download da me
                     #mi salvo la corrispondenza tra filename e filemd5 nella mia tabellina fileTable
+                    #ma lo faccio solo se la riga non e' gia' presente
                     fileTable = self.getFileTable()
-                    newFile = []
-                    newFile.append(filename) #il filename non e' formattato
-                    newFile.append(filemd5)
-                    fileTable.append(newFile)
-                    self.setFileTable(fileTable)
-                    print self.getFileTable()
+
+                    notFound = True
+
+                    for i in range(0,len(fileTable)):
+                        if filemd5 == fileTable[i][1]:
+                            print "file gia' presente nella tabellina fileTable. non lo aggiungo"
+                            notFound = False
+
+                    if notFound: #il file non era presente nella tabellina fileTable, lo aggiungo
+
+                        newFile = []
+                        newFile.append(filename) #il filename non e' formattato
+                        newFile.append(filemd5)
+                        fileTable.append(newFile)
+                        self.setFileTable(fileTable)
+                        print self.getFileTable()
 
                     #invio l'ack a chi ha effettuato la ricerca
                     #neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
@@ -318,24 +345,17 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                     print "AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form
                     #self.closeConn(neigh_sock)
 
-        #prove per debug
-        print self.getNeighTable()
-        self.addNeighbour("555.555.555.555",333)
-        print self.getNeighTable()
-        self.addNeighbour("666.666.666.666",444)
-        print self.getNeighTable()
-
     # end of run method
 
 class AckQuery(threading.Thread, Service):
 
-    def __init__(self, my_IP_form, my_port_form): #da aggiungere socketclient, addrclient
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
-        #self.socketclient = socketclient
-        #self.addrclient = addrclient
+        self.socketclient = socketclient
+        self.addrclient = addrclient
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -359,31 +379,52 @@ class AckQuery(threading.Thread, Service):
         filename = filename.strip(" ") #pulisco la stringa dagli spazi
         print filename
 
-        print "qui dovrei chiedere all'utente se vuole effettuare il download"
-        #se non lo voglio fare qui potrei farlo nel thread principale (gnutella.py)
-        #quindi andare ad aggiungere al menu principale anche l'opzione di scarica file
-        #cosi' l'input da terminale me lo da sempre il thread principale
-        #potrebbe essere un'idea
+        myQueryTable = self.getMyQueryTable()
 
-        #prove per debug
-        print self.getNeighTable()
-        self.addNeighbour("555.555.555.555",333)
-        print self.getNeighTable()
-        self.addNeighbour("666.666.666.666",444)
-        print self.getNeighTable()
+        for i in range(0,len(myQueryTable)):
+            if pktID == myQueryTable[i][0]:
+                if time.time() - myQueryTable[i][1] > 300: #se sono passati piu' di 300 secondi
+                    print "richiesta aque scaduta!"
+                else:
+
+                    print "richiesta aque accettata."
+
+                    downTable = self.getDownTable()
+
+                    if not len(downTable): #se tabella vuota
+                        id = 1
+                    else:
+                        id = len(downTable) + 1
+
+                    print "codice per download: " + str(id)
+
+                    new_ack = []
+                    new_ack.append(id)
+                    new_ack.append(ipp2p)
+                    new_ack.append(pp2p)
+                    new_ack.append(filemd5)
+                    new_ack.append(filename)
+                    new_ack.append(pktID)
+
+                    downTable.append(new_ack)
+
+                    self.setDownTable(downTable)
+
+                    print self.getDownTable() #TODO debug
+
 
     # end of run method
 
 
 class Near(threading.Thread, Service):
 
-    def __init__(self, my_IP_form, my_port_form): #da aggiungere socketclient, addrclient
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
-        #self.socketclient = socketclient
-        #self.addrclient = addrclient
+        self.socketclient = socketclient
+        self.addrclient = addrclient
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -443,25 +484,18 @@ class Near(threading.Thread, Service):
             print "ANEA" + pktID + self.my_IP_form + self.my_port_form
             #self.closeConn(neigh_sock)
 
-        #prove per debug
-        print self.getNeighTable()
-        self.addNeighbour("555.555.999.555",333)
-        print self.getNeighTable()
-        self.addNeighbour("666.666.999.666",444)
-        print self.getNeighTable()
-
     # end of run method
 
 
 class AckNear(threading.Thread, Service):
 
-    def __init__(self, my_IP_form, my_port_form): #da aggiungere socketclient, addrclient
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
-        #self.socketclient = socketclient
-        #self.addrclient = addrclient
+        self.socketclient = socketclient
+        self.addrclient = addrclient
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -479,28 +513,43 @@ class AckNear(threading.Thread, Service):
         pp2p = ack_near[31:36]
         print pp2p
 
-        print "aggiungo il vicino"
-        self.addNeighbour(ipp2p, pp2p)
+        myQueryTable = self.getMyQueryTable()
 
-        #prove per debug
-        print self.getNeighTable()
-        self.addNeighbour("555.555.555.1",333)
-        print self.getNeighTable()
-        self.addNeighbour("666.666.666.1",444)
-        print self.getNeighTable()
+        for i in range(0,len(myQueryTable)):
+            if pktID == myQueryTable[i][0]:
+                if time.time() - myQueryTable[i][1] > 300: #se sono passati piu' di 300 secondi
+                    print "richiesta anea scaduta!"
+                else:
+
+                    print "richiesta anea accettata!"
+
+                    neighTable = self.getDownTable()
+
+                    print "devo controllare che il vicino sia nuovo"
+                    for i in range(0,len(neighTable)):
+                        if ipp2p == neighTable[i][0] and pp2p == neighTable[i][1]: #vicino gia' presente
+                            print "vicino gia' presente. non lo aggiungo"
+                        elif ipp2p == neighTable[i][0] and pp2p != neighTable[i][1]: #ip presente, ma porta diversa --> aggiorno porta
+                            print "ip gia' presente. aggiorno porta"
+                            neighTable[i][1] = pp2p
+                        else: #vicino non esistente
+                            print "aggiungo il vicino"
+                            self.addNeighbour(ipp2p, pp2p)
+
+                    self.setDownTable(neighTable)
 
     # end of run method
 
 
 class Download(threading.Thread, Service):
 
-    def __init__(self, my_IP_form, my_port_form): #da aggiungere socketclient, addrclient
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
-        #self.socketclient = socketclient
-        #self.addrclient = addrclient
+        self.socketclient = socketclient
+        self.addrclient = addrclient
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -578,7 +627,6 @@ class Download(threading.Thread, Service):
 
                         #print chunk_dim_form
                         #self.socketclient.sendall(str(chunk_dim_form) + buff)
-                        print "invio: " + str(chunk_dim_form) + buff
                         chunk_sent = chunk_sent +1
                         #print "Sent " + str(chunk_sent) + " chunks to " + str(self.addrclient[0])#TODO debug
                         buff = file.read(chunk_dim)

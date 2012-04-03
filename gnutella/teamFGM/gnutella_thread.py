@@ -8,14 +8,13 @@ import time
 
 class Dispatcher(threading.Thread):
 
-    def __init__(self, socketclient, addrclient, neighTable, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
         # info sul peer che si connette, magari servono
         self.socketclient = socketclient
         self.addrclient = addrclient
-        self.neighTable = neighTable
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
 
@@ -54,7 +53,7 @@ class Dispatcher(threading.Thread):
             myservice.start()
 
         elif request=="AQUE":
-            myservice = gnutella_service.AckQuery(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form) #da completare
+            myservice = gnutella_service.AckQuery(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
         elif request=="NEAR":
@@ -105,58 +104,29 @@ class ListenToPeers(threading.Thread):
 
     def run(self):
 
-        #le righe seguenti servono solo per fare una prova di debug (poi andranno cancellate)
-        #al posto di attendere una richiesta e far partire il thread
-        #faccio partire il thread Query io a comando
-        myservice = gnutella_service.Query(self.my_IP_form, self.my_port_form)
-        myservice.start()
 
-        time.sleep(5)
-
-        myservice = gnutella_service.AckQuery(self.my_IP_form, self.my_port_form)
-        myservice.start()
-
-        time.sleep(5)
-
-        myservice = gnutella_service.Near(self.my_IP_form, self.my_port_form)
-        myservice.start()
-
-        time.sleep(5)
-
-        myservice = gnutella_service.AckNear(self.my_IP_form, self.my_port_form)
-        myservice.start()
-
-        time.sleep(5)
-
-        myservice = gnutella_service.Download(self.my_IP_form, self.my_port_form)
-        myservice.start()
-
-
-
-
-
-        #self.address = (self.my_IP_form, int(self.my_port_form))
+        self.address = (self.my_IP_form, int(self.my_port_form))
 
         # Metto a disposizione una porta per il peer to peer
-        #self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        #self.peer_socket.bind(self.address)
-        #self.peer_socket.listen(5) #socket per chi vorra' fare download da me
+        self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        self.peer_socket.bind(self.address)
+        self.peer_socket.listen(5) #socket per chi vorra' fare download da me
 
-        #a=0 #TODO debug
+        a=0 #TODO debug
 
-        #while self.check == True:
+        while self.check == True:
 
-        #    try:
-        #        (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
+            try:
+                (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
 
-        #        print "client " + AddrClient[0] + " connected"
+                print "client " + AddrClient[0] + " connected"
 
-        #        dispatcher = Dispatcher(SocketClient,AddrClient,self.neighTable,self.my_IP_form,self.my_port_form)
-        #        dispatcher.start()
+                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form)
+                dispatcher.start()
 
-        #    except Exception,expt:
-        #        a=a+1 #TODO debug
+            except Exception,expt:
+                a=a+1 #TODO debug
 
 
 
-        #self.peer_socket.close()
+        self.peer_socket.close()

@@ -1,8 +1,5 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-import mongodbmanager
-
-
 class FilesManager(object):
 
     # @returns array with matches path

@@ -14,8 +14,6 @@ class BackgroundThread(Thread):
         self.ip = ip
         self.port = port
 
-        known_peers.append("foo")
-
     def run(self):
         #print "Background thread started"
 

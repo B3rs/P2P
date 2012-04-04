@@ -28,9 +28,9 @@ class UIThread(Thread):
             p = Peer(ip, port)
             self.known_peers.append(p)
 
-        print "Your known peers are\n"
+        print "Your known peers are:"
         for peer in self.known_peers:
-            print "\t" + peer.ip + ":" + peer.port # Doesn't work :(
+            print "\t" + peer.ip + ":" + peer.port
 
         while 1:
             print "\nPress 1 to search a file in the network"

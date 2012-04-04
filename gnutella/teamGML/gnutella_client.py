@@ -1,6 +1,7 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from managers.filesmanager import FilesManager
+from models.peer import Peer
 import socket, os, sys
 from threading import Thread
 from custom_utils.logging import klog
@@ -156,6 +157,8 @@ class GnutellaPeer(object):
 
     def start(self):
         print "Gnutella started on %s:%s" %(self.ip, self.port)
+
+        print known_peers
 
         self.server_socket.listen(10)
         while 1:

@@ -16,15 +16,16 @@ class GnutellaPeer(object):
     def __init__(self):
         # Error checking
         if len(sys.argv) < 3:
-            print "Usage $ python gnutella ip port"
-            sys.exit()
-
-        self.ip = sys.argv[1]
-        self.port = sys.argv[2]
+            # TODO some error checking?
+            self.ip = raw_input("Please insert your ip ")
+            self.port = raw_input("Please inser your port ")
+        else:
+            self.ip = sys.argv[1]
+            self.port = sys.argv[2]
 
 
     def start(self):
-        print "Gnutella started on %s:%s" %(self.ip, self.port)
+        print "Gnutella by Luca Ferrari, Marco Berasni and Giovanni Lodi.\nConnected on %s:%s" %(self.ip, self.port)
 
         # Launch background thread for network handling
         bg = BackgroundThread(self.ip, self.port)

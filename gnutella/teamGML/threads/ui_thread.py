@@ -10,7 +10,6 @@ class UIThread(Thread):
 
     def run(self):
         #print "UI thread started"
-        print "Gnutella by Luca Ferrari, Marco Berasni and Giovanni Lodi.\n"
 
         while 1:
             print "Press 1 to search a file in the network"
@@ -18,10 +17,10 @@ class UIThread(Thread):
             cmd = raw_input()
 
             if cmd == "1":
-                print "U pressed 1 :)"
+                print "U pressed 1 :)\n"
                 pass
             elif cmd == "2":
-                print "U pressed 2 :)"
+                print "U pressed 2 :)\n"
                 pass
             else:
                 print "Invalid command! %s" %cmd

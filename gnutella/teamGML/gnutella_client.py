@@ -27,13 +27,15 @@ class GnutellaPeer(object):
     def start(self):
         print "Gnutella by Luca Ferrari, Marco Berasni and Giovanni Lodi.\nConnected on %s:%s" %(self.ip, self.port)
 
+        known_peers = []
+
         # Launch background thread for network handling
-        bg = BackgroundThread(self.ip, self.port)
+        bg = BackgroundThread(self.ip, self.port, known_peers)
         bg.setDaemon(True)
         bg.start()
 
         # Launch ui thread for interaction with the user
-        ui = UIThread()
+        ui = UIThread(known_peers)
         ui.start()
 
 

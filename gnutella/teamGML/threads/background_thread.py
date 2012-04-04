@@ -4,14 +4,17 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
+from threads.service_thread import ServiceThread
 import socket
 
 class BackgroundThread(Thread):
 
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, known_peers):
         super(BackgroundThread, self).__init__()
         self.ip = ip
         self.port = port
+
+        known_peers.append("foo")
 
     def run(self):
         #print "Background thread started"

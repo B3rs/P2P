@@ -1,5 +1,3 @@
-from gnutella.teamGML.managers.filesmanager import FilesManager
-
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread

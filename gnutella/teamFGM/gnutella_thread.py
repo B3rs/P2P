@@ -65,7 +65,7 @@ class Dispatcher(threading.Thread):
             myservice.start()
 
         elif request=="RETR":
-            myservice = gnutella_service.Download(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = gnutella_service.Upload(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
         else:

@@ -169,7 +169,7 @@ class GnutellaPeer(object):
 
         print "Download..."
 
-        id = raw_input("Choose an ID: ")
+        id = raw_input("Choose an identification: ")
 
         downService = gnutella_service.Service()
         downTable = downService.getDownTable()

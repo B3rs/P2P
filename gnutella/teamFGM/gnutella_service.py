@@ -382,9 +382,8 @@ class AckQuery(threading.Thread, Service):
         filemd5 = ack_query[36:52]
         print filemd5 #TODO debug
         filename = ack_query[52:152]
-        print filename #TODO debug
         filename = filename.strip(" ") #pulisco la stringa dagli spazi
-        print filename #TODO debug
+        print "File name: " + filename + "\n"
 
         myQueryTable = self.getMyQueryTable()
 

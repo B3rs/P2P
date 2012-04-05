@@ -4,5 +4,6 @@
 *.swp
 *.pyc
 .idea/*
+*.autosave
 
 */*.pyc

@@ -9,10 +9,9 @@ import socket
 
 class BackgroundThread(Thread):
 
-    def __init__(self, ip, port, known_peers):
+    def __init__(self, clientPeer, known_peers):
         super(BackgroundThread, self).__init__()
-        self.ip = ip
-        self.port = port
+        self.clientPeer = clientPeer
 
     def run(self):
         #print "Background thread started"
@@ -26,13 +25,13 @@ class BackgroundThread(Thread):
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         self.server_socket.bind(
-            (self.ip, int(self.port))
+            (self.clientPeer.ip, self.clientPeer.port)
         )
 
         self.server_socket.listen(10)
         while 1:
             #print "Waiting for connection "
             (socket_client, address) = self.server_socket.accept()
-            s = ServiceThread(socket_client, self.ip, self.port)
+            s = ServiceThread(socket_client, self.clientPeer.ip, self.clientPeer.port)
             s.start()
 

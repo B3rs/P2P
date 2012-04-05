@@ -29,13 +29,15 @@ class GnutellaPeer(object):
 
         known_peers = []
 
+        clientPeer = Peer(self.ip, self.port)
+
         # Launch background thread for network handling
-        bg = BackgroundThread(self.ip, self.port, known_peers)
+        bg = BackgroundThread(clientPeer, known_peers)
         bg.setDaemon(True)
         bg.start()
 
         # Launch ui thread for interaction with the user
-        ui = UIThread(known_peers)
+        ui = UIThread(clientPeer, known_peers)
         ui.start()
 
 

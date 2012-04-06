@@ -39,19 +39,19 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "0.0.0.0"
+        self.n1_IP = "192.168.0.193"
         self.n1_port = 9999
-        self.n2_IP = "0.0.0.0"
-        self.n2_port = 9999
+        #self.n2_IP = "0.0.0.0"
+        #self.n2_port = 9999
 
         #tabella vicini
         neighService = gnutella_service.Service()
         print "Adding root #1"
         neighService.addNeighbour(self.n1_IP,self.n1_port)
         print neighService.getNeighTable()
-        print "Adding root #2"
-        neighService.addNeighbour(self.n2_IP,self.n2_port)
-        print neighService.getNeighTable()
+        #print "Adding root #2"
+        #neighService.addNeighbour(self.n2_IP,self.n2_port)
+        #print neighService.getNeighTable()
 
     # end of __init__ method
 
@@ -122,11 +122,11 @@ class GnutellaPeer(object):
 
         neighTable = nearService.getNeighTable()
         for n in range(0,len(neighTable)):
-            #neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            #neigh_sock.sendall("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
+            neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
+            neigh_sock.sendall("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
             print "NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form
             print neighTable[n]
-            #self.closeConn(neigh_sock)
+            self.closeConn(neigh_sock)
 
     # end of findNeigh method
 
@@ -156,11 +156,11 @@ class GnutellaPeer(object):
 
         neighTable = querService.getNeighTable()
         for n in range(0,len(neighTable)):
-            #neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            #neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + query_TTL_form + search_form)
+            neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
+            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + query_TTL_form + search_form)
             print "QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form
             print neighTable[n]
-            #self.closeConn(neigh_sock)
+            self.closeConn(neigh_sock)
 
     # end of findFile method
 
@@ -209,7 +209,6 @@ class GnutellaPeer(object):
 
             try:
                 # Acknowledge "ARET" dal peer
-                #ack = iodown_socket.recv(10)
                 ack = self.sockread(iodown_socket, 10)
             except IOError:
                 print "Connection error. The peer " + iodown_host + " is death\n"
@@ -239,8 +238,7 @@ class GnutellaPeer(object):
                         #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
                         try:
 
-                            #lungh_form = iodown_socket.recv(5) #ricevo lunghezza chunck formattata
-                            lungh_form = self.sockread(iodown_socket, 5)
+                            lungh_form = self.sockread(iodown_socket, 5) #ricevo lunghezza chunck formattata
                             #print lungh_form
 
                             lungh = int(lungh_form) #converto in intero

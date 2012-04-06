@@ -250,7 +250,10 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
         lista_files = []
 
-        dir = "/Users/Frencina/PycharmProjects/P2P/gnutella/teamFGM" #TODO setup your own directory
+        dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
+        #dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
+        #dir = "/home/Dropbox/Git_Pycharm/P2P/gnutella/teamFGM" #MAU
+
         dirEntries = os.listdir(dir)
         print dirEntries
         for entry in dirEntries:
@@ -261,9 +264,10 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
     def run(self):
 
-        #query = self.sockread(self.socketclient,58)
-        print "simulation of QUER-packet received" #TODO debug
-        query = "0000000000000000999.999.999.9995555501                   g" #esempio per debug #TODO debug
+        print "QUER-packet received"
+        query = self.sockread(self.socketclient,58)
+        #print "simulation of QUER-packet received" #TODO debug
+        #query = "0000000000000000999.999.999.9995555501                   g" #esempio per debug #TODO debug
         print query #TODO debug
         pktID = query[:16]
         print pktID #TODO debug
@@ -304,10 +308,10 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
                     if neighTable[n][0] != ipp2p and neighTable[n][1] != int(pp2p):
 
-                        #neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-                        #neigh_sock.sendall("QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca)
+                        neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
+                        neigh_sock.sendall("QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca)
                         print "QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca
-                        #self.closeConn(neigh_sock)
+                        self.closeConn(neigh_sock)
 
             #in ogni caso cerco tra i miei files se ne ho uno che matcha la ricerca
             files = self.searchFiles(ricerca) #files = lista di files che matchano la ricerca
@@ -350,10 +354,10 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                         print self.getFileTable()
 
                     #invio l'ack a chi ha effettuato la ricerca
-                    #neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
-                    #neigh_sock.sendall("AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form)
+                    neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
+                    neigh_sock.sendall("AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form)
                     print "AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form
-                    #self.closeConn(neigh_sock)
+                    self.closeConn(neigh_sock)
 
     # end of run method
 
@@ -372,9 +376,10 @@ class AckQuery(threading.Thread, Service):
 
     def run(self):
 
-        #ack_query = self.sockread(self.socketclient,152)
-        print "simulation of AQUE-packet received" #TODO debug
-        ack_query = "1111111111111111999.999.999.99955555ffffffffffffffff                                                                                          pipppo.txt" #TODO debug
+        print "AQUE-packet received"
+        ack_query = self.sockread(self.socketclient,152)
+        #print "simulation of AQUE-packet received" #TODO debug
+        #ack_query = "1111111111111111999.999.999.99955555ffffffffffffffff                                                                                          pipppo.txt" #TODO debug
         print ack_query #TODO debug
         pktID = ack_query[:16]
         print pktID #TODO debug
@@ -440,9 +445,10 @@ class Near(threading.Thread, Service):
 
     def run(self):
 
-        #query = self.sockread(self.socketclient,38)
-        print "simulation of NEAR-packet received" #TODO debug
-        near = "0000000000000001999.999.999.9995555502" #TODO debug
+        print "NEAR-packet received"
+        query = self.sockread(self.socketclient,38)
+        #print "simulation of NEAR-packet received" #TODO debug
+        #near = "0000000000000001999.999.999.9995555502" #TODO debug
         print near #TODO debug
         pktID = near[:16]
         print pktID #TODO debug
@@ -480,18 +486,18 @@ class Near(threading.Thread, Service):
 
                     if neighTable[n][0] != ipp2p and neighTable[n][1] != int(pp2p):
 
-                        #neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-                        #neigh_sock.sendall("NEAR" + pktID + ipp2p + pp2p + ttl_form)
+                        neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
+                        neigh_sock.sendall("NEAR" + pktID + ipp2p + pp2p + ttl_form)
                         print "NEAR" + pktID + ipp2p + pp2p + ttl_form
-                        #self.closeConn(neigh_sock)
+                        self.closeConn(neigh_sock)
 
 
             #rispondo alla richiesta invio l'ack AQUE a chi ha effettuato la ricerca
             print "Reply request, sending ANEA" #TODO debug
-            #neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
-            #neigh_sock.sendall("ANEA" + pktID + self.my_IP_form + self.my_port_form)
+            neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
+            neigh_sock.sendall("ANEA" + pktID + self.my_IP_form + self.my_port_form)
             print "ANEA" + pktID + self.my_IP_form + self.my_port_form #TODO debug
-            #self.closeConn(neigh_sock)
+            self.closeConn(neigh_sock)
 
     # end of run method
 
@@ -511,9 +517,10 @@ class AckNear(threading.Thread, Service):
 
     def run(self):
 
-        #ack_query = self.sockread(self.socketclient,36)
-        print "simulation of ANEA-packet received" #TODO debug
-        ack_near = "2222222222222222111.111.111.11155555" #TODO debug
+        print "ANEA-packet received"
+        ack_near = self.sockread(self.socketclient,36)
+        #print "simulation of ANEA-packet received" #TODO debug
+        #ack_near = "2222222222222222111.111.111.11155555" #TODO debug
         print ack_near #TODO debug
         pktID = ack_near[:16]
         print pktID #TODO debug
@@ -576,22 +583,11 @@ class Upload(threading.Thread, Service):
 
     def run(self):
 
-        #per debug aggiungo un md5 fittizio alla tabella fileTable
-
-        print "aggiungo un file con md5 fasullo" #TODO debug
-        fileTable = self.getFileTable()
-        newFile = []
-        newFile.append("pippo.jpeg")
-        newFile.append("0000000000000000")
-        fileTable.append(newFile)
-        self.setFileTable(fileTable)
-        print self.getFileTable()
-
         print "Download request arrived from " + self.IP_form
 
-        #download = self.sockread(self.socketclient,16)
-        print "simulo l'arrivo di un pacchetto RETR"
-        download = "0000000000000000" #esempio per debug
+        download = self.sockread(self.socketclient,16)
+        #print "simulo l'arrivo di un pacchetto RETR"
+        #download = "0000000000000000" #esempio per debug
         print download
         md5tofind = download[:16]
         print md5tofind
@@ -628,25 +624,23 @@ class Upload(threading.Thread, Service):
             try :
                 buff = file.read(chunk_dim)
                 chunk_sent = 0
-                #self.socketclient.sendall("ARET" + num_chunks_form)
+                self.socketclient.sendall("ARET" + num_chunks_form)
                 print "invio: " + "ARET" + num_chunks_form
                 while len(buff) == chunk_dim :
                     chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
                     try:
 
                         #print chunk_dim_form
-                        #self.socketclient.sendall(str(chunk_dim_form) + buff)
+                        self.socketclient.sendall(str(chunk_dim_form) + buff)
                         chunk_sent = chunk_sent +1
-                        #print "Sent " + str(chunk_sent) + " chunks to " + str(self.addrclient[0])#TODO debug
                         buff = file.read(chunk_dim)
                     except IOError: #this exception includes the socket.error child!
                         print "Connection error due to the death of the peer!!!\n"
                 if len(buff) != 0:
-                    #print "coda del file" #TODO debug
                     chunk_last_form = '%(#)05d' % {"#" : len(buff)}
-                    #self.socketclient.sendall(chunk_last_form + buff)
+                    self.socketclient.sendall(chunk_last_form + buff)
                     print "invio: " + chunk_last_form + buff
-                #print "End of upload to "+self.addrclient[0]+ " of "+filename
+                print "End of upload to "+self.addrclient[0]+ " of "+filename
                 print "fine dell'invio del file"
                 file.close()
                 #print "ho chiuso il file" #TODO debug

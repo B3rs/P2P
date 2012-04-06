@@ -178,7 +178,8 @@ class Service():
     def addPktToTable(self, pktID): #scrivo sulla tabella che ho esaminato il pacchetto
 
         pktTable = self.getPktTable()
-        print "PktTable before adding pktID received: " + pktTable #TODO debug
+        print "PktTable before adding pktID received: " #TODO debug
+        print pktTable
 
         newPkt = []
         newPkt.append(pktID)
@@ -187,7 +188,8 @@ class Service():
         self.setPktTable(pktTable)
 
         pktTable = self.getPktTable()
-        print "PktTable after adding pkt: " + pktTable #TODO debug
+        print "PktTable after adding pkt: " #TODO debug
+        print pktTable
 
 
     def cleanPktTable (self):
@@ -200,7 +202,8 @@ class Service():
         now = time.time()
 
         pktTable = self.getPktTable()
-        print "pktTable after cleaning:\n" + pktTable #TODO debug
+        print "pktTable after cleaning:\n" #TODO debug
+        print pktTable
 
         for i in range(0,len(pktTable)):
 
@@ -211,7 +214,7 @@ class Service():
         self.setPktTable(pktTable)
 
         pktTable = self.getPktTable()
-        print "pktTable after cleaning:\n" + pktTable #TODO debug
+        print "pktTable after cleaning:\n" #TODO debug
         print pktTable
 
 

@@ -39,19 +39,19 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "192.168.0.193"
-        self.n1_port = 9999
-        #self.n2_IP = "0.0.0.0"
-        #self.n2_port = 9999
+        self.n1_IP = "192.168.0.100"
+        self.n1_port = 6503
+        self.n2_IP = "192.168.0.187"
+        self.n2_port = 6503
 
         #tabella vicini
         neighService = gnutella_service.Service()
         print "Adding root #1"
         neighService.addNeighbour(self.n1_IP,self.n1_port)
         print neighService.getNeighTable()
-        #print "Adding root #2"
-        #neighService.addNeighbour(self.n2_IP,self.n2_port)
-        #print neighService.getNeighTable()
+        print "Adding root #2"
+        neighService.addNeighbour(self.n2_IP,self.n2_port)
+        print neighService.getNeighTable()
 
     # end of __init__ method
 
@@ -79,7 +79,7 @@ class GnutellaPeer(object):
 
     def openConn(self, IP, port):
         #mi connetto al vicino
-        neigh_addr = (IP, port)
+        neigh_addr = (IP, int(port))
         try:
             print "Connecting with Neighbour " + IP #TODO debug
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

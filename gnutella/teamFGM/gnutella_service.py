@@ -133,7 +133,7 @@ class Service():
 
     def openConn(self, IP, port):
         #mi connetto al vicino
-        neigh_addr = (IP, port)
+        neigh_addr = (IP, int(port))
         try:
             print "Connecting with neighbour " + IP #TODO debug
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -250,8 +250,8 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
         lista_files = []
 
-        dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
-        #dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
+        #dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
+        dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
         #dir = "/home/Dropbox/Git_Pycharm/P2P/gnutella/teamFGM" #MAU
 
         dirEntries = os.listdir(dir)
@@ -446,7 +446,7 @@ class Near(threading.Thread, Service):
     def run(self):
 
         print "NEAR-packet received"
-        query = self.sockread(self.socketclient,38)
+        near = self.sockread(self.socketclient,38)
         #print "simulation of NEAR-packet received" #TODO debug
         #near = "0000000000000001999.999.999.9995555502" #TODO debug
         print near #TODO debug
@@ -539,20 +539,28 @@ class AckNear(threading.Thread, Service):
 
                     print "ANEA request accepted!"
 
-                    neighTable = self.getDownTable()
+                    neighTable = self.getNeighTable()
+
+                    toadd=True
 
                     print "I have to control that this neighbour is really new" #TODO debug
                     for i in range(0,len(neighTable)):
                         if ipp2p == neighTable[i][0] and pp2p == neighTable[i][1]: #vicino gia' presente
                             print "Neighbour already present in neightable! -> Nothing to do" #TODO debug
+                            toadd = False
+                            break
                         elif ipp2p == neighTable[i][0] and pp2p != neighTable[i][1]: #ip presente, ma porta diversa --> aggiorno porta
                             print "This IP already exist, but with another port -> updating port" #TODO debug
                             neighTable[i][1] = pp2p
+                            toadd = False
+                            break
                         else: #vicino non esistente
-                            print "Adding neighbour" #TODO debug
-                            self.addNeighbour(ipp2p, pp2p)
+                            toadd = True
+                    if toadd == True:
+                        print "Adding neighbour" #TODO debug
+                        self.addNeighbour(ipp2p, pp2p)
 
-                    self.setDownTable(neighTable)
+                    self.setNeighTable(neighTable)
 
     # end of run method
 

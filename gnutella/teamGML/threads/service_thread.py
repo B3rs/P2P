@@ -2,26 +2,24 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
 from managers.filesmanager import FilesManager
+from managers.peersmanager import PeersManager
+from custom_utils.formatting import *
 import socket
 
 class ServiceThread(Thread):
 
-    def __init__(self, socket, ip, port):
+    def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
-        self.ip = ip
-        self.port = port
+
+        self.ip = format_ip_address(ip)
+        self.port = format_port_number(port)
+
+        self.ui_handler = ui_handler
+
         super(ServiceThread, self).__init__()
 
-    # TODO
-    def find_files(self, query_string):
-        if query_string != "":
-            return FilesManager.find_files_by_query(query_string)
-        else:
-            return []
 
     def run(self):
-
-        self._socket.setblocking(1)
 
         try:
             self._socket.setblocking(1) # <-------- ??
@@ -40,13 +38,13 @@ class ServiceThread(Thread):
                     # decrease ttl propagate the message to the peers
                     ttl = str(int(ttl) - 1)
                     # TODO something like
-                    known_peers = [] # <-- to be filled with objects
-                    for peer in known_peers:
+
+                    for peer in PeersManager.find_known_peers():
                         self._socket.send(command + pckt_id + peer_ip + peer_port + ttl + query)
 
 
                     # look for the requested file
-                    for f in find_files(query):
+                    for f in FilesManager.find_files_by_query(query):
                         md5 = calculate_md5_for_file_path(f)
                         filename = f.split('/')[-1:]
                         self._socket.send("AQUE" + pckt_id + ip + port + md5 + filename)
@@ -61,6 +59,8 @@ class ServiceThread(Thread):
                 file_name = str(self._socket.recv(100))
 
                 # Add the result to the result list and show it on screen
+                self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port. file_md5)
+
 
             # Received package looking for neighbour peers
             if command == "NEAR":
@@ -74,8 +74,8 @@ class ServiceThread(Thread):
                     # decrease ttl and propagate the message to the peers
                     ttl = str(int(ttl) - 1)
                     # TODO something like
-                    known_peers = [] # <-- to be filled with objects
-                    for peer in known_peers:
+
+                    for peer in PeersManager.find_known_peers():
                         self._socket.send(command + pckt_id + peer_ip + peer_port + ttl)
 
 
@@ -87,8 +87,9 @@ class ServiceThread(Thread):
                 peer_port = str(self._socket.recv(5))
 
                 # Add peer to known peers
-                # TODO something like
-                # known_peers.add(new Peer(peer_ip. peer_port)
+                PeersManager.add_new_peer(peer_ip, peer_port)
+                self.ui_handler.peers_changed()
+
 
             elif command == "":
                 condition = False

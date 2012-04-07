@@ -1,10 +1,26 @@
 import sys
 from PyQt4.QtGui import QApplication, QMainWindow
-from ui.qgnutella_window import QGnutellaWindow
+from gnutella.teamGML.ui.qt.qgnutella_window import QGnutellaWindow
+from threads.response_handler_thread import ResponseHandlerThread
+from threads.request_emitter_thread import RequestEmitterThread
 
-app = QApplication(sys.argv)
-window = QGnutellaWindow()
+PORT = 9999
 
-window.show()
+if __name__ == "__main__":
 
-sys.exit(app.exec_())
+    #Setup the emitter thread
+    request_emitter = RequestEmitterThread(PORT)
+    #TODO: RequestEmitterThread doesn't have a run method! WTF?!
+
+    #Setup the UI
+    app = QApplication(sys.argv)
+    ui = QGnutellaWindow(request_emitter)
+
+    # Launch background thread for network handling
+    bg = ResponseHandlerThread(PORT, ui)
+    bg.setDaemon(True)
+    bg.start()
+
+    ui.show()
+
+    sys.exit(app.exec_())

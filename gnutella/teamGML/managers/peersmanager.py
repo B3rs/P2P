@@ -2,12 +2,17 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from models.peer import Peer
 
+PEERS = [] #TODO: remove this into a singleton instance of PeersManager
+
 class PeersManager(object):
 
     # @returns array with known peers
     @classmethod
     def find_known_peers(cls):
-        peers = []
-        for i in xrange(5):
-            peers.append(Peer("192.168.1.10%d" % i, 80))
-        return peers
+        return PEERS
+
+    # @returns add a new known
+    @classmethod
+    def add_new_peer(cls, peer_ip, peer_port):
+        peer = Peer(peer_ip, peer_port)
+        PEERS.append(p)

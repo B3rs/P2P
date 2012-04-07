@@ -81,6 +81,19 @@
        </property>
       </column>
      </widget>
+     <widget class="QPushButton" name="searchNeighboursBtn">
+      <property name="geometry">
+       <rect>
+        <x>413</x>
+        <y>20</y>
+        <width>161</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Search neighbours</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -163,7 +176,12 @@
       </column>
       <column>
        <property name="text">
-        <string>Peer Port</string>
+        <string>Peer port</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Md5</string>
        </property>
       </column>
      </widget>

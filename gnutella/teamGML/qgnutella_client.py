@@ -1,6 +1,6 @@
 import sys
 from PyQt4.QtGui import QApplication, QMainWindow
-from gnutella.teamGML.ui.qt.qgnutella_window import QGnutellaWindow
+from ui.qt.qgnutella_window import QGnutellaWindow
 from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter_thread import RequestEmitterThread
 

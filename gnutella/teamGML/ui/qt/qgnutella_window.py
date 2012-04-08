@@ -5,7 +5,6 @@ from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from ui.abstract_ui import AbstractGnutellaUI
 
-
 class QGnutellaWindow(QMainWindow):
     def __init__(self, request_emitter):
 

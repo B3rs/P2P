@@ -1,7 +1,12 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import os
 
-SHARED_PATH = "../shared_files"
+# TODO: WARNING!
+# SHARED_PATH = "../shared"
+# That way path is defined from this file location, but it doesn't work,
+# because the method it's called form another file in a different location...
+# TODO find a way to evaluate the path in a way that is transparent to the caller of the method
+SHARED_PATH = "shared"
 
 
 class FilesManager(object):

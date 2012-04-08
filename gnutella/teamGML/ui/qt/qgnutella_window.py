@@ -16,9 +16,8 @@ class QGnutellaWindow(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        #Show the shared files into the sharedfolder
-        for file_name in FilesManager.shared_files():
-            file_item = QListWidgetItem(file_name, self.ui.sharedFilesListWidget)
+        #Show the shared files into the shared folder
+        self.shared_changed()
 
         #Show the known neighbours
         self.peers_changed()
@@ -66,4 +65,9 @@ class QGnutellaWindow(QMainWindow):
         self.ui.peersTreeWidget.clear()
         for peer in PeersManager.find_known_peers():
             item = QTreeWidgetItem(self.ui.peersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
+
+    def shared_changed(self):
+        self.ui.sharedFilesListWidget.clear()
+        for file_name in FilesManager.shared_files():
+            file_item = QListWidgetItem(file_name, self.ui.sharedFilesListWidget)
 

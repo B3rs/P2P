@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/designer/mainwindownew.ui'
+# Form implementation generated from reading ui file 'designer/mainwindow.ui'
 #
-# Created: Sun Apr  8 09:11:17 2012
+# Created: Sun Apr  8 09:50:15 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -108,7 +108,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("MainWindow", "Gnutella client", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "by Ferrari Luca, Lodi Giovanni, Bersani Marco", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MainWindow", "by Ferrari Luca, Bersani Marco, Lodi Giovanni", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Peer Port", None, QtGui.QApplication.UnicodeUTF8))
         self.searchNeighboursBtn.setText(QtGui.QApplication.translate("MainWindow", "Search neighbours", None, QtGui.QApplication.UnicodeUTF8))

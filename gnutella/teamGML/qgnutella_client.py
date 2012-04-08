@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     # Launch background thread for network handling
     bg = ResponseHandlerThread(PORT, ui)
-    bg.setDaemon(True)
+    bg.daemon = True
     bg.start()
 
     ui.show()

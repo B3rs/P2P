@@ -8,3 +8,6 @@ Cercare Project Structure
 Add content Root
 inserire: /usr/local/lib/python2.7/site-packages
 
+------
+
+Or go to http://steventen.wordpress.com/2011/10/27/install-pyqt4-qt-4-7-on-mac-osx-lion/

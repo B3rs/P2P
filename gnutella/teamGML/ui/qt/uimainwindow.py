@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mainwindow.ui'
+# Form implementation generated from reading ui file 'qt/designer/mainwindownew.ui'
 #
-# Created: Fri Apr  6 12:15:21 2012
+# Created: Sun Apr  8 09:11:17 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -35,11 +35,36 @@ class Ui_MainWindow(object):
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
         self.peersTreeWidget = QtGui.QTreeWidget(self.tab)
-        self.peersTreeWidget.setGeometry(QtCore.QRect(10, 60, 561, 231))
+        self.peersTreeWidget.setGeometry(QtCore.QRect(10, 60, 584, 221))
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.peersTreeWidget.sizePolicy().hasHeightForWidth())
+        self.peersTreeWidget.setSizePolicy(sizePolicy)
+        self.peersTreeWidget.setItemsExpandable(False)
         self.peersTreeWidget.setObjectName(_fromUtf8("peersTreeWidget"))
+        self.peersTreeWidget.header().setVisible(True)
+        self.peersTreeWidget.header().setStretchLastSection(True)
         self.searchNeighboursBtn = QtGui.QPushButton(self.tab)
-        self.searchNeighboursBtn.setGeometry(QtCore.QRect(413, 20, 161, 32))
+        self.searchNeighboursBtn.setGeometry(QtCore.QRect(440, 20, 161, 32))
         self.searchNeighboursBtn.setObjectName(_fromUtf8("searchNeighboursBtn"))
+        self.peerIP = QtGui.QLineEdit(self.tab)
+        self.peerIP.setGeometry(QtCore.QRect(60, 300, 181, 22))
+        self.peerIP.setText(_fromUtf8(""))
+        self.peerIP.setObjectName(_fromUtf8("peerIP"))
+        self.label_5 = QtGui.QLabel(self.tab)
+        self.label_5.setGeometry(QtCore.QRect(10, 300, 62, 22))
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.label_6 = QtGui.QLabel(self.tab)
+        self.label_6.setGeometry(QtCore.QRect(250, 300, 62, 20))
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.peerPort = QtGui.QLineEdit(self.tab)
+        self.peerPort.setGeometry(QtCore.QRect(320, 300, 61, 22))
+        self.peerPort.setText(_fromUtf8(""))
+        self.peerPort.setObjectName(_fromUtf8("peerPort"))
+        self.addPeerBtn = QtGui.QPushButton(self.tab)
+        self.addPeerBtn.setGeometry(QtCore.QRect(440, 297, 161, 32))
+        self.addPeerBtn.setObjectName(_fromUtf8("addPeerBtn"))
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
@@ -77,7 +102,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -87,6 +112,9 @@ class Ui_MainWindow(object):
         self.peersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Peer Port", None, QtGui.QApplication.UnicodeUTF8))
         self.searchNeighboursBtn.setText(QtGui.QApplication.translate("MainWindow", "Search neighbours", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setText(QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setText(QtGui.QApplication.translate("MainWindow", "Peer port", None, QtGui.QApplication.UnicodeUTF8))
+        self.addPeerBtn.setText(QtGui.QApplication.translate("MainWindow", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Neighbours", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Shared files", None, QtGui.QApplication.UnicodeUTF8))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("MainWindow", "Downloads", None, QtGui.QApplication.UnicodeUTF8))

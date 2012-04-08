@@ -66,10 +66,25 @@
        <rect>
         <x>10</x>
         <y>60</y>
-        <width>561</width>
-        <height>231</height>
+        <width>584</width>
+        <height>221</height>
        </rect>
       </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="itemsExpandable">
+       <bool>false</bool>
+      </property>
+      <attribute name="headerVisible">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="headerStretchLastSection">
+       <bool>true</bool>
+      </attribute>
       <column>
        <property name="text">
         <string>Peer IP</string>
@@ -84,7 +99,7 @@
      <widget class="QPushButton" name="searchNeighboursBtn">
       <property name="geometry">
        <rect>
-        <x>413</x>
+        <x>440</x>
         <y>20</y>
         <width>161</width>
         <height>32</height>
@@ -92,6 +107,71 @@
       </property>
       <property name="text">
        <string>Search neighbours</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="peerIP">
+      <property name="geometry">
+       <rect>
+        <x>60</x>
+        <y>300</y>
+        <width>181</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_5">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>300</y>
+        <width>62</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Peer IP</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>300</y>
+        <width>62</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Peer port</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="peerPort">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>300</y>
+        <width>61</width>
+        <height>22</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="addPeerBtn">
+      <property name="geometry">
+       <rect>
+        <x>440</x>
+        <y>297</y>
+        <width>161</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Add</string>
       </property>
      </widget>
     </widget>

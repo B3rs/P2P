@@ -17,7 +17,7 @@ class RequestEmitterThread(Thread):
         print "Started query flooding for peers" # TODO write better
         for peer in PeersManager.find_known_peers():
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # usefull to avoid boring address already in use
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # useful to avoid boring address already in use
             sock.bind((peer.ip, peer.port))
             local_ip = sock.getsockname()[0]
             p_id = "1234"

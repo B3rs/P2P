@@ -15,4 +15,4 @@ class PeersManager(object):
     @classmethod
     def add_new_peer(cls, peer_ip, peer_port):
         peer = Peer(peer_ip, peer_port)
-        PEERS.append(p)
+        PEERS.append(peer)

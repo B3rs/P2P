@@ -73,8 +73,8 @@ class ServiceThread(Thread):
                 if int(ttl) > 1:
                     # decrease ttl and propagate the message to the peers
                     ttl = str(int(ttl) - 1)
-                    # TODO something like
 
+                    # TODO something like
                     for peer in PeersManager.find_known_peers():
                         self._socket.send(command + pckt_id + peer_ip + peer_port + ttl)
 

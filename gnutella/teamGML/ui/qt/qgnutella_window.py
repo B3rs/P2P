@@ -27,8 +27,20 @@ class QGnutellaWindow(QMainWindow):
         self.ui.searchBtn.clicked.connect(self._searchBtnClicked)
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
         self.ui.searchNeighboursBtn.clicked.connect(self._searchNeighboursBtnClicked)
+        self.ui.addPeerBtn.clicked.connect(self._addPeerBtnClicked)
 
     #EVENTS
+    def _addPeerBtnClicked(self):
+        # Check inputs are not null
+        # TODO
+
+        ip = self.ui.peerIP.text()
+        port = self.ui.peerPort.text()
+
+        # Add peer to PeerManager and to list
+        PeersManager.add_new_peer(ip, port)
+        self.peers_changed()
+
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
         query = self.ui.searchLineEdit.text()
@@ -51,6 +63,7 @@ class QGnutellaWindow(QMainWindow):
         item = QTreeWidgetItem(self.ui.resultsTreeWidget, QStringList([str(filename), str(peer_ip), str(peer_port), str(file_md5)]))
 
     def peers_changed(self):
+        self.ui.peersTreeWidget.clear()
         for peer in PeersManager.find_known_peers():
             item = QTreeWidgetItem(self.ui.peersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
 

@@ -46,7 +46,6 @@ class Dispatcher(threading.Thread):
     def run(self):
 
         request = self.sockread(self.socketclient,4) #leggo i primi 4 byte per sapere cosa fare
-        print request
 
         if request=="QUER":
             myservice = gnutella_service.Query(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
@@ -119,7 +118,7 @@ class ListenToPeers(threading.Thread):
             try:
                 (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
 
-                print "Peer " + AddrClient[0] + " connected"
+                #print "Peer " + AddrClient[0] + " connected"
 
                 dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form)
                 dispatcher.start()

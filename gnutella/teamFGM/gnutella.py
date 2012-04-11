@@ -39,19 +39,17 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "192.168.0.100"
+        self.n1_IP = "192.168.0.187"
         self.n1_port = 6503
-        self.n2_IP = "192.168.0.187"
-        self.n2_port = 6503
+        #self.n2_IP = "192.168.0.187"
+        #self.n2_port = 6503
 
         #tabella vicini
         neighService = gnutella_service.Service()
         print "Adding root #1"
         neighService.addNeighbour(self.n1_IP,self.n1_port)
-        print neighService.getNeighTable()
-        print "Adding root #2"
-        neighService.addNeighbour(self.n2_IP,self.n2_port)
-        print neighService.getNeighTable()
+        #print "Adding root #2"
+        #neighService.addNeighbour(self.n2_IP,self.n2_port)
 
     # end of __init__ method
 
@@ -81,7 +79,7 @@ class GnutellaPeer(object):
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
         try:
-            print "Connecting with Neighbour " + IP #TODO debug
+            #print "Connecting with Neighbour " + IP #TODO debug
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -109,8 +107,7 @@ class GnutellaPeer(object):
             neigh_TTL = raw_input("Insert neighbours TTL (min=1, typ=2): ")
         neigh_TTL_form = '%(#)02d' % {"#" : int(neigh_TTL)}
         pktID =  self.generate_pktID()
-        print "pktID generated for find neighbours: " + pktID
-        # invio la richiesta di query flooding a tutti i miei vicini
+
         nearService = gnutella_service.Service()
 
         myQueryTable = nearService.getMyQueryTable()
@@ -120,12 +117,13 @@ class GnutellaPeer(object):
         myQueryTable.append(new_entry)
         nearService.setMyQueryTable(myQueryTable)
 
+        # invio la richiesta di query flooding a tutti i miei vicini
+
         neighTable = nearService.getNeighTable()
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
-            print "NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form
-            print neighTable[n]
+            print "invio NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form
             self.closeConn(neigh_sock)
 
     # end of findNeigh method
@@ -137,14 +135,12 @@ class GnutellaPeer(object):
 
         query_TTL = "0" #inizializzazione fittizia per il while di controllo stdin
         search = raw_input("Insert a search string: ")
-        print search
         search_form = '%(#)020s' % {"#" : search} #formatto la stringa di ricerca
         while int(query_TTL) < 1 :
             query_TTL = raw_input("Insert TTL for query request (min=1, typ=4 or 5): ")
         query_TTL_form = '%(#)02d' % {"#" : int(query_TTL)}
         pktID = self.generate_pktID()
-        print "pktID generated for file research: " + pktID
-        # invio la richiesta di query flooding a tutti i miei vicini
+
         querService = gnutella_service.Service()
 
         myQueryTable = querService.getMyQueryTable()
@@ -154,12 +150,12 @@ class GnutellaPeer(object):
         myQueryTable.append(new_entry)
         querService.setMyQueryTable(myQueryTable)
 
+        # invio la richiesta di query flooding a tutti i miei vicini
         neighTable = querService.getNeighTable()
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + query_TTL_form + search_form)
-            print "QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form
-            print neighTable[n]
+            print "invio QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form
             self.closeConn(neigh_sock)
 
     # end of findFile method
@@ -175,10 +171,10 @@ class GnutellaPeer(object):
         downTable = downService.getDownTable()
         for i in range(0,len(downTable)):
             if int(id) == downTable[i][0]:
-                print "You have chosen to download file named '" + downTable[i][4] + "'\n"
                 filemd5 = downTable[i][3]
                 filename = downTable[i][4]
                 pktid = downTable[i][5]
+                row = i
 
         queryTable = downService.getMyQueryTable()
 
@@ -197,12 +193,11 @@ class GnutellaPeer(object):
 
         try: # e' necessario tenere sotto controllo la connessione, perche' puo' disconnettersi il peer o non essere disponibile
 
-            iodown_socket = self.openConn(downTable[i][1], int(downTable[i][2])) #passo ip e porta
+            iodown_socket = self.openConn(downTable[row][1], int(downTable[row][2])) #passo ip e porta
         except IOError: #IOError exception includes socket.error
             print "Connection with " + iodown_host + "not available"
         else:
             print "Connection with peer enstablished.\n"
-            #print "Download will start shortly! Be patient"
 
             # SPEDISCO IL PRIMO MESSAGGIO
             iodown_socket.sendall("RETR" + filemd5)

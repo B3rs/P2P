@@ -4,6 +4,7 @@ from threading import Thread
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from custom_utils.formatting import *
+from custom_utils.hashing import *
 import socket
 
 class ServiceThread(Thread):
@@ -46,8 +47,8 @@ class ServiceThread(Thread):
                     # look for the requested file
                     for f in FilesManager.find_files_by_query(query):
                         md5 = calculate_md5_for_file_path(f)
-                        filename = f.split('/')[-1:]
-                        self._socket.send("AQUE" + pckt_id + ip + port + md5 + filename)
+                        filename = f.split('/')[-1]
+                        self._socket.send("AQUE" + pckt_id + peer_ip + peer_port + md5 + filename)
 
             # Received package in reply to a file research
             if command == "AQUE":

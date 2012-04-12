@@ -75,8 +75,9 @@ class ServiceThread(Thread):
                 file_md5 = str(self._socket.recv(16))
                 file_name = str(self._socket.recv(100)).strip(" ")
 
-                # Add the result to the result list and show it on screen
-                self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, file_md5)
+                if PacketsManager.is_generated_packet_still_valid(pckt_id):
+                    # Add the result to the result list and show it on screen
+                    self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, file_md5)
 
 
             # Received package looking for neighbour peers
@@ -113,10 +114,10 @@ class ServiceThread(Thread):
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
 
-
-                # Add peer to known peers
-                PeersManager.add_new_peer(peer_ip, peer_port)
-                self.ui_handler.peers_changed()
+                if PacketsManager.is_generated_packet_still_valid(pckt_id):
+                    # Add peer to known peers
+                    PeersManager.add_new_peer(peer_ip, peer_port)
+                    self.ui_handler.peers_changed()
 
             elif command == "":
                 condition = False

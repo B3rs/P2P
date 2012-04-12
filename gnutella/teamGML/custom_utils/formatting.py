@@ -14,3 +14,6 @@ def format_port_number(port):
 
 def format_query(query):
     return '%(#)020s' % {"#" : str(query)}
+
+def format_ttl(ttl):
+    return '%(#)02d' % {"#" : int(ttl)}

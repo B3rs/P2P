@@ -34,15 +34,14 @@ class ServiceThread(Thread):
                 pckt_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
-                ttl = str(self._socket.recv(2))
+                ttl = int(self._socket.recv(2))
                 query = str(self._socket.recv(20))
 
                 klog("%s pid: %s %s:%s ttl: %s query: %s" % (command, pckt_id, sender_ip, sender_port, ttl, query))
 
                 if int(ttl) > 1:
                     # decrease ttl propagate the message to the peers
-                    ttl = str(int(ttl) - 1)
-                    # TODO something like
+                    ttl = format_ttl(ttl -1)
 
                     for peer in PeersManager.find_known_peers():
                         sock = connect_socket(peer.ip, peer.port)
@@ -81,11 +80,11 @@ class ServiceThread(Thread):
                 pckt_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
-                ttl = str(self._socket.recv(2))
+                ttl = int(self._socket.recv(2))
 
-                if int(ttl) > 1:
+                if ttl > 1:
                     # decrease ttl and propagate the message to the peers
-                    ttl = str(int(ttl) - 1)
+                    ttl = format_ttl(ttl -1)
 
                     for peer in PeersManager.find_known_peers():
                         sock = connect_socket(peer.ip, peer.port)

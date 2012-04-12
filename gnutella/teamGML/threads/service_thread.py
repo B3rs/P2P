@@ -3,6 +3,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 from threading import Thread
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
+from managers.packetsmanager import PacketsManager
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.sockets import *
@@ -39,27 +40,31 @@ class ServiceThread(Thread):
 
                 klog("%s pid: %s %s:%s ttl: %s query: %s" % (command, pckt_id, sender_ip, sender_port, ttl, query))
 
-                if int(ttl) > 1:
-                    # decrease ttl propagate the message to the peers
-                    ttl = format_ttl(ttl -1)
+                if not PacketsManager.is_packet_id_known(pckt_id):
 
-                    for peer in PeersManager.find_known_peers():
-                        sock = connect_socket(peer.ip, peer.port)
-                        sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
-                        klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
-                        sock.close()
+                    PacketsManager.add_new_packet(pckt_id, sender_ip)
+
+                    if int(ttl) > 1:
+                        # decrease ttl propagate the message to the peers
+                        ttl = format_ttl(ttl -1)
+
+                        for peer in PeersManager.find_known_peers():
+                            sock = connect_socket(peer.ip, peer.port)
+                            sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
+                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
+                            sock.close()
 
 
-                    # look for the requested file
-                    for f in FilesManager.find_files_by_query(query):
-                        md5 = calculate_md5_for_file_path(f)
-                        filename = f.split('/')[-1]
-                        command = "AQUE"
-                        sock = connect_socket(sender_ip, sender_port)
-                        sock.send(command + pckt_id + sender_ip + sender_port + md5 + filename)
-                        klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, sender_ip, sender_port, md5, filename))
+                        # look for the requested file
+                        for f in FilesManager.find_files_by_query(query):
+                            md5 = calculate_md5_for_file_path(f)
+                            filename = f.split('/')[-1]
+                            command = "AQUE"
+                            sock = connect_socket(sender_ip, sender_port)
+                            sock.send(command + pckt_id + sender_ip + sender_port + md5 + filename)
+                            klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, sender_ip, sender_port, md5, filename))
 
-                        sock.close()
+                            sock.close()
 
             # Received package in reply to a file research
             if command == "AQUE":
@@ -82,16 +87,24 @@ class ServiceThread(Thread):
                 sender_port = str(self._socket.recv(5))
                 ttl = int(self._socket.recv(2))
 
-                if ttl > 1:
-                    # decrease ttl and propagate the message to the peers
-                    ttl = format_ttl(ttl -1)
+                if not PacketsManager.is_packet_id_known(pckt_id):
 
-                    for peer in PeersManager.find_known_peers():
-                        sock = connect_socket(peer.ip, peer.port)
-                        sock.send(command + pckt_id + sender_ip + sender_port + ttl)
-                        klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
+                    PacketsManager.add_new_packet(pckt_id, sender_ip)
 
-                        sock.close()
+                    if ttl > 1:
+                        # decrease ttl and propagate the message to the peers
+                        ttl = format_ttl(ttl -1)
+
+                        for peer in PeersManager.find_known_peers():
+                            sock = connect_socket(peer.ip, peer.port)
+                            sock.send(command + pckt_id + sender_ip + sender_port + ttl)
+                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
+                            sock.close()
+
+                    # show yourself to the peer
+                    sock = connect_socket(sender_ip, sender_port)
+                    sock.send("ANEA" + pckt_id + self.ip + self.port)
+                    sock.close()
 
             # Received package in reply to a neighbour peer search
             if command == "ANEA":

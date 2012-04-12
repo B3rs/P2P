@@ -11,3 +11,6 @@ def format_ip_address(ip):
 
 def format_port_number(port):
     return '%(#)05d' % {"#" : int(port)}
+
+def format_query(query):
+    return '%(#)020s' % {"#" : str(query)}

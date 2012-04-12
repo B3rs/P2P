@@ -89,7 +89,6 @@ class ServiceThread(Thread):
                 PeersManager.add_new_peer(peer_ip, peer_port)
                 self.ui_handler.peers_changed()
 
-
             elif command == "":
                 condition = False
 

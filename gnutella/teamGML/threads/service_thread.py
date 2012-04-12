@@ -100,6 +100,7 @@ class ServiceThread(Thread):
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
 
+
                 # Add peer to known peers
                 PeersManager.add_new_peer(peer_ip, peer_port)
                 self.ui_handler.peers_changed()

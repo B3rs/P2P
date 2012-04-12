@@ -60,7 +60,7 @@ class ServiceThread(Thread):
                 file_name = str(self._socket.recv(100))
 
                 # Add the result to the result list and show it on screen
-                self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port. file_md5)
+                self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, file_md5)
 
 
             # Received package looking for neighbour peers

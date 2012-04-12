@@ -90,8 +90,12 @@ class ServiceThread(Thread):
                         sock = connect_socket(peer.ip, peer.port)
                         sock.send(command + pckt_id + sender_ip + sender_port + ttl)
                         klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
-
                         sock.close()
+
+                # show yourself to the peer
+                sock = connect_socket(sender_ip, sender_port)
+                sock.send("ANEA" + pckt_id + self.ip + self.port)
+                sock.close()
 
             # Received package in reply to a neighbour peer search
             if command == "ANEA":

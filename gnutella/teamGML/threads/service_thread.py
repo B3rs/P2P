@@ -5,6 +5,7 @@ from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from custom_utils.formatting import *
 from custom_utils.hashing import *
+from custom_utils.sockets import *
 import socket
 
 class ServiceThread(Thread):
@@ -30,8 +31,8 @@ class ServiceThread(Thread):
             # Received package looking for a file
             if command == "QUER":
                 pckt_id = str(self._socket.recv(16))
-                peer_ip = str(self._socket.recv(15))
-                peer_port = str(self._socket.recv(5))
+                sender_ip = str(self._socket.recv(15))
+                sender_port = str(self._socket.recv(5))
                 ttl = str(self._socket.recv(2))
                 query = str(self._socket.recv(20))
 
@@ -41,14 +42,18 @@ class ServiceThread(Thread):
                     # TODO something like
 
                     for peer in PeersManager.find_known_peers():
-                        self._socket.send(command + pckt_id + peer_ip + peer_port + ttl + query)
+                        sock = connect_socket(peer.ip, peer.port)
+                        sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
+                        sock.close()
 
 
                     # look for the requested file
                     for f in FilesManager.find_files_by_query(query):
                         md5 = calculate_md5_for_file_path(f)
                         filename = f.split('/')[-1]
-                        self._socket.send("AQUE" + pckt_id + peer_ip + peer_port + md5 + filename)
+                        sock = connect_socket(sender_ip, sender_port)
+                        sock.send("AQUE" + pckt_id + sender_ip + sender_port + md5 + filename)
+                        sock.close()
 
             # Received package in reply to a file research
             if command == "AQUE":
@@ -67,17 +72,18 @@ class ServiceThread(Thread):
             if command == "NEAR":
                 print "NEAR received"
                 pckt_id = str(self._socket.recv(16))
-                peer_ip = str(self._socket.recv(15))
-                peer_port = str(self._socket.recv(5))
+                sender_ip = str(self._socket.recv(15))
+                sender_port = str(self._socket.recv(5))
                 ttl = str(self._socket.recv(2))
 
                 if int(ttl) > 1:
                     # decrease ttl and propagate the message to the peers
                     ttl = str(int(ttl) - 1)
 
-                    # TODO something like
                     for peer in PeersManager.find_known_peers():
-                        self._socket.send(command + pckt_id + peer_ip + peer_port + ttl)
+                        sock = connect_socket(peer.ip, peer.port)
+                        sock.send(command + pckt_id + sender_ip + sender_port + ttl)
+                        sock.close()
 
             # Received package in reply to a neighbour peer search
             if command == "ANEA":

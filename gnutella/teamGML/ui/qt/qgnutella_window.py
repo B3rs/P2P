@@ -30,15 +30,13 @@ class QGnutellaWindow(QMainWindow):
 
     #EVENTS
     def _addPeerBtnClicked(self):
-        # Check inputs are not null
-        # TODO
-
         ip = self.ui.peerIP.text()
         port = self.ui.peerPort.text()
 
-        # Add peer to PeerManager and to list
-        PeersManager.add_new_peer(ip, port)
-        self.peers_changed()
+        if len(port) > 1 and len(ip.split(".")) == 4:
+            # Add peer to PeerManager and to list
+            PeersManager.add_new_peer(ip, port)
+            self.peers_changed()
 
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()

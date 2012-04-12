@@ -22,7 +22,7 @@ class RequestEmitterThread(Thread):
             local_ip = sock.getsockname()[0]
             p_id = generate_packet_id(16) #TODO: generate
             ttl = 3
-            sock.send("NEAR" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + str(ttl))
+            sock.send("NEAR" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl))
             sock.close()
 
     def search_for_files(self, query):
@@ -32,7 +32,7 @@ class RequestEmitterThread(Thread):
             local_ip = sock.getsockname()[0]
             p_id = generate_packet_id(16) #TODO: generate
             ttl = 3
-            sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + str(ttl) + format_query(query))
+            sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
             sock.close()
 
     def download_file(self, peer_ip, peer_port, md5):

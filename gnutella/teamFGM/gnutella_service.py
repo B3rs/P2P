@@ -93,7 +93,7 @@ class Service():
             newline = []
             newline.append(IP_form)
             newline.append(port_form)
-            newline.append(time.time()) #numero di secondi dall'epoca (?)
+            newline.append(time.time()) #numero di secondi dall'epoca
             self.neighTable.append(newline) #inserisco la nuova riga nella tabella dei vicini
         elif len(self.neighTable) == self.getNeighDim() : #tabella piena
             # devo eliminare qualche vicino memorizzato
@@ -135,7 +135,7 @@ class Service():
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
         try:
-            print "Connecting with neighbour " + IP #TODO debug
+            #print "Connecting with neighbour " + IP #TODO debug
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -178,18 +178,12 @@ class Service():
     def addPktToTable(self, pktID): #scrivo sulla tabella che ho esaminato il pacchetto
 
         pktTable = self.getPktTable()
-        print "PktTable before adding pktID received: " #TODO debug
-        print pktTable
 
         newPkt = []
         newPkt.append(pktID)
         newPkt.append(time.time())
         pktTable.append(newPkt)
         self.setPktTable(pktTable)
-
-        pktTable = self.getPktTable()
-        print "PktTable after adding pkt: " #TODO debug
-        print pktTable
 
 
     def cleanPktTable (self):
@@ -202,20 +196,14 @@ class Service():
         now = time.time()
 
         pktTable = self.getPktTable()
-        print "pktTable after cleaning:\n" #TODO debug
-        print pktTable
 
         for i in range(0,len(pktTable)):
 
             if now - pktTable[i][1] > 300: #se sono passati piu' di 300 secondi elimino la riga dalla tabella
 
-                pktTable.remove(i) #TODO controllare che la cancellazione di una riga si faccia cosi'
+                pktTable.pop(i)
 
         self.setPktTable(pktTable)
-
-        pktTable = self.getPktTable()
-        print "pktTable after cleaning:\n" #TODO debug
-        print pktTable
 
 
     def checkPktAlreadySeen(self, pktID): #metodo per capire se il pacchetto e' passato sotto le mie mani negli ultimi 300 secondi
@@ -225,11 +213,9 @@ class Service():
         for i in range (0,len(pktTable)):
 
             if pktTable[i][0] == pktID: #se ho trovato il pacchetto
-                print "packed already seen" #TODO debug
                 return True
 
-        #se sono uscita indenne dal ciclo
-        print "packet never seen" #TODO debug
+        #se sono uscita indenne dal ciclo (pacchetto non trovato)
         return False
 
 
@@ -250,15 +236,13 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
         lista_files = []
 
-        #dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
-        dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
+        dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
+        #dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
         #dir = "/home/Dropbox/Git_Pycharm/P2P/gnutella/teamFGM" #MAU
 
         dirEntries = os.listdir(dir)
-        print dirEntries
         for entry in dirEntries:
             if re.match(".*" + search_string + ".*", entry):
-                print entry
                 lista_files.append(entry)
         return lista_files
 
@@ -266,27 +250,18 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
         print "QUER-packet received"
         query = self.sockread(self.socketclient,58)
-        #print "simulation of QUER-packet received" #TODO debug
-        #query = "0000000000000000999.999.999.9995555501                   g" #esempio per debug #TODO debug
         print query #TODO debug
         pktID = query[:16]
-        print pktID #TODO debug
         ipp2p = query[16:31]
-        print ipp2p #TODO debug
         pp2p = query[31:36]
-        print pp2p #TODO debug
         ttl = query[36:38]
-        print ttl #TODO debug
-        ricerca = query[38:58]
-        print ricerca #TODO debug
-        ricerca = ricerca.strip(" ") #pulisco la stringa dagli spazi
-        print ricerca #TODO debug
+        ricerca_form = query[38:58]
+        ricerca = ricerca_form.strip(" ") #pulisco la stringa dagli spazi
 
-        print "Cleaning pktTble"
         self.cleanPktTable() #pulizia della tabella dei pacchetti
 
         if self.checkPktAlreadySeen(pktID): #se ho gia' ricevuto questo pacchetto
-            print "Packet already received in past. Waiting on other QUER-packet"
+            print "Packet already received."
         else:
             self.addPktToTable(pktID) #aggiungo pacchetto alla tabella
 
@@ -299,18 +274,16 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                 #decremento il ttl prima di propagare il pacchetto
                 ttl_decr = int(ttl) - 1
                 ttl_form = '%(#)02d' % {"#" : int(ttl_decr)} #porta formattata per bene
-                print ttl_form
 
                 neighTable = self.getNeighTable()
-                print neighTable
 
                 for n in range(0,len(neighTable)): #n e' l'indice del vicino
 
                     if neighTable[n][0] != ipp2p and neighTable[n][1] != int(pp2p):
 
                         neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-                        neigh_sock.sendall("QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca)
-                        print "QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca
+                        neigh_sock.sendall("QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca_form)
+                        print "invio QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca_form
                         self.closeConn(neigh_sock)
 
             #in ogni caso cerco tra i miei files se ne ho uno che matcha la ricerca
@@ -341,7 +314,6 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
                     for i in range(0,len(fileTable)):
                         if filemd5 == fileTable[i][1]:
-                            print "File already present in fileTable -> hasn't to add" #TODO debug
                             notFound = False
 
                     if notFound: #il file non era presente nella tabellina fileTable, lo aggiungo
@@ -356,7 +328,7 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                     #invio l'ack a chi ha effettuato la ricerca
                     neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
                     neigh_sock.sendall("AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form)
-                    print "AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form
+                    print "invio AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form
                     self.closeConn(neigh_sock)
 
     # end of run method
@@ -378,31 +350,21 @@ class AckQuery(threading.Thread, Service):
 
         print "AQUE-packet received"
         ack_query = self.sockread(self.socketclient,152)
-        #print "simulation of AQUE-packet received" #TODO debug
-        #ack_query = "1111111111111111999.999.999.99955555ffffffffffffffff                                                                                          pipppo.txt" #TODO debug
-        print ack_query #TODO debug
+        print ack_query
         pktID = ack_query[:16]
-        print pktID #TODO debug
         ipp2p = ack_query[16:31]
-        print ipp2p #TODO debug
         pp2p = ack_query[31:36]
-        print pp2p #TODO debug
         filemd5 = ack_query[36:52]
-        print filemd5 #TODO debug
         filename = ack_query[52:152]
         filename = filename.strip(" ") #pulisco la stringa dagli spazi
-        print "File name: " + filename + "\n"
 
         myQueryTable = self.getMyQueryTable()
 
         for i in range(0,len(myQueryTable)):
             if pktID == myQueryTable[i][0]:
                 if time.time() - myQueryTable[i][1] > 300: #se sono passati piu' di 300 secondi
-                    print "AQUE request expired!" #TODO debug
+                    print "AQUE request expired!"
                 else:
-
-                    print "AQUE request accepted!" #TODO debug
-
                     downTable = self.getDownTable()
 
                     if not len(downTable): #se tabella vuota
@@ -424,9 +386,6 @@ class AckQuery(threading.Thread, Service):
 
                     self.setDownTable(downTable)
 
-                    print self.getDownTable() #TODO debug
-
-
     # end of run method
 
 
@@ -447,23 +406,16 @@ class Near(threading.Thread, Service):
 
         print "NEAR-packet received"
         near = self.sockread(self.socketclient,38)
-        #print "simulation of NEAR-packet received" #TODO debug
-        #near = "0000000000000001999.999.999.9995555502" #TODO debug
-        print near #TODO debug
+        print near
         pktID = near[:16]
-        print pktID #TODO debug
         ipp2p = near[16:31]
-        print ipp2p #TODO debug
         pp2p = near[31:36]
-        print pp2p #TODO debug
         ttl = near[36:38]
-        print ttl #TODO debug
 
-        print "Cleaning pktTable"
         self.cleanPktTable() #pulizia della tabella dei pacchetti
 
         if self.checkPktAlreadySeen(pktID): #se ho gia' ricevuto questo pacchetto
-            print "Packet already received. Nothing to do"
+            print "Packet already received."
 
         else:
             self.addPktToTable(pktID) #aggiungo pacchetto alla tabella
@@ -477,10 +429,8 @@ class Near(threading.Thread, Service):
                 #decremento il ttl prima di propagare il pacchetto
                 ttl_decr = int(ttl) - 1
                 ttl_form = '%(#)02d' % {"#" : int(ttl_decr)} #porta formattata per bene
-                print ttl_form
 
                 neighTable = self.getNeighTable()
-                print neighTable
 
                 for n in range(0,len(neighTable)): #n e' l'indice del vicino
 
@@ -488,15 +438,14 @@ class Near(threading.Thread, Service):
 
                         neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
                         neigh_sock.sendall("NEAR" + pktID + ipp2p + pp2p + ttl_form)
-                        print "NEAR" + pktID + ipp2p + pp2p + ttl_form
+                        print "invio NEAR" + pktID + ipp2p + pp2p + ttl_form
                         self.closeConn(neigh_sock)
 
 
             #rispondo alla richiesta invio l'ack AQUE a chi ha effettuato la ricerca
-            print "Reply request, sending ANEA" #TODO debug
             neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
             neigh_sock.sendall("ANEA" + pktID + self.my_IP_form + self.my_port_form)
-            print "ANEA" + pktID + self.my_IP_form + self.my_port_form #TODO debug
+            print "invio ANEA" + pktID + self.my_IP_form + self.my_port_form #TODO debug
             self.closeConn(neigh_sock)
 
     # end of run method
@@ -519,15 +468,10 @@ class AckNear(threading.Thread, Service):
 
         print "ANEA-packet received"
         ack_near = self.sockread(self.socketclient,36)
-        #print "simulation of ANEA-packet received" #TODO debug
-        #ack_near = "2222222222222222111.111.111.11155555" #TODO debug
-        print ack_near #TODO debug
+        print ack_near
         pktID = ack_near[:16]
-        print pktID #TODO debug
         ipp2p = ack_near[16:31]
-        print ipp2p #TODO debug
         pp2p = ack_near[31:36]
-        print pp2p #TODO debug
 
         myQueryTable = self.getMyQueryTable()
 
@@ -537,27 +481,22 @@ class AckNear(threading.Thread, Service):
                     print "ANEA request expired!"
                 else:
 
-                    print "ANEA request accepted!"
-
                     neighTable = self.getNeighTable()
 
                     toadd=True
 
-                    print "I have to control that this neighbour is really new" #TODO debug
                     for i in range(0,len(neighTable)):
                         if ipp2p == neighTable[i][0] and pp2p == neighTable[i][1]: #vicino gia' presente
-                            print "Neighbour already present in neightable! -> Nothing to do" #TODO debug
                             toadd = False
                             break
                         elif ipp2p == neighTable[i][0] and pp2p != neighTable[i][1]: #ip presente, ma porta diversa --> aggiorno porta
-                            print "This IP already exist, but with another port -> updating port" #TODO debug
                             neighTable[i][1] = pp2p
                             toadd = False
                             break
                         else: #vicino non esistente
                             toadd = True
                     if toadd == True:
-                        print "Adding neighbour" #TODO debug
+                        print "Adding neighbour " +  ipp2p
                         self.addNeighbour(ipp2p, pp2p)
 
                     self.setNeighTable(neighTable)
@@ -591,14 +530,11 @@ class Upload(threading.Thread, Service):
 
     def run(self):
 
-        print "Download request arrived from " + self.IP_form
+        print "Download request arrived from " + self.addrclient[0]
 
         download = self.sockread(self.socketclient,16)
-        #print "simulo l'arrivo di un pacchetto RETR"
-        #download = "0000000000000000" #esempio per debug
         print download
         md5tofind = download[:16]
-        print md5tofind
 
         chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
 
@@ -606,12 +542,8 @@ class Upload(threading.Thread, Service):
 
         # ricerca della corrispondenza
         for i in fileTable:
-            print "filename " + i[0]
-            print "md5 " + i[1]
             if i[1] == md5tofind:
-                print "file found!"
                 filename = i[0]
-                print filename
 
         # dividere il file in chuncks
 
@@ -633,7 +565,6 @@ class Upload(threading.Thread, Service):
                 buff = file.read(chunk_dim)
                 chunk_sent = 0
                 self.socketclient.sendall("ARET" + num_chunks_form)
-                print "invio: " + "ARET" + num_chunks_form
                 while len(buff) == chunk_dim :
                     chunk_dim_form = '%(#)05d' % {"#" : len(buff)}
                     try:
@@ -647,9 +578,7 @@ class Upload(threading.Thread, Service):
                 if len(buff) != 0:
                     chunk_last_form = '%(#)05d' % {"#" : len(buff)}
                     self.socketclient.sendall(chunk_last_form + buff)
-                    print "invio: " + chunk_last_form + buff
                 print "End of upload to "+self.addrclient[0]+ " of "+filename
-                print "fine dell'invio del file"
                 file.close()
                 #print "ho chiuso il file" #TODO debug
             except EOFError:

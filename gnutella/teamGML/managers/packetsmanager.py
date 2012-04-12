@@ -55,7 +55,7 @@ class PacketsManager(object):
     def add_new_generated_packet(cls, packet_id, packet_sender = None):
         if not PacketsManager.is_generated_packet_id_known(packet_id):
             packet = Packet(packet_id, packet_sender)
-            MY_PACKETS.append(packet)
+            GENERATED_PACKETS.append(packet)
 
     @classmethod
     def get_generated_packet_by_id(cls, packet_id):

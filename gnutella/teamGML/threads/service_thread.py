@@ -78,7 +78,6 @@ class ServiceThread(Thread):
                     for peer in PeersManager.find_known_peers():
                         self._socket.send(command + pckt_id + peer_ip + peer_port + ttl)
 
-
             # Received package in reply to a neighbour peer search
             if command == "ANEA":
                 print "ANEA received "

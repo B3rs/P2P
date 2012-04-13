@@ -8,12 +8,11 @@ from models.peer import Peer
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.sockets import *
+from custom_utils.files import file_size
 from custom_utils.logging import klog
 import socket
 
 class ServiceThread(Thread):
-
-    CHUNK_DIM = 128
 
     def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
@@ -66,7 +65,11 @@ class ServiceThread(Thread):
                             filename = f.split('/')[-1]
                             command = "AQUE"
                             sock = connect_socket(sender_ip, sender_port)
-                            sock.send(command + pckt_id + self.ip + self.port + md5 + filename)
+                            sent = 0
+                            sent += sock.send(command + pckt_id + self.ip + self.port)
+                            sent += sock.send(md5)
+                            sent += sock.send(format_filename(filename))
+                            print "mandati: %d" %(sent)
                             klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
 
                             sock.close()

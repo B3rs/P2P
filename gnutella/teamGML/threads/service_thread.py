@@ -137,7 +137,7 @@ class ServiceThread(Thread):
 
                 md5 = self._socket.recv(16)
 
-                response_packet = "ARET"
+                self._socket.send("ARET")   #sending the ack command
 
                 # Get the file matching the md5
                 path = FilesManager.find_file_by_md5(md5)
@@ -149,20 +149,22 @@ class ServiceThread(Thread):
                     if leftover != 0.0:
                         chunks_num += 1
 
-                    response_packet += format_chunks_number(chunks_num)
+                    self._socket.send(format_chunks_number(chunks_num)) #sending the chunks number
+                else:
+                    pass #i have to close the thread because the file does not exists
 
                 #open the file
                 file2send= open(path, 'rb')
                 chunk = file2send.read(CHUNK_DIM)
+
                 while chunk != '':
-                    response_packet += format_chunk_length(len(chunk))
-                    response_packet += chunk
+                    self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
+                    self._socket.send(chunk)    #sending the chunk
                     chunk = file2send.read(CHUNK_DIM)
                 file2send.close()
 
-                self._socket.send(response_packet)
 
-            elif command == "":
+            if command == "":
                 condition = False
 
             # Close the socket

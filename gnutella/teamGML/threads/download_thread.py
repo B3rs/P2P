@@ -15,14 +15,6 @@ class DownloadThread(Thread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
 
-    def file_size(self, path):
-        file = open(path,'r')
-        file.seek(0,2)
-        size = F.tell()
-        file.seek(0,0)
-        file.close()
-        return size
-
     def run(self):
 
         command = str(self._socket.recv(4))

@@ -139,6 +139,15 @@ class ServiceThread(Thread):
                 # Start download...
                 try:
                     print "Download started"
+                    newFile = open("temp", "ab") # a = append, b = binary mode
+                    for i in range(0, chunk_number):
+                        chunk_length = int(self._socket.recv(5))
+                        chunk_data = self._socket.recv(chunk_length)
+                        newFile.write(chunk_data)
+
+                    newFile.close()
+                    print "Download completed"
+
                 except Exception:
                     print "An exception has occurred"
 

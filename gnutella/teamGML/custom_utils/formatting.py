@@ -17,3 +17,9 @@ def format_query(query):
 
 def format_ttl(ttl):
     return '%(#)02d' % {"#" : int(ttl)}
+
+def format_chunks_number(num):
+    return '%(#)06d' % {"#" : int(num)}
+
+def format_filename(filename):
+    return '%(#)0100s' % {"#" : str(filename)}

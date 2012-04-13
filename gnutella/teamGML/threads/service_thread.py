@@ -4,9 +4,11 @@ from threading import Thread
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
+from models.peer import Peer
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.sockets import *
+from custom_utils.files import file_size
 from custom_utils.logging import klog
 import socket
 
@@ -49,10 +51,12 @@ class ServiceThread(Thread):
                         ttl = format_ttl(ttl -1)
 
                         for peer in PeersManager.find_known_peers():
-                            sock = connect_socket(peer.ip, peer.port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
-                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
-                            sock.close()
+                            #query floading to the known peers except for the sender
+                            if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
+                                sock = connect_socket(peer.ip, peer.port)
+                                sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
+                                klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
+                                sock.close()
 
 
                         # look for the requested file
@@ -61,8 +65,12 @@ class ServiceThread(Thread):
                             filename = f.split('/')[-1]
                             command = "AQUE"
                             sock = connect_socket(sender_ip, sender_port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + md5 + filename)
-                            klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, sender_ip, sender_port, md5, filename))
+                            sent = 0
+                            sent += sock.send(command + pckt_id + self.ip + self.port)
+                            sent += sock.send(md5)
+                            sent += sock.send(format_filename(filename))
+                            print "mandati: %d" %(sent)
+                            klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
 
                             sock.close()
 
@@ -97,10 +105,13 @@ class ServiceThread(Thread):
                         ttl = format_ttl(ttl -1)
 
                         for peer in PeersManager.find_known_peers():
-                            sock = connect_socket(peer.ip, peer.port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + ttl)
-                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
-                            sock.close()
+
+                            #query floading to the known peers except for the sender
+                            if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
+                                sock = connect_socket(peer.ip, peer.port)
+                                sock.send(command + pckt_id + sender_ip + sender_port + ttl)
+                                klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
+                                sock.close()
 
                     # show yourself to the peer
                     sock = connect_socket(sender_ip, sender_port)
@@ -119,10 +130,46 @@ class ServiceThread(Thread):
                     PeersManager.add_new_peer(peer_ip, peer_port)
                     self.ui_handler.peers_changed()
 
-            elif command == "":
+            # Received package asking for a file
+            if command == "RETR":
+                print "RETR received"
+                CHUNK_DIM = 128
+
+                md5 = self._socket.recv(16)
+
+                self._socket.send("ARET")   #sending the ack command
+
+                # Get the file matching the md5
+                path = FilesManager.find_file_by_md5(md5)
+                if path:
+                    # Chunks
+                    size = file_size(path)
+                    chunks_num = int(size // CHUNK_DIM)
+                    leftover = size % CHUNK_DIM
+                    if leftover != 0.0:
+                        chunks_num += 1
+
+                    self._socket.send(format_chunks_number(chunks_num)) #sending the chunks number
+                else:
+                    pass #i have to close the thread because the file does not exists
+
+                #open the file
+                file2send= open(path, 'rb')
+                chunk = file2send.read(CHUNK_DIM)
+
+                while chunk != '':
+                    self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
+                    self._socket.send(chunk)    #sending the chunk
+                    chunk = file2send.read(CHUNK_DIM)
+                file2send.close()
+
+
+            if command == "":
                 condition = False
 
+            # Close the socket
             self._socket.close()
+
         except Exception, ex:
             condition = False
             print ex

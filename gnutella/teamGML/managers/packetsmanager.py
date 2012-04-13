@@ -1,7 +1,8 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from models.packet import Packet
-from datetime import timedelta
+import time
+from custom_utils.logging import *
 
 #TODO: remove this into a singleton instance of PeersManager
 PACKETS = []
@@ -19,8 +20,8 @@ class PacketsManager(object):
     def is_packet_known(cls, packet):
         for p in PACKETS:
             if p.id == packet.id:
-                return true
-        return false
+                return True
+        return False
 
     # @returns true if the packet is already in the list
     @classmethod
@@ -67,8 +68,8 @@ class PacketsManager(object):
     @classmethod
     def is_generated_packet_still_valid(cls, packet_id):
         if PacketsManager.is_generated_packet_id_known(packet_id):
-            delta = timedelta(PacketsManager.get_generated_packet_by_id(packet_id))
-            print delta.seconds
-            if delta.seconds <= 300:
+            delta = time.time() - PacketsManager.get_generated_packet_by_id(packet_id).timestamp
+            print delta
+            if delta <= 300:
                 return True
         return False

@@ -35,10 +35,6 @@ class QGnutellaWindow(QMainWindow):
         self.connect(self, SIGNAL("download_file_changed"), self._draw_download_item)
         self.connect(self, SIGNAL("upload_file_changed"), self._draw_upload_item)
 
-        self._draw_download_item("cane", "1212", "10.0.0.1", 0)
-        self._draw_download_item("cane", "1212", "10.0.0.1", 50)
-        self._draw_upload_item("pene", "2", "22.0.0.1", 0)
-        self._draw_upload_item("pene", "2", "22.0.0.1", 60)
 
     #EVENTS
     def _addPeerBtnClicked(self):
@@ -112,11 +108,11 @@ class QGnutellaWindow(QMainWindow):
     def shared_files_changed(self):
         self.emit(SIGNAL("shared_files_changed"))
 
-    def download_file_changed(self, filename, peer_ip, peer_port, file_md5):
-        self.emit(SIGNAL("download_file_changed"), filename, peer_ip, peer_port, file_md5)
+    def download_file_changed(self, filename, file_md5, peer_ip, percent):
+        self.emit(SIGNAL("download_file_changed"), filename, file_md5, peer_ip, percent)
 
-    def upload_file_changed(self, filename, peer_ip, peer_port, file_md5):
-        self.emit(SIGNAL("upload_file_changed"), filename, peer_ip, peer_port, file_md5)
+    def upload_file_changed(self, filename, file_md5, peer_ip, percent):
+        self.emit(SIGNAL("upload_file_changed"), filename, file_md5, peer_ip, percent)
 
 
 

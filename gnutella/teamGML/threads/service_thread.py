@@ -66,8 +66,8 @@ class ServiceThread(Thread):
                             filename = f.split('/')[-1]
                             command = "AQUE"
                             sock = connect_socket(sender_ip, sender_port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + md5 + filename)
-                            klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, sender_ip, sender_port, md5, filename))
+                            sock.send(command + pckt_id + self.ip + self.port + md5 + filename)
+                            klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
 
                             sock.close()
 

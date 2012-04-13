@@ -14,8 +14,8 @@ class PeersManager(object):
 
     @classmethod
     def is_known_peer(cls, ip, port):
-        for peer in PEERS:
-            if peer.ip == format_ip_address(ip) and peer.port == format_port_number(port):
+        for peer in PeersManager.find_known_peers():
+            if PeersManager.are_same_peer(peer, Peer(ip, port)):
                 return True
         return False
 
@@ -26,6 +26,5 @@ class PeersManager(object):
     # @returns add a new known
     @classmethod
     def add_new_peer(cls, peer_ip, peer_port):
-        peer = Peer(peer_ip, peer_port)
         if not PeersManager.is_known_peer(peer_ip, peer_port):
-            PEERS.append(peer)
+            PEERS.append(Peer(peer_ip, peer_port))

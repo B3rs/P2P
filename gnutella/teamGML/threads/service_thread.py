@@ -133,6 +133,8 @@ class ServiceThread(Thread):
             # Received package asking for a file
             if command == "RETR":
                 print "RETR received"
+                CHUNK_DIM = 128
+
                 md5 = self._socket.recv(16)
 
                 response_packet = "ARET"
@@ -141,7 +143,7 @@ class ServiceThread(Thread):
                 path = FilesManager.find_file_by_md5(md5)
                 if path:
                     # Chunks
-                    size = self.file_size(path)
+                    size = file_size(path)
                     chunks_num = int(size // CHUNK_DIM)
                     leftover = size % CHUNK_DIM
                     if leftover != 0.0:

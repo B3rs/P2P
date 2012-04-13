@@ -4,6 +4,7 @@ from threading import Thread
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
+from models.peer import Peer
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.sockets import *

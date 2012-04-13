@@ -119,6 +119,25 @@ class ServiceThread(Thread):
                     PeersManager.add_new_peer(peer_ip, peer_port)
                     self.ui_handler.peers_changed()
 
+            # Received package asking for a file
+            if command == "RETR":
+                print "RETR received"
+                md5 = self._socket.recv(16)
+                # TODO
+
+            # Received a package with the file wanted
+            if command == "ARET":
+                print "ARET received"
+
+                chunk_number = int(self._socket.recv(6))
+
+                # Start download...
+                try:
+                    print "Download started"
+                except Exception:
+                    print "An exception has occurred"
+
+
             elif command == "":
                 condition = False
 

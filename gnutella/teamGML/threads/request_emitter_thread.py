@@ -39,5 +39,6 @@ class RequestEmitterThread(Thread):
             sock.close()
 
     def download_file(self, peer_ip, peer_port, md5):
-        print "Download....."
-        print "TODO"
+        downloadSocket = connect_socket(peer_ip, peer_port)
+        downloadSocket.send("RETR" + md5)
+        downloadSocket.close()

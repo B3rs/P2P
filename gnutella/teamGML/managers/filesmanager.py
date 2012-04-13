@@ -13,7 +13,7 @@ class FilesManager(object):
 
     # @returns array with matches path
     @classmethod
-    def find_files_by_query(cls, query, shared_path = '.'):
+    def find_files_by_query(cls, query, shared_path = SHARED_PATH):
 
         query = query.lower().strip(' ')
 

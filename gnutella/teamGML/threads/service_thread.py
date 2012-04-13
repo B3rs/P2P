@@ -49,10 +49,12 @@ class ServiceThread(Thread):
                         ttl = format_ttl(ttl -1)
 
                         for peer in PeersManager.find_known_peers():
-                            sock = connect_socket(peer.ip, peer.port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
-                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
-                            sock.close()
+                            #query floading to the known peers except for the sender
+                            if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
+                                sock = connect_socket(peer.ip, peer.port)
+                                sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
+                                klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
+                                sock.close()
 
 
                         # look for the requested file
@@ -97,10 +99,13 @@ class ServiceThread(Thread):
                         ttl = format_ttl(ttl -1)
 
                         for peer in PeersManager.find_known_peers():
-                            sock = connect_socket(peer.ip, peer.port)
-                            sock.send(command + pckt_id + sender_ip + sender_port + ttl)
-                            klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
-                            sock.close()
+
+                            #query floading to the known peers except for the sender
+                            if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
+                                sock = connect_socket(peer.ip, peer.port)
+                                sock.send(command + pckt_id + sender_ip + sender_port + ttl)
+                                klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
+                                sock.close()
 
                     # show yourself to the peer
                     sock = connect_socket(sender_ip, sender_port)

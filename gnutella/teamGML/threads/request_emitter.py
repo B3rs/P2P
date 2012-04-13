@@ -8,13 +8,14 @@ from managers.packetsmanager import PacketsManager
 from custom_utils.formatting import *
 from custom_utils.hashing import generate_packet_id
 from custom_utils.sockets import connect_socket
+from threads.service_thread import ServiceThread
 
 #TODO: where is the run method????????
-class RequestEmitterThread(Thread):
+class RequestEmitter(Thread):
 
     def __init__(self, local_port):
-        super(RequestEmitterThread, self).__init__()
         self.local_port = local_port
+        self.ui_handler = None
 
     def search_for_peers(self):
         print "Started query flooding for peers" # TODO write better
@@ -41,4 +42,8 @@ class RequestEmitterThread(Thread):
     def download_file(self, peer_ip, peer_port, md5):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETR" + md5)
-        downloadSocket.close()
+        # Star a thread that will take care of the download and of the socket management
+        my_remote_ip = my_remote_ip = sockets.get_local_ip(socket_client.getsockname()[0])
+        s = ServiceThread(downloadSocket, my_remote_ip, self.local_port, self.ui_handler)
+        s.start()
+        #downloadSocket.close()

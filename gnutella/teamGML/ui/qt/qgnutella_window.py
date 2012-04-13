@@ -9,6 +9,7 @@ class QGnutellaWindow(QMainWindow):
     def __init__(self, request_emitter):
 
         self.request_emitter = request_emitter
+        self.request_emitter.ui = self
 
         QMainWindow.__init__(self)
 

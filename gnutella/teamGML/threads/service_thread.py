@@ -13,6 +13,8 @@ import socket
 
 class ServiceThread(Thread):
 
+    CHUNK_DIM = 128
+
     def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
 
@@ -125,10 +127,42 @@ class ServiceThread(Thread):
                     PeersManager.add_new_peer(peer_ip, peer_port)
                     self.ui_handler.peers_changed()
 
+            # Received package asking for a file
+            if command == "RETR":
+                print "RETR received"
+                md5 = self._socket.recv(16)
+
+                response_packet = "ARET"
+
+                # Get the file matching the md5
+                path = FilesManager.find_file_by_md5(md5)
+                if path:
+                    # Chunks
+                    size = self.file_size(path)
+                    chunks_num = int(size // CHUNK_DIM)
+                    leftover = size % CHUNK_DIM
+                    if leftover != 0.0:
+                        chunks_num += 1
+
+                    response_packet += format_chunks_number(chunks_num)
+
+                #open the file
+                file2send= open(path, 'rb')
+                chunk = file2send.read(CHUNK_DIM)
+                while chunk != '':
+                    response_packet += format_chunk_length(len(chunk))
+                    response_packet += chunk
+                    chunk = file2send.read(CHUNK_DIM)
+                file2send.close()
+
+                self._socket.send(response_packet)
+
             elif command == "":
                 condition = False
 
+            # Close the socket
             self._socket.close()
+
         except Exception, ex:
             condition = False
             print ex

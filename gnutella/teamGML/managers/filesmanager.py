@@ -1,5 +1,6 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import os
+from custom_utils import hashing
 
 # TODO: WARNING!
 # SHARED_PATH = "../shared"
@@ -26,6 +27,17 @@ class FilesManager(object):
                     matches.append(os.path.join(dirname, filename))
 
         return matches
+
+    # TODO efficiency!!!
+    @classmethod
+    def find_file_by_md5(cls, md5):
+        for dirname, dirnames, filenames in os.walk(SHARED_PATH):
+            for filename in filenames:
+                path = dirname + "/" + filename
+                fileMd5 = hashing.calculate_md5_for_file_path(path)
+                if fileMd5 == md5:
+                    return path
+        return False
 
     @classmethod
     def shared_files(cls):

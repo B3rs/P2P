@@ -42,7 +42,9 @@ class RequestEmitter(Thread):
 
     def download_file(self, peer_ip, peer_port, md5, filename = "temp"):
         downloadSocket = connect_socket(peer_ip, peer_port)
-        downloadSocket.send("RETR" + md5)
+        downloadSocket.send("RETR")
+        downloadSocket.send(md5)
         # Star a thread that will take care of the download and of the socket management
         dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
         dlThread.start()
+#169.254.134.99

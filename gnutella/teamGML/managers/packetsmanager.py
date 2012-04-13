@@ -2,6 +2,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from models.packet import Packet
 import time
+from custom_utils.logging import *
 
 #TODO: remove this into a singleton instance of PeersManager
 PACKETS = []
@@ -19,8 +20,8 @@ class PacketsManager(object):
     def is_packet_known(cls, packet):
         for p in PACKETS:
             if p.id == packet.id:
-                return true
-        return false
+                return True
+        return False
 
     # @returns true if the packet is already in the list
     @classmethod

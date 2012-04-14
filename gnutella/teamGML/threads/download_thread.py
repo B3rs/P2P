@@ -2,6 +2,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
 from custom_utils.logging import klog
+from custom_utils.hashing import *
 
 class DownloadThread(Thread):
 
@@ -15,21 +16,26 @@ class DownloadThread(Thread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
 
+        print "md5: " + encode_md5(file_md5)
+
     def run(self):
 
         command = str(self._socket.recv(4))
 
         if command == "ARET":
 
-            print "Download started"
+            print "Received ARET"
 
             chunk_number = int(self._socket.recv(6))
             try:
                 print "Download started"
+                print "chunk number: "+chunk_number
                 newFile = open(self._filename, "ab") # a = append, b = binary mode
                 for i in range(0, chunk_number):
                     chunk_length = int(self._socket.recv(5))
+                    print "chunk len: "+chunk_length
                     chunk_data = self._socket.recv(chunk_length)
+                    print "chunk data: "+chunk_data
                     newFile.write(chunk_data)
 
                     percent = i* 100/chunk_number

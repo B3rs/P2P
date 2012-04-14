@@ -68,6 +68,7 @@ class ServiceThread(Thread):
                             sent = 0
                             sent += sock.send(command + pckt_id + self.ip + self.port)
                             sent += sock.send(md5)
+                            print "ho generato un md5: "+encode_md5(md5)
                             sent += sock.send(format_filename(filename))
                             print "mandati: %d" %(sent)
                             klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
@@ -142,6 +143,7 @@ class ServiceThread(Thread):
                 # Get the file matching the md5
                 path = FilesManager.find_file_by_md5(md5)
                 if path:
+                    print "i have found the file"
                     # Chunks
                     size = file_size(path)
                     chunks_num = int(size // CHUNK_DIM)

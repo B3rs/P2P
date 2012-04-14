@@ -47,4 +47,4 @@ class RequestEmitter(Thread):
         # Star a thread that will take care of the download and of the socket management
         dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
         dlThread.start()
-#169.254.134.99
+#169.254.179.208

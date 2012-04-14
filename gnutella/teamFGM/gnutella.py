@@ -21,7 +21,13 @@ class GnutellaPeer(object):
         """
 
         # PEER
-        self.my_IP = socket.gethostbyname(socket.gethostname()) #brutto ma mi serve per ottenere il mio IP
+
+        #OS X
+        self.my_IP = socket.gethostbyname(socket.gethostname())
+
+        #Linux
+        #self.my_IP = "address"
+
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
         IP_2 = '%(#)03d' % {"#" : int(my_IP_split[1])}
@@ -39,17 +45,19 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "192.168.0.187"
-        self.n1_port = 6503
+        self.n1_IP = "169.254.167.175"
+        self.n1_port = 9999
         #self.n2_IP = "192.168.0.187"
         #self.n2_port = 6503
 
         #tabella vicini
         neighService = gnutella_service.Service()
-        print "Adding root #1"
         neighService.addNeighbour(self.n1_IP,self.n1_port)
-        #print "Adding root #2"
+        print "Added root " + self.n1_IP + ":" + str(self.n1_port)
         #neighService.addNeighbour(self.n2_IP,self.n2_port)
+        #print "Added root " + self.n2_IP + ":" + str(self.n2_port)
+
+        print ""
 
     # end of __init__ method
 
@@ -123,8 +131,10 @@ class GnutellaPeer(object):
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
-            print "invio NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form
+            print "sent NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
             self.closeConn(neigh_sock)
+
+        print ""
 
     # end of findNeigh method
 
@@ -155,8 +165,10 @@ class GnutellaPeer(object):
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + query_TTL_form + search_form)
-            print "invio QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form
+            print "sent QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
             self.closeConn(neigh_sock)
+
+        print ""
 
     # end of findFile method
 
@@ -165,7 +177,7 @@ class GnutellaPeer(object):
 
         print "Download..."
 
-        id = raw_input("Choose an identification: ")
+        id = raw_input("Choose an identification code: ")
 
         downService = gnutella_service.Service()
         downTable = downService.getDownTable()
@@ -195,9 +207,8 @@ class GnutellaPeer(object):
 
             iodown_socket = self.openConn(downTable[row][1], int(downTable[row][2])) #passo ip e porta
         except IOError: #IOError exception includes socket.error
-            print "Connection with " + iodown_host + "not available"
+            print "Connection with " + downTable[row][1] + ":" + downTable[row][2] + " not available"
         else:
-            print "Connection with peer enstablished.\n"
 
             # SPEDISCO IL PRIMO MESSAGGIO
             iodown_socket.sendall("RETR" + filemd5)
@@ -205,8 +216,11 @@ class GnutellaPeer(object):
             try:
                 # Acknowledge "ARET" dal peer
                 ack = self.sockread(iodown_socket, 10)
+
+                print "received " + ack + " from " + downTable[row][1] + ":" + downTable[row][2]
+
             except IOError:
-                print "Connection error. The peer " + iodown_host + " is death\n"
+                print "Connection error. The peer " + downTable[row][1] + ":" + downTable[row][2] + " is death\n"
             else:
 
                 if ack[:4]=="ARET":
@@ -234,23 +248,17 @@ class GnutellaPeer(object):
                         try:
 
                             lungh_form = self.sockread(iodown_socket, 5) #ricevo lunghezza chunck formattata
-                            #print lungh_form
 
                             lungh = int(lungh_form) #converto in intero
-                            #print lungh
 
                             #devo leggere altri byte ora
                             #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
 
-                            #data = iodown_socket.recv(lungh)
                             data = self.sockread(iodown_socket, lungh)
-                            #print "ho ricevuto i byte" #TODO debug mode
 
                             #lo devo mettere sul mio file che ho nel mio pc
 
                             fout.write(data) #scrivo sul file in append
-
-                            #print ""
 
                         except IOError, expt:
 
@@ -274,6 +282,8 @@ class GnutellaPeer(object):
                     fout.close() #chiudo il file perche' ho finito di scaricarlo
 
                     self.closeConn(iodown_socket) #chiudo la socket verso il peer da cui ho scaricato
+
+                    print "Download effettuato con successo\n"
 
 
     def goOut(self):

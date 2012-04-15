@@ -44,8 +44,8 @@ class DownloadThread(Thread):
                 newFile.close()
                 print "Download completed"
 
-            except Exception:
-                print "An exception has occurred"
+            except Exception, ex:
+                print "An exception has occurred: "+ex
 
 
         self._socket.close()

@@ -6,7 +6,7 @@ from models.peer import Peer
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
 from custom_utils.formatting import *
-from custom_utils.hashing import generate_packet_id
+from custom_utils.hashing import *
 from custom_utils.sockets import connect_socket
 from threads.download_thread import DownloadThread
 
@@ -47,4 +47,3 @@ class RequestEmitter(Thread):
         # Star a thread that will take care of the download and of the socket management
         dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
         dlThread.start()
-#169.254.179.208

@@ -85,12 +85,12 @@ class QGnutellaWindow(QMainWindow):
 
     def _draw_transfer_item(self, container, filename, md5, peer_ip, percent):
         #QTreeWidget::setItemWidget ( QTreeWidgetItem * item, int column, QWidget * widget )
-        items_found = container.findItems(filename, Qt.MatchExactly, 0)
+        items_found = container.findItems(md5, Qt.MatchExactly, 3)
         if len(items_found) > 0:
             item = items_found[0]
             container.itemWidget(item, 1).setValue(percent)
         else:
-            item = QTreeWidgetItem(container, QStringList([str(filename), "0", str(peer_ip), str("md5")]))
+            item = QTreeWidgetItem(container, QStringList([str(filename), "0", str(peer_ip), str(md5)]))
             progress_bar = QProgressBar()
             progress_bar.setMinimum(0)
             progress_bar.setMaximum(100)

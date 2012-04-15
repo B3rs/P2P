@@ -149,6 +149,7 @@ class ServiceThread(Thread):
                     print "i have found the file"
                     # Chunks
                     size = file_size(os.path.join(file.filepath, file.filename))
+                    bytes_sent = 0
                     chunks_num = int(size // CHUNK_DIM)
                     leftover = size % CHUNK_DIM
                     if leftover != 0.0:
@@ -162,9 +163,17 @@ class ServiceThread(Thread):
 
                     while chunk != '':
                         self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
-                        self._socket.send(chunk)    #sending the chunk
+                        bytes_sent += self._socket.send(chunk)    #sending the chunk
+
+                        percent = bytes_sent*100/size
+                        self.ui_handler.upload_file_changed(file.filename, file.md5, "other", percent)
+
                         chunk = file2send.read(CHUNK_DIM)
                     file2send.close()
+
+                    print "upload complete"
+                    self.ui_handler.upload_file_changed(file.filename, file.md5, "other", 100)
+
                 else:
                     print "file by md5 not found"
 

@@ -2,14 +2,16 @@ import sys
 from PyQt4.QtGui import QApplication, QMainWindow
 from ui.qt.qgnutella_window import QGnutellaWindow
 from threads.response_handler_thread import ResponseHandlerThread
-from threads.request_emitter_thread import RequestEmitterThread
+from threads.request_emitter import RequestEmitter
+from managers.filesmanager import FilesManager
 
-PORT = 9999
+PORT = 1234
 
 if __name__ == "__main__":
 
+    FilesManager.load_files()
     #Setup the emitter thread
-    request_emitter = RequestEmitterThread(PORT)
+    request_emitter = RequestEmitter(PORT)
     #TODO: RequestEmitterThread doesn't have a run method! WTF?!
 
     #Setup the UI

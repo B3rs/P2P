@@ -42,10 +42,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>by Ferrari Luca, Lodi Giovanni, Bersani Marco</string>
+     <string>by Ferrari Luca, Bersani Marco, Lodi Giovanni</string>
     </property>
    </widget>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="mainTabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -55,47 +55,12 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
       <string>Neighbours</string>
      </attribute>
-     <widget class="QTreeWidget" name="peersTreeWidget">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>60</y>
-        <width>584</width>
-        <height>221</height>
-       </rect>
-      </property>
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="itemsExpandable">
-       <bool>false</bool>
-      </property>
-      <attribute name="headerVisible">
-       <bool>true</bool>
-      </attribute>
-      <attribute name="headerStretchLastSection">
-       <bool>true</bool>
-      </attribute>
-      <column>
-       <property name="text">
-        <string>Peer IP</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>Peer Port</string>
-       </property>
-      </column>
-     </widget>
      <widget class="QPushButton" name="searchNeighboursBtn">
       <property name="geometry">
        <rect>
@@ -174,6 +139,41 @@
        <string>Add</string>
       </property>
      </widget>
+     <widget class="QTreeWidget" name="peersTreeWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>584</width>
+        <height>221</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="itemsExpandable">
+       <bool>false</bool>
+      </property>
+      <attribute name="headerVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="headerStretchLastSection">
+       <bool>true</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Peer IP</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Peer Port</string>
+       </property>
+      </column>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -192,8 +192,104 @@
     </widget>
     <widget class="QWidget" name="tab_3">
      <attribute name="title">
-      <string>Downloads</string>
+      <string>Transfers</string>
      </attribute>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Downloads:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>180</y>
+        <width>81</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Uploads:</string>
+      </property>
+     </widget>
+     <widget class="QTreeWidget" name="uploadsTreeWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>200</y>
+        <width>581</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Filename</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Percentage</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Peer</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Md5</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QTreeWidget" name="downloadsTreeWidget">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>581</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>Filename</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Percentage</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Peer</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Md5</string>
+       </property>
+      </column>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_4">
      <attribute name="title">

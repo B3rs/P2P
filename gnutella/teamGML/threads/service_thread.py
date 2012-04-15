@@ -155,19 +155,18 @@ class ServiceThread(Thread):
                         chunks_num += 1
 
                     self._socket.send(format_chunks_number(chunks_num)) #sending the chunks number
-                else:
-                    pass #i have to close the thread because the file does not exists
 
-                #open the file
-                file2send= open(os.path.join(file.filepath, file.filename), 'rb')
-                chunk = file2send.read(CHUNK_DIM)
-
-                while chunk != '':
-                    self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
-                    self._socket.send(chunk)    #sending the chunk
+                    #open the file
+                    file2send= open(os.path.join(file.filepath, file.filename), 'rb')
                     chunk = file2send.read(CHUNK_DIM)
-                file2send.close()
 
+                    while chunk != '':
+                        self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
+                        self._socket.send(chunk)    #sending the chunk
+                        chunk = file2send.read(CHUNK_DIM)
+                    file2send.close()
+                else:
+                    print "file by md5 not found"
 
             if command == "":
                 condition = False

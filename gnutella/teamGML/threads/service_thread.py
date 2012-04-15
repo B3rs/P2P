@@ -70,7 +70,7 @@ class ServiceThread(Thread):
                             sent = 0
                             sent += sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
                             sent += sock.send(md5)
-                            print "ho generato un md5: "+encode_md5(md5)
+                            print "ho generato un md5: "+md5
                             sent += sock.send(format_filename(filename))
                             print "mandati: %d" %(sent)
                             klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
@@ -138,7 +138,7 @@ class ServiceThread(Thread):
                 print "RETR received"
                 CHUNK_DIM = 128
 
-                md5 = self._socket.recv(16)
+                md5 = encode_md5(self._socket.recv(16))
 
                 self._socket.send("ARET")   #sending the ack command
 

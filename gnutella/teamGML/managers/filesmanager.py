@@ -18,7 +18,7 @@ class FilesManager(object):
         for dirname, dirnames, filenames in os.walk(SHARED_PATH):
             for filename in filenames:
                 path = dirname + "/" + filename
-                md5 = hashing.calculate_md5_for_file_path(path)
+                md5 = hashing.encode_md5(hashing.calculate_md5_for_file_path(path))
                 file = File(dirname, filename, md5)
                 FILES.append(file)
 

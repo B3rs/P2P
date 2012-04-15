@@ -1,4 +1,4 @@
-def file_size(self, path):
+def file_size(path):
     f = open(path, 'r')
     f.seek(0, 2)
     sz = f.tell()

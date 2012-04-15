@@ -23,13 +23,13 @@ class DownloadThread(Thread):
 
     def run(self):
 
-        command = str(self._socket.recv(4))
+        command = str(read_from_socket(self._socket, 4))
 
         if command == "ARET":
 
             print "Received ARET"
 
-            chunk_number = int(self._socket.recv(6))
+            chunk_number = int(read_from_socket(self._socket, 6))
             try:
                 print "Download started"
                 print "chunk number: " + str(chunk_number)

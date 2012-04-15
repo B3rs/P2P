@@ -49,6 +49,8 @@ class DownloadThread(Thread):
                     self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
 
                 newFile.close()
+                self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, 100)
+
                 print "Download completed"
 
             except Exception, ex:

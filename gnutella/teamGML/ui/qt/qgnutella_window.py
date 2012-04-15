@@ -71,8 +71,8 @@ class QGnutellaWindow(QMainWindow):
 
     def _redraw_shared_files(self):
         self.ui.sharedFilesListWidget.clear()
-        for file_name in FilesManager.shared_files():
-            file_item = QListWidgetItem(file_name, self.ui.sharedFilesListWidget)
+        for file in FilesManager.shared_files():
+            file_item = QListWidgetItem(file.filename, self.ui.sharedFilesListWidget)
 
     def _draw_new_result_file(self, filename, peer_ip, peer_port, file_md5):
         item = QTreeWidgetItem(self.ui.resultsTreeWidget, QStringList([str(filename), str(peer_ip), str(peer_port), str(file_md5)]))

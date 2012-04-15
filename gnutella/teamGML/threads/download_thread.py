@@ -29,13 +29,13 @@ class DownloadThread(Thread):
             chunk_number = int(self._socket.recv(6))
             try:
                 print "Download started"
-                print "chunk number: "+chunk_number
+                print "chunk number: " + str(chunk_number)
                 newFile = open(self._filename, "ab") # a = append, b = binary mode
                 for i in range(0, chunk_number):
                     chunk_length = int(self._socket.recv(5))
-                    print "chunk len: "+chunk_length
+                    print "chunk len: " + str(chunk_length)
                     chunk_data = self._socket.recv(chunk_length)
-                    print "chunk data: "+chunk_data
+                    print "chunk data: "+ str(chunk_data)
                     newFile.write(chunk_data)
 
                     percent = i* 100/chunk_number
@@ -45,7 +45,7 @@ class DownloadThread(Thread):
                 print "Download completed"
 
             except Exception, ex:
-                print "An exception has occurred: "+ex
+                print "An exception has occurred: "+str(ex)
 
 
         self._socket.close()

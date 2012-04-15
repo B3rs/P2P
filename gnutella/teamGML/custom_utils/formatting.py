@@ -21,5 +21,8 @@ def format_ttl(ttl):
 def format_chunks_number(num):
     return '%(#)06d' % {"#" : int(num)}
 
+def format_chunk_length(length):
+    return '%(#)05d' % {"#" : int(length)}
+
 def format_filename(filename):
     return '%(#)0100s' % {"#" : str(filename)}

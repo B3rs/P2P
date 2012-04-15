@@ -143,6 +143,7 @@ class ServiceThread(Thread):
                 self._socket.send("ARET")   #sending the ack command
 
                 # Get the file matching the md5
+
                 file = FilesManager.find_file_by_md5(md5)
                 if file:
                     print "i have found the file"

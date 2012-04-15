@@ -141,10 +141,11 @@ class ServiceThread(Thread):
                 self._socket.send("ARET")   #sending the ack command
 
                 # Get the file matching the md5
-                path = FilesManager.find_file_by_md5(md5)
+                #path = FilesManager.find_file_by_md5(md5)
+                path = FilesManager.find_files_by_query("u")[0]
                 if path:
-                    print "i have found the file"
                     # Chunks
+                    print "i have found the file"
                     size = file_size(path)
                     chunks_num = int(size // CHUNK_DIM)
                     leftover = size % CHUNK_DIM

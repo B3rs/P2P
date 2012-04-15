@@ -5,12 +5,14 @@ from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
 from models.peer import Peer
+from models.file import File
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.sockets import *
 from custom_utils.files import file_size
 from custom_utils.logging import klog
 import socket
+import os
 
 class ServiceThread(Thread):
 
@@ -61,8 +63,8 @@ class ServiceThread(Thread):
 
                         # look for the requested file
                         for f in FilesManager.find_files_by_query(query):
-                            md5 = calculate_md5_for_file_path(f)
-                            filename = f.split('/')[-1]
+                            md5 = f.md5
+                            filename = f.filename
                             command = "AQUE"
                             sock = connect_socket(sender_ip, sender_port)
                             sent = 0
@@ -141,11 +143,11 @@ class ServiceThread(Thread):
                 self._socket.send("ARET")   #sending the ack command
 
                 # Get the file matching the md5
-                path = FilesManager.find_file_by_md5(md5)
-                if path:
+                file = FilesManager.find_file_by_md5(md5)
+                if file:
                     print "i have found the file"
                     # Chunks
-                    size = file_size(path)
+                    size = file_size(os.path.join(file.filepath, file.filename))
                     chunks_num = int(size // CHUNK_DIM)
                     leftover = size % CHUNK_DIM
                     if leftover != 0.0:
@@ -156,7 +158,7 @@ class ServiceThread(Thread):
                     pass #i have to close the thread because the file does not exists
 
                 #open the file
-                file2send= open(path, 'rb')
+                file2send= open(os.path.join(file.filepath, file.filename), 'rb')
                 chunk = file2send.read(CHUNK_DIM)
 
                 while chunk != '':

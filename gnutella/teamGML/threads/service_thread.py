@@ -53,10 +53,10 @@ class ServiceThread(Thread):
                         ttl = format_ttl(ttl -1)
 
                         for peer in PeersManager.find_known_peers():
-                            #query floading to the known peers except for the sender
+                            #query flooding to the known peers except for the sender
                             if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
                                 sock = connect_socket(peer.ip, peer.port)
-                                sock.send(command + pckt_id + sender_ip + sender_port + ttl + query)
+                                sock.send(command + pckt_id + sender_ip + sender_port + str(ttl) + query)
                                 klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
                                 sock.close()
 
@@ -68,7 +68,7 @@ class ServiceThread(Thread):
                             command = "AQUE"
                             sock = connect_socket(sender_ip, sender_port)
                             sent = 0
-                            sent += sock.send(command + pckt_id + self.ip + self.port)
+                            sent += sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
                             sent += sock.send(md5)
                             print "ho generato un md5: "+encode_md5(md5)
                             sent += sock.send(format_filename(filename))

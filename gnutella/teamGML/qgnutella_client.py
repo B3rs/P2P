@@ -5,7 +5,7 @@ from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
 
-PORT = 9999
+PORT = 1234
 
 if __name__ == "__main__":
 

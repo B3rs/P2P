@@ -44,8 +44,8 @@ class DownloadThread(Thread):
                     chunk_data = self._socket.recv(chunk_length)
                     newFile.write(chunk_data)
 
-                    #percent = i* 100/chunk_number
-                    #self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
+                    percent = i* 100/chunk_number
+                    self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
 
                 newFile.close()
                 print "Download completed"

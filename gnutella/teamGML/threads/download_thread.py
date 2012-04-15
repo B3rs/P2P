@@ -4,6 +4,8 @@ from threading import Thread
 from custom_utils.logging import klog
 from custom_utils.hashing import *
 
+DOWNLOAD_FOLDER = "../downloads"
+
 class DownloadThread(Thread):
 
     CHUNK_DIM = 128
@@ -30,16 +32,20 @@ class DownloadThread(Thread):
             try:
                 print "Download started"
                 print "chunk number: " + str(chunk_number)
-                newFile = open(self._filename, "ab") # a = append, b = binary mode
+                newFile = open(DOWNLOAD_FOLDER+"/"+self._filename, "wb") # a = append, b = binary mode
+
                 for i in range(0, chunk_number):
-                    chunk_length = int(self._socket.recv(5))
-                    print "chunk len: " + str(chunk_length)
+                    print "i: "+str(i)
+
+                    chunk_length = self._socket.recv(5)
+                    print chunk_length
+                    chunk_length = int(chunk_length)
+
                     chunk_data = self._socket.recv(chunk_length)
-                    print "chunk data: "+ str(chunk_data)
                     newFile.write(chunk_data)
 
-                    percent = i* 100/chunk_number
-                    self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
+                    #percent = i* 100/chunk_number
+                    #self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
 
                 newFile.close()
                 print "Download completed"

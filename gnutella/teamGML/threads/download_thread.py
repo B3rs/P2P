@@ -36,10 +36,7 @@ class DownloadThread(Thread):
                 newFile = open(DOWNLOAD_FOLDER+"/"+self._filename, "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
-                    print "i: "+str(i)
-
                     chunk_length = read_from_socket(self._socket, 5)
-                    print chunk_length
                     chunk_length = int(chunk_length)
 
                     chunk_data = read_from_socket(self._socket, chunk_length)
@@ -50,7 +47,6 @@ class DownloadThread(Thread):
 
                 newFile.close()
                 self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, 100)
-
                 print "Download completed"
 
             except Exception, ex:

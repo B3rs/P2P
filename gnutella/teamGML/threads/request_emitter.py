@@ -40,7 +40,7 @@ class RequestEmitter(Thread):
             sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
             sock.close()
 
-    def download_file(self, peer_ip, peer_port, md5, filename = "temp"):
+    def download_file(self, peer_ip, peer_port, md5, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETR")
         downloadSocket.send(md5)

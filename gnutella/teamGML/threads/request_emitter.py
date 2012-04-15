@@ -43,7 +43,7 @@ class RequestEmitter(Thread):
     def download_file(self, peer_ip, peer_port, md5, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETR")
-        downloadSocket.send(md5)
+        downloadSocket.send(decode_md5(md5))
         # Star a thread that will take care of the download and of the socket management
         dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
         dlThread.start()

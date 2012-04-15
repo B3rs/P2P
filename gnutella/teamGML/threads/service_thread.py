@@ -88,7 +88,7 @@ class ServiceThread(Thread):
 
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add the result to the result list and show it on screen
-                    self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, file_md5)
+                    self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
 
 
             # Received package looking for neighbour peers

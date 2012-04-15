@@ -19,7 +19,7 @@ class DownloadThread(Thread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
 
-        print "md5: " + encode_md5(file_md5)
+        print "downloading "+ str(self._file_md5)
 
     def run(self):
 

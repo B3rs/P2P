@@ -4,7 +4,7 @@ from ui.qt.qgnutella_window import QGnutellaWindow
 from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter import RequestEmitter
 
-PORT = 9999
+PORT = 1234
 
 if __name__ == "__main__":
 

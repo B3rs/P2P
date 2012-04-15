@@ -69,7 +69,7 @@ class ServiceThread(Thread):
                             sock = connect_socket(sender_ip, sender_port)
                             sent = 0
                             sent += sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
-                            sent += sock.send(md5)
+                            sent += sock.send(decode_md5(md5))
                             print "ho generato un md5: "+md5
                             sent += sock.send(format_filename(filename))
                             print "mandati: %d" %(sent)

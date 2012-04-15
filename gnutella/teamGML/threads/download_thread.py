@@ -3,6 +3,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 from threading import Thread
 from custom_utils.logging import klog
 from custom_utils.hashing import *
+from custom_utils.sockets import read_from_socket
 
 DOWNLOAD_FOLDER = "../downloads"
 
@@ -37,11 +38,11 @@ class DownloadThread(Thread):
                 for i in range(0, chunk_number):
                     print "i: "+str(i)
 
-                    chunk_length = self._socket.recv(5)
+                    chunk_length = read_from_socket(self._socket, 5)
                     print chunk_length
                     chunk_length = int(chunk_length)
 
-                    chunk_data = self._socket.recv(chunk_length)
+                    chunk_data = read_from_socket(self._socket, chunk_length)
                     newFile.write(chunk_data)
 
                     percent = i* 100/chunk_number

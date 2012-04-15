@@ -21,3 +21,16 @@ def get_local_ip(host):
     finally:
         del s
     return client
+
+
+def read_from_socket(socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
+
+    lettiTot = socket.recv(numToRead)
+    num = len(lettiTot)
+
+    while (num < numToRead):
+        letti = socket.recv(numToRead - num)
+        num = num + len(letti)
+        lettiTot = lettiTot + letti
+
+    return lettiTot #restituisco la stringa letta

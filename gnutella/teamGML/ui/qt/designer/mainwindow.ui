@@ -45,7 +45,7 @@
      <string>by Ferrari Luca, Bersani Marco, Lodi Giovanni</string>
     </property>
    </widget>
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QTabWidget" name="mainTabWidget">
     <property name="geometry">
      <rect>
       <x>10</x>

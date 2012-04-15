@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Fri Apr 13 12:40:18 2012
+# Created: Sun Apr 15 16:59:35 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -29,9 +29,9 @@ class Ui_MainWindow(object):
         self.label_2 = QtGui.QLabel(self.centralwidget)
         self.label_2.setGeometry(QtCore.QRect(170, 40, 291, 21))
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.tabWidget = QtGui.QTabWidget(self.centralwidget)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 90, 611, 361))
-        self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
+        self.mainTabWidget = QtGui.QTabWidget(self.centralwidget)
+        self.mainTabWidget.setGeometry(QtCore.QRect(10, 90, 611, 361))
+        self.mainTabWidget.setObjectName(_fromUtf8("mainTabWidget"))
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
         self.searchNeighboursBtn = QtGui.QPushButton(self.tab)
@@ -65,13 +65,13 @@ class Ui_MainWindow(object):
         self.peersTreeWidget.setObjectName(_fromUtf8("peersTreeWidget"))
         self.peersTreeWidget.header().setVisible(False)
         self.peersTreeWidget.header().setStretchLastSection(True)
-        self.tabWidget.addTab(self.tab, _fromUtf8(""))
+        self.mainTabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
         self.sharedFilesListWidget = QtGui.QListWidget(self.tab_2)
         self.sharedFilesListWidget.setGeometry(QtCore.QRect(10, 20, 581, 301))
         self.sharedFilesListWidget.setObjectName(_fromUtf8("sharedFilesListWidget"))
-        self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
+        self.mainTabWidget.addTab(self.tab_2, _fromUtf8(""))
         self.tab_3 = QtGui.QWidget()
         self.tab_3.setObjectName(_fromUtf8("tab_3"))
         self.label_7 = QtGui.QLabel(self.tab_3)
@@ -92,7 +92,7 @@ class Ui_MainWindow(object):
         self.downloadsTreeWidget = QtGui.QTreeWidget(self.tab_3)
         self.downloadsTreeWidget.setGeometry(QtCore.QRect(10, 30, 581, 141))
         self.downloadsTreeWidget.setObjectName(_fromUtf8("downloadsTreeWidget"))
-        self.tabWidget.addTab(self.tab_3, _fromUtf8(""))
+        self.mainTabWidget.addTab(self.tab_3, _fromUtf8(""))
         self.tab_4 = QtGui.QWidget()
         self.tab_4.setObjectName(_fromUtf8("tab_4"))
         self.label_3 = QtGui.QLabel(self.tab_4)
@@ -113,14 +113,14 @@ class Ui_MainWindow(object):
         font.setPointSize(11)
         self.label_4.setFont(font)
         self.label_4.setObjectName(_fromUtf8("label_4"))
-        self.tabWidget.addTab(self.tab_4, _fromUtf8(""))
+        self.mainTabWidget.addTab(self.tab_4, _fromUtf8(""))
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(2)
+        self.mainTabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -133,8 +133,8 @@ class Ui_MainWindow(object):
         self.addPeerBtn.setText(QtGui.QApplication.translate("MainWindow", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Peer Port", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Neighbours", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Shared files", None, QtGui.QApplication.UnicodeUTF8))
+        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.tab), QtGui.QApplication.translate("MainWindow", "Neighbours", None, QtGui.QApplication.UnicodeUTF8))
+        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Shared files", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Downloads:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Uploads:", None, QtGui.QApplication.UnicodeUTF8))
         self.uploadsTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
@@ -145,7 +145,7 @@ class Ui_MainWindow(object):
         self.downloadsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Percentage", None, QtGui.QApplication.UnicodeUTF8))
         self.downloadsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Peer", None, QtGui.QApplication.UnicodeUTF8))
         self.downloadsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Md5", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("MainWindow", "Transfers", None, QtGui.QApplication.UnicodeUTF8))
+        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.tab_3), QtGui.QApplication.translate("MainWindow", "Transfers", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "File name to search:", None, QtGui.QApplication.UnicodeUTF8))
         self.searchBtn.setText(QtGui.QApplication.translate("MainWindow", "Search!", None, QtGui.QApplication.UnicodeUTF8))
         self.resultsTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
@@ -153,5 +153,5 @@ class Ui_MainWindow(object):
         self.resultsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Peer port", None, QtGui.QApplication.UnicodeUTF8))
         self.resultsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Md5", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Double click on a file to download it", None, QtGui.QApplication.UnicodeUTF8))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
+        self.mainTabWidget.setTabText(self.mainTabWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
 

@@ -27,7 +27,6 @@ class ResponseHandlerThread(Thread):
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
         self.ip = self.server_socket.getsockname()[0]
-        print self.ip
 
         self.server_socket.bind(
             (self.ip, self.port)
@@ -39,7 +38,6 @@ class ResponseHandlerThread(Thread):
             (socket_client, address) = self.server_socket.accept()
             # This (should) return the correct local ip, it needs a host to evaluate it
             my_remote_ip = sockets.get_local_ip(socket_client.getsockname()[0])
-            print my_remote_ip
             s = ServiceThread(socket_client, my_remote_ip, self.port, self.ui_handler)
             s.start()
 

@@ -45,8 +45,8 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "169.254.167.175"
-        self.n1_port = 9999
+        self.n1_IP = "169.254.193.90"
+        self.n1_port = 6503
         #self.n2_IP = "192.168.0.187"
         #self.n2_port = 6503
 
@@ -131,7 +131,7 @@ class GnutellaPeer(object):
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("NEAR" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
-            print "sent NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
+            print "sent NEAR" + str(pktID) + self.my_IP_form + str(self.my_port_form) + neigh_TTL_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
             self.closeConn(neigh_sock)
 
         print ""
@@ -165,7 +165,7 @@ class GnutellaPeer(object):
         for n in range(0,len(neighTable)):
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
             neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + query_TTL_form + search_form)
-            print "sent QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
+            print "sent QUER" + str(pktID) + self.my_IP_form + str(self.my_port_form) + query_TTL_form + search_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
             self.closeConn(neigh_sock)
 
         print ""
@@ -207,7 +207,7 @@ class GnutellaPeer(object):
 
             iodown_socket = self.openConn(downTable[row][1], int(downTable[row][2])) #passo ip e porta
         except IOError: #IOError exception includes socket.error
-            print "Connection with " + downTable[row][1] + ":" + downTable[row][2] + " not available"
+            print "Connection with " + downTable[row][1] + ":" + str(downTable[row][2]) + " not available"
         else:
 
             # SPEDISCO IL PRIMO MESSAGGIO
@@ -217,10 +217,10 @@ class GnutellaPeer(object):
                 # Acknowledge "ARET" dal peer
                 ack = self.sockread(iodown_socket, 10)
 
-                print "received " + ack + " from " + downTable[row][1] + ":" + downTable[row][2]
+                print "received " + ack + " from " + downTable[row][1] + ":" + str(downTable[row][2])
 
             except IOError:
-                print "Connection error. The peer " + downTable[row][1] + ":" + downTable[row][2] + " is death\n"
+                print "Connection error. The peer " + downTable[row][1] + ":" + str(downTable[row][2]) + " is death\n"
             else:
 
                 if ack[:4]=="ARET":

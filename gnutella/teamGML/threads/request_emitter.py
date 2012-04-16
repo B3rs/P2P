@@ -7,36 +7,37 @@ from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
 from custom_utils.formatting import *
 from custom_utils.hashing import *
+from custom_utils.logging import *
 from custom_utils.sockets import connect_socket
 from threads.download_thread import DownloadThread
 
-#TODO: where is the run method????????
-class RequestEmitter(Thread):
+TTL_FOR_PEERS_SEARCH = 3
+TTL_FOR_FILES_SEARCH = 3
+
+class RequestEmitter(object):
 
     def __init__(self, local_port):
         self.local_port = local_port
         self.ui_handler = None
 
-    def search_for_peers(self):
-        print "Started query flooding for peers" # TODO write better
+    def search_for_peers(self, ttl = TTL_FOR_PEERS_SEARCH ):
+        klog("Started query flooding for peers, ttl %s" %ttl)
         for peer in PeersManager.find_known_peers():
             sock = connect_socket(peer.ip, peer.port)
             local_ip = sock.getsockname()[0]
             p_id = generate_packet_id(16)
             PacketsManager.add_new_generated_packet(p_id)
-            ttl = 3
             sock.send("NEAR" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl))
             sock.close()
 
-    def search_for_files(self, query):
-        print "Started query flooding for files: %s" %query
+    def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
+        klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         p_id = generate_packet_id(16)
 
         for peer in PeersManager.find_known_peers():
             sock = connect_socket(peer.ip, peer.port)
             local_ip = sock.getsockname()[0]
             PacketsManager.add_new_generated_packet(p_id)
-            ttl = 3
             sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
             sock.close()
 

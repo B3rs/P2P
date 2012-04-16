@@ -1,7 +1,11 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 DEBUG = True
+UI_LOGGER = None
 
-def klog(var):
+def klog(message):
     if DEBUG:
-        print var
+        print message
+
+        if UI_LOGGER:
+            UI_LOGGER.show_log_message(message)

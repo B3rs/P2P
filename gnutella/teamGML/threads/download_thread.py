@@ -9,8 +9,6 @@ DOWNLOAD_FOLDER = "../downloads"
 
 class DownloadThread(Thread):
 
-    CHUNK_DIM = 128
-
     def __init__(self, socket, filename, file_md5, peer_ip, ui_handler):
         super(DownloadThread, self).__init__()
         self._socket = socket
@@ -19,7 +17,7 @@ class DownloadThread(Thread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
 
-        print "downloading "+ str(self._file_md5)
+        klog("downloading %s %s" %(self._filename, str(self._file_md5)))
 
     def run(self):
 
@@ -27,12 +25,12 @@ class DownloadThread(Thread):
 
         if command == "ARET":
 
-            print "Received ARET"
+            klog("Received ARET")
 
             chunk_number = int(read_from_socket(self._socket, 6))
             try:
-                print "Download started"
-                print "chunk number: " + str(chunk_number)
+                klog("Download started")
+                klog("chunk number: " + str(chunk_number))
                 newFile = open(DOWNLOAD_FOLDER+"/"+self._filename, "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
@@ -47,10 +45,10 @@ class DownloadThread(Thread):
 
                 newFile.close()
                 self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, 100)
-                print "Download completed"
+                klog("Download completed")
 
             except Exception, ex:
-                print "An exception has occurred: "+str(ex)
+                klog("An exception has occurred: "+str(ex))
 
 
         self._socket.close()

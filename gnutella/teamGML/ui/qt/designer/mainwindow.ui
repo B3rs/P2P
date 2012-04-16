@@ -68,6 +68,23 @@
              </spacer>
             </item>
             <item>
+             <widget class="QLabel" name="label_9">
+              <property name="text">
+               <string>TTL:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="ttlPeersSearchSpinBox">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="value">
+               <number>3</number>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="searchNeighboursBtn">
               <property name="text">
                <string>Search neighbours</string>
@@ -84,15 +101,12 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
             <property name="itemsExpandable">
              <bool>false</bool>
             </property>
-            <attribute name="headerVisible">
-             <bool>true</bool>
-            </attribute>
-            <attribute name="headerStretchLastSection">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Peer IP</string>
@@ -165,7 +179,11 @@
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <item>
-           <widget class="QListWidget" name="sharedFilesListWidget"/>
+           <widget class="QListWidget" name="sharedFilesListWidget">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
@@ -188,6 +206,9 @@
           </item>
           <item>
            <widget class="QTreeWidget" name="downloadsTreeWidget">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
             <column>
              <property name="text">
               <string>Filename</string>
@@ -224,6 +245,9 @@
           </item>
           <item>
            <widget class="QTreeWidget" name="uploadsTreeWidget">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
             <column>
              <property name="text">
               <string>Filename</string>
@@ -266,6 +290,23 @@
              <widget class="QLineEdit" name="searchLineEdit"/>
             </item>
             <item>
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>TTL:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="ttlFilesSearchSpinBox">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="value">
+               <number>3</number>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QPushButton" name="searchBtn">
               <property name="text">
                <string>Search!</string>
@@ -276,6 +317,9 @@
           </item>
           <item>
            <widget class="QTreeWidget" name="resultsTreeWidget">
+            <property name="alternatingRowColors">
+             <bool>true</bool>
+            </property>
             <column>
              <property name="text">
               <string>Filename</string>
@@ -326,6 +370,16 @@
              </spacer>
             </item>
            </layout>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="tab_5">
+         <attribute name="title">
+          <string>Logging</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <widget class="QTextBrowser" name="loggingTextBrowser"/>
           </item>
          </layout>
         </widget>

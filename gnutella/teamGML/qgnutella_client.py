@@ -4,6 +4,7 @@ from ui.qt.qgnutella_window import QGnutellaWindow
 from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
+from custom_utils import logging
 
 PORT = 1234
 
@@ -17,6 +18,9 @@ if __name__ == "__main__":
     #Setup the UI
     app = QApplication(sys.argv)
     ui = QGnutellaWindow(request_emitter)
+
+    #Set the UI to the logger function to show the log messages also in the UI
+    logging.UI_LOGGER = ui
 
     # Launch background thread for network handling
     bg = ResponseHandlerThread(PORT, ui)

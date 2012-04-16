@@ -11,7 +11,6 @@ from custom_utils.hashing import *
 from custom_utils.sockets import *
 from custom_utils.files import file_size
 from custom_utils.logging import klog
-import socket
 import os
 
 class ServiceThread(Thread):
@@ -70,16 +69,14 @@ class ServiceThread(Thread):
                             sent = 0
                             sent += sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
                             sent += sock.send(decode_md5(md5))
-                            print "ho generato un md5: "+md5
                             sent += sock.send(format_filename(filename))
-                            print "mandati: %d" %(sent)
                             klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, md5, filename))
 
                             sock.close()
 
             # Received package in reply to a file research
             if command == "AQUE":
-                print "AQUE received"
+                klog("AQUE received")
                 pckt_id = str(self._socket.recv(16))
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
@@ -93,7 +90,7 @@ class ServiceThread(Thread):
 
             # Received package looking for neighbour peers
             if command == "NEAR":
-                print "NEAR received"
+                klog("NEAR received")
                 pckt_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
@@ -123,7 +120,7 @@ class ServiceThread(Thread):
 
             # Received package in reply to a neighbour peer search
             if command == "ANEA":
-                print "ANEA received "
+                klog("ANEA received ")
                 pckt_id = str(self._socket.recv(16))
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
@@ -135,7 +132,7 @@ class ServiceThread(Thread):
 
             # Received package asking for a file
             if command == "RETR":
-                print "RETR received"
+                klog("RETR received")
                 CHUNK_DIM = 128
 
                 md5 = encode_md5(self._socket.recv(16))
@@ -146,7 +143,8 @@ class ServiceThread(Thread):
 
                 file = FilesManager.find_file_by_md5(md5)
                 if file:
-                    print "i have found the file"
+                    klog("i have found the file: %s" % file.filename)
+
                     # Chunks
                     size = file_size(os.path.join(file.filepath, file.filename))
                     bytes_sent = 0
@@ -171,11 +169,11 @@ class ServiceThread(Thread):
                         chunk = file2send.read(CHUNK_DIM)
                     file2send.close()
 
-                    print "upload complete"
+                    klog("upload completed: %s" %file.filename)
                     self.ui_handler.upload_file_changed(file.filename, file.md5, "other", 100)
 
                 else:
-                    print "file by md5 not found"
+                    klog("file by md5 not found")
 
             if command == "":
                 condition = False
@@ -187,4 +185,4 @@ class ServiceThread(Thread):
             condition = False
             print ex
 
-        print "request processed correctly"
+        klog("request processed correctly")

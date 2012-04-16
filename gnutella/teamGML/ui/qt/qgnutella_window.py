@@ -4,6 +4,7 @@ from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from ui.abstract_ui import AbstractGnutellaUI
+from custom_utils.logging import klog
 
 class QGnutellaWindow(QMainWindow):
     def __init__(self, request_emitter):
@@ -35,8 +36,13 @@ class QGnutellaWindow(QMainWindow):
         self.connect(self, SIGNAL("download_file_changed"), self._draw_download_item)
         self.connect(self, SIGNAL("upload_file_changed"), self._draw_upload_item)
 
+        self.connect(self, SIGNAL("log_message_ready"), self._show_log_message)
+
 
     #EVENTS
+    def _show_log_message(self, message):
+        self.ui.loggingTextBrowser.append(message)
+
     def _addPeerBtnClicked(self):
         ip = self.ui.peerIP.text()
         port = self.ui.peerPort.text()
@@ -49,20 +55,22 @@ class QGnutellaWindow(QMainWindow):
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
         query = self.ui.searchLineEdit.text()
-        self.request_emitter.search_for_files(query)
+        ttl = int(self.ui.ttlFilesSearchSpinBox.value())
+        self.request_emitter.search_for_files(query, ttl)
 
     def _resultsTreeClicked(self, item, index):
         file_name = item.text(0)
         peer_ip = item.text(1)
         peer_port = item.text(2)
         file_md5 = item.text(3)
-        print "Scarico: %s da %s:%s" % (file_name, peer_ip, peer_port)
+        klog("Scarico: %s da %s:%s" % (file_name, peer_ip, peer_port))
         self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
         self.ui.mainTabWidget.setCurrentIndex(2) #go to the transfer page
 
     #EVENTS HANDLING
     def _searchNeighboursBtnClicked(self):
-        self.request_emitter.search_for_peers()
+        ttl = int(self.ui.ttlPeersSearchSpinBox.value())
+        self.request_emitter.search_for_peers(ttl)
 
     def _redraw_peers(self):
         self.ui.peersTreeWidget.clear()
@@ -115,6 +123,8 @@ class QGnutellaWindow(QMainWindow):
     def upload_file_changed(self, filename, file_md5, peer_ip, percent):
         self.emit(SIGNAL("upload_file_changed"), filename, file_md5, peer_ip, percent)
 
+    def show_log_message(self, message):
+        self.emit(SIGNAL("log_message_ready"), message)
 
 
 

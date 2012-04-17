@@ -253,7 +253,7 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
     def run(self):
 
         query = self.sockread(self.socketclient,58)
-        print "received QUER" + query + " from " + self.addrclient[0] + ":" + self.addrclient[1]
+        print "received QUER" + query + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = query[:16]
         ipp2p = query[16:31]
         pp2p = query[31:36]
@@ -286,7 +286,7 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
                         neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
                         neigh_sock.sendall("QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca_form)
-                        print "sent QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
+                        print "sent QUER" + pktID + ipp2p + pp2p + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                         self.closeConn(neigh_sock)
 
             #in ogni caso cerco tra i miei files se ne ho uno che matcha la ricerca
@@ -327,12 +327,12 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                         newFile.append(filemd5)
                         fileTable.append(newFile)
                         self.setFileTable(fileTable)
-                        print self.getFileTable()
+                        #print self.getFileTable()
 
                     #invio l'ack a chi ha effettuato la ricerca
                     neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
                     neigh_sock.sendall("AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form)
-                    print "sent AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form + " to " + ipp2p + ":" + pp2p
+                    print "sent AQUE" + pktID + self.my_IP_form + self.my_port_form + filemd5 + filename_form + " to " + ipp2p + ":" + str(pp2p)
                     self.closeConn(neigh_sock)
 
         print ""
@@ -355,7 +355,7 @@ class AckQuery(threading.Thread, Service):
     def run(self):
 
         ack_query = self.sockread(self.socketclient,152)
-        print "received AQUE" + ack_query + " from " + self.addrclient[0] + ":" + self.addrclient[1]
+        print "received AQUE" + ack_query + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = ack_query[:16]
         ipp2p = ack_query[16:31]
         pp2p = ack_query[31:36]
@@ -412,7 +412,7 @@ class Near(threading.Thread, Service):
     def run(self):
 
         near = self.sockread(self.socketclient,38)
-        print "received NEAR" + near + " from " + self.addrclient[0] + ":" + self.addrclient[1]
+        print "received NEAR" + near + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = near[:16]
         ipp2p = near[16:31]
         pp2p = near[31:36]
@@ -444,14 +444,14 @@ class Near(threading.Thread, Service):
 
                         neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
                         neigh_sock.sendall("NEAR" + pktID + ipp2p + pp2p + ttl_form)
-                        print "sent NEAR" + pktID + ipp2p + pp2p + ttl_form + " to " + neighTable[n][0] + ":" + neighTable[n][1]
+                        print "sent NEAR" + pktID + ipp2p + pp2p + ttl_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                         self.closeConn(neigh_sock)
 
 
             #rispondo alla richiesta invio l'ack AQUE a chi ha effettuato la ricerca
             neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
             neigh_sock.sendall("ANEA" + pktID + self.my_IP_form + self.my_port_form)
-            print "sent ANEA" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + pp2p
+            print "sent ANEA" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + str(pp2p)
             self.closeConn(neigh_sock)
 
         print ""
@@ -475,7 +475,7 @@ class AckNear(threading.Thread, Service):
     def run(self):
 
         ack_near = self.sockread(self.socketclient,36)
-        print "received ANEA" + ack_near + " from " + self.addrclient[0] + ":" + self.addrclient[1]
+        print "received ANEA" + ack_near + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = ack_near[:16]
         ipp2p = ack_near[16:31]
         pp2p = ack_near[31:36]
@@ -505,7 +505,7 @@ class AckNear(threading.Thread, Service):
                     if toadd == True:
 
                         self.addNeighbour(ipp2p, pp2p)
-                        print "Added neighbour " +  ipp2p + ":" + pp2p
+                        print "Added neighbour " +  ipp2p + ":" + str(pp2p)
 
                     self.setNeighTable(neighTable)
 
@@ -541,7 +541,7 @@ class Upload(threading.Thread, Service):
     def run(self):
 
         download = self.sockread(self.socketclient,16)
-        print "received RETR" + download + " from " + self.addrclient[0] + ":" + self.addrclient[1]
+        print "received RETR" + download + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         md5tofind = download[:16]
 
         chunk_dim = 128 # specifica la dimensione in byte del chunk (fix)
@@ -559,7 +559,7 @@ class Upload(threading.Thread, Service):
             file = open(filename, "rb")
         except Exception,expt:
             print "Error: %s" %expt + "\n"
-            print "An error occured, file upload unavailable for peer " + self.addrclient[0] + "\n"
+            print "An error occured, file upload unavailable for peer " + self.addrclient[0] + ":" + str(self.addrclient[1]) + "\n"
         else :
             tot_dim=self.filesize(filename)
             num_of_chunks = int(tot_dim // chunk_dim) #risultato intero della divisione
@@ -586,7 +586,7 @@ class Upload(threading.Thread, Service):
                 if len(buff) != 0:
                     chunk_last_form = '%(#)05d' % {"#" : len(buff)}
                     self.socketclient.sendall(chunk_last_form + buff)
-                print "End of upload of " + filename + " to " + self.addrclient[0] + ":" + self.addrclient[1]
+                print "End of upload of " + filename + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
                 file.close()
                 #print "ho chiuso il file" #TODO debug
             except EOFError:

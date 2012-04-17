@@ -6,7 +6,7 @@ from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
 from custom_utils import logging
 
-PORT = 1234
+PORT = 8000
 
 if __name__ == "__main__":
 

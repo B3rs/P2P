@@ -120,10 +120,12 @@ class ServiceThread(Thread):
 
             # Received package in reply to a neighbour peer search
             if command == "ANEA":
-                klog("ANEA received ")
+
                 pckt_id = str(self._socket.recv(16))
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
+
+                klog("ANEA received from %s:%s" %(peer_ip, peer_port))
 
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add peer to known peers
@@ -138,6 +140,7 @@ class ServiceThread(Thread):
                 md5 = encode_md5(self._socket.recv(16))
 
                 self._socket.send("ARET")   #sending the ack command
+                remote_ip = self._socket.getpeername()[0]
 
                 # Get the file matching the md5
 
@@ -164,13 +167,13 @@ class ServiceThread(Thread):
                         bytes_sent += self._socket.send(chunk)    #sending the chunk
 
                         percent = bytes_sent*100/size
-                        self.ui_handler.upload_file_changed(file.filename, file.md5, "other", percent)
+                        self.ui_handler.upload_file_changed(file.filename, file.md5, remote_ip, percent)
 
                         chunk = file2send.read(CHUNK_DIM)
                     file2send.close()
 
                     klog("upload completed: %s" %file.filename)
-                    self.ui_handler.upload_file_changed(file.filename, file.md5, "other", 100)
+                    self.ui_handler.upload_file_changed(file.filename, file.md5, remote_ip, 100)
 
                 else:
                     klog("file by md5 not found")

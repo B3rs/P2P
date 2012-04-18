@@ -7,6 +7,7 @@ from custom_utils.logging import *
 #TODO: remove this into a singleton instance of PeersManager
 PACKETS = []
 GENERATED_PACKETS = []
+TIME_THRESHOLD = 20#300
 
 class PacketsManager(object):
 
@@ -70,6 +71,6 @@ class PacketsManager(object):
         if PacketsManager.is_generated_packet_id_known(packet_id):
             delta = time.time() - PacketsManager.get_generated_packet_by_id(packet_id).timestamp
             print delta
-            if delta <= 300:
+            if delta <= TIME_THRESHOLD:
                 return True
         return False

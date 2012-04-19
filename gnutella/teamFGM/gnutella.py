@@ -23,7 +23,8 @@ class GnutellaPeer(object):
         # PEER
 
         #OS X
-        self.my_IP = socket.gethostbyname(socket.gethostname())
+        self.my_IP = "192.168.1.107"
+        #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
         #self.my_IP = "address"
@@ -45,17 +46,17 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "169.254.193.90"
-        self.n1_port = 6503
-        #self.n2_IP = "192.168.0.187"
-        #self.n2_port = 6503
+        self.n1_IP = "192.168.1.100"
+        self.n1_port = 6400
+        self.n2_IP = "192.168.1.103"
+        self.n2_port = 8000
 
         #tabella vicini
         neighService = gnutella_service.Service()
         neighService.addNeighbour(self.n1_IP,self.n1_port)
         print "Added root " + self.n1_IP + ":" + str(self.n1_port)
-        #neighService.addNeighbour(self.n2_IP,self.n2_port)
-        #print "Added root " + self.n2_IP + ":" + str(self.n2_port)
+        neighService.addNeighbour(self.n2_IP,self.n2_port)
+        print "Added root " + self.n2_IP + ":" + str(self.n2_port)
 
         print ""
 
@@ -283,7 +284,7 @@ class GnutellaPeer(object):
 
                     self.closeConn(iodown_socket) #chiudo la socket verso il peer da cui ho scaricato
 
-                    print "Download effettuato con successo\n"
+                    print "Download completed successfully\n"
 
 
     def goOut(self):

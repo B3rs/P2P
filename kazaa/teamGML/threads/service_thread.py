@@ -28,13 +28,19 @@ class ServiceThread(Thread):
 
         super(ServiceThread, self).__init__()
 
-    #
-    # TODO unstub!
-    #
+
     def login_user(self, ip, port):
-        return "1234567890ABCDEF"
+        user = UsersManager.create_user(ip, port)
+        return user.session_id
+
     def logout_user(self, session_id):
-        return 1
+        user = UsersManager.find_user_by_session_id(session_id)
+        if user:
+            numdeleted = FilesManager.delete_files_for_user(user)
+            UsersManager.delete_user(user)
+            return numdeleted
+        else:
+            return -1
 
 
 
@@ -124,19 +130,21 @@ class ServiceThread(Thread):
 
             if command == "ALGI":
                 session_id = str(self._socket.recv(16))
-                # TODO store the session_id somewhere !
-                klog("ALGI received form super peer")
-                pass
+                UsersManager.set_my_session_id(set_my_session_id)
+                klog("ALGI received form super peer: %s", session_id)
 
             if command == "LOGO":
                 peer_session_id = str(self._socket.recv(16))
                 delete_num = self.logout_user(peer_session_id)
-                klog("Received a LOGO, from session_id: %s" %(peer_session_id))
-                self._socket.send("ALGO"+"{0:03d}".format(delete_num))
-                klog("Sent ALGO to session_id: %s" %(peer_session_id))
+                klog("Received a LOGO, from session_id: %s" %peer_session_id)
+                self._socket.send("ALGO"+"{0:03d}" % format_deletenum(delete_num))
+                klog("Sent ALGO to session_id: %s deletenum: %d" %(peer_session_id, delete_num))
 
             if command == "ALGO":
-                print "ALGO received, it's such a sad thing :("
+                delete_num = read_from_socket(self._socket, 3)
+                klog("ALGO received. delete num: %s" %delete_num)
+                UsersManager.set_my_session_id("")
+                klog("TODO: destroy the listening client???")
 
             # Received package looking for super-peer
             if command == "SUPE":

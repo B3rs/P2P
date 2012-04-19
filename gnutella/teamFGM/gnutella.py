@@ -1,4 +1,4 @@
-__author__ = 'Frencina'
+__author__ = 'GuiducciGrillandaLoPiccolo'
 
 import gnutella_thread
 import gnutella_service
@@ -23,8 +23,7 @@ class GnutellaPeer(object):
         # PEER
 
         #OS X
-        self.my_IP = "192.168.1.107"
-        #self.my_IP = socket.gethostbyname(socket.gethostname())
+        self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
         #self.my_IP = "address"
@@ -36,7 +35,7 @@ class GnutellaPeer(object):
         IP_4 = '%(#)03d' % {"#" : int(my_IP_split[3])}
         self.my_IP_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
 
-        self.my_port = 6503 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
+        self.my_port = 6400 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
         self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
         self.stop = False #non voglio uscire subito dal programma
@@ -46,11 +45,10 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-
-        self.n1_IP = "192.168.1.100"
-        self.n1_port = 6400
-        self.n2_IP = "192.168.1.103"
-        self.n2_port = 8000
+        self.n1_IP = "192.168.1.102"
+        self.n1_port = 8013
+        self.n2_IP = "192.168.1.100"
+        self.n2_port = 6400
 
         #tabella vicini
         neighService = gnutella_service.Service()
@@ -58,7 +56,6 @@ class GnutellaPeer(object):
         print "Added root " + self.n1_IP + ":" + str(self.n1_port)
         neighService.addNeighbour(self.n2_IP,self.n2_port)
         print "Added root " + self.n2_IP + ":" + str(self.n2_port)
-
 
         print ""
 

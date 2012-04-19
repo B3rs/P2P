@@ -1,4 +1,4 @@
-__author__ = 'Frencina'
+__author__ = 'GuiducciGrillandaLoPiccolo'
 
 import socket # networking module
 import threading
@@ -112,6 +112,7 @@ class Service():
             print "An error occured in neighTable handling"
 
         print self.neighTable
+
     #end of addNeighbour method
 
 
@@ -240,8 +241,8 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
 
         lista_files = []
 
-        #dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
-        dir = "/Users/ingiulio/P2P/P2P/gnutella/teamFGM" #GIU
+        dir = "/Users/Francesca/PycharmProjects/P2P/gnutella/teamFGM" #FRE
+        #dir = "/Users/ingiulio/P2P/gnutella/teamFGM" #GIU
         #dir = "/home/Dropbox/Git_Pycharm/P2P/gnutella/teamFGM" #MAU
 
         dirEntries = os.listdir(dir)

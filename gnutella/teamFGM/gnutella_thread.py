@@ -1,4 +1,4 @@
-__author__ = 'Frencina'
+__author__ = 'GuiducciGrillandaLoPiccolo'
 
 import gnutella_service
 

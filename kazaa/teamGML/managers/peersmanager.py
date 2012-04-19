@@ -9,13 +9,20 @@ class PeersManager(object):
 
     # @returns array with known peers
     @classmethod
-    def find_known_peers(cls):
-        return PEERS
+    def find_known_peers(cls, superpeers=False):
+        if superpeers:
+            matching = []
+            for p in PEERS:
+                if p.is_superpeer:
+                    matching.append(p)
+            return matching
+        else:
+            return PEERS
 
     @classmethod
-    def is_known_peer(cls, ip, port):
-        for peer in PeersManager.find_known_peers():
-            if PeersManager.are_same_peer(peer, Peer(ip, port)):
+    def is_known_peer(cls, peer):
+        for peer2 in PeersManager.find_known_peers():
+            if PeersManager.are_same_peer(peer, peer2):
                 return True
         return False
 
@@ -25,6 +32,6 @@ class PeersManager(object):
 
     # @returns add a new known
     @classmethod
-    def add_new_peer(cls, peer_ip, peer_port):
-        if not PeersManager.is_known_peer(peer_ip, peer_port):
-            PEERS.append(Peer(peer_ip, peer_port))
+    def add_new_peer(cls, peer):
+        if not PeersManager.is_known_peer(peer):
+            PEERS.append(peer)

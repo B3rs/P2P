@@ -10,7 +10,7 @@ PORT = 8000
 
 if __name__ == "__main__":
 
-    FilesManager.load_files()
+    FilesManager.load_my_files()
 
     #Setup the emitter thread
     request_emitter = RequestEmitter(PORT)

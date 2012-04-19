@@ -46,7 +46,7 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-<<<<<<< HEAD
+
         self.n1_IP = "192.168.1.100"
         self.n1_port = 6400
         self.n2_IP = "192.168.1.103"
@@ -58,19 +58,7 @@ class GnutellaPeer(object):
         print "Added root " + self.n1_IP + ":" + str(self.n1_port)
         neighService.addNeighbour(self.n2_IP,self.n2_port)
         print "Added root " + self.n2_IP + ":" + str(self.n2_port)
-=======
-        #self.n1_IP = "10.42.43.13"
-        #self.n1_port = 1234
-        #self.n2_IP = "10.42.43.10"
-        #self.n2_port = 8016
 
-        #tabella vicini
-        #neighService = gnutella_service.Service()
-        #neighService.addNeighbour(self.n1_IP,self.n1_port)
-        #print "Added root " + self.n1_IP + ":" + str(self.n1_port)
-        #neighService.addNeighbour(self.n2_IP,self.n2_port)
-        #print "Added root " + self.n2_IP + ":" + str(self.n2_port)
->>>>>>> 121ca0967a04ae1d3d9fea66d8d13db5dc79347d
 
         print ""
 

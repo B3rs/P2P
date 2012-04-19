@@ -1,4 +1,4 @@
-__author__ = 'Frencina'
+__author__ = 'GuiducciGrillandaLoPiccolo'
 
 import socket # networking module
 import threading
@@ -110,6 +110,8 @@ class Service():
             self.neighTable[to_replace][2]= time.time()
         else:
             print "An error occured in neighTable handling"
+
+        print self.neighTable
 
     #end of addNeighbour method
 

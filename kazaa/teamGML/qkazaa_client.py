@@ -11,9 +11,9 @@ PORT = 8000
 if __name__ == "__main__":
 
     FilesManager.load_files()
+
     #Setup the emitter thread
     request_emitter = RequestEmitter(PORT)
-    #TODO: RequestEmitterThread doesn't have a run method! WTF?!
 
     #Setup the UI
     app = QApplication(sys.argv)

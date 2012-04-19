@@ -328,7 +328,7 @@ class Query(threading.Thread, Service): #ereditarieta' multipla
                         newFile.append(filemd5)
                         fileTable.append(newFile)
                         self.setFileTable(fileTable)
-                        print self.getFileTable()
+                        #print self.getFileTable()
 
                     #invio l'ack a chi ha effettuato la ricerca
                     neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta

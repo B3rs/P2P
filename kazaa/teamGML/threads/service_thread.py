@@ -4,6 +4,7 @@ from threading import Thread
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
+from managers.usersmanager import UsersManager
 from models.peer import Peer
 from models.file import File
 from custom_utils.formatting import *
@@ -15,8 +16,10 @@ import os
 
 class ServiceThread(Thread):
 
-    def __init__(self, socket, ip, port, ui_handler):
+    def __init__(self, socket, is_superpeer, ip, port, ui_handler):
         self._socket = socket
+
+        self.is_superpeer = is_superpeer
 
         self.ip = format_ip_address(ip)
         self.port = format_port_number(port)
@@ -25,6 +28,15 @@ class ServiceThread(Thread):
 
         super(ServiceThread, self).__init__()
 
+    #
+    # TODO unstub!
+    #
+    def login_user(self, ip, port):
+        return "1234567890ABCDEF"
+    def logout_user(self, session_id):
+        return 1
+
+
 
     def run(self):
 
@@ -32,6 +44,10 @@ class ServiceThread(Thread):
             self._socket.setblocking(1) # <-------- ??
 
             command = str(self._socket.recv(4))
+
+            #
+            # FILES
+            #
 
             # Received package looking for a file
             if command == "QUER":
@@ -88,9 +104,43 @@ class ServiceThread(Thread):
                     self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
 
 
-            # Received package looking for neighbour peers
-            if command == "NEAR":
-                klog("NEAR received")
+            #
+            # PEERS
+            #
+
+            if command == "LOGI":
+                if self.is_superpeer:
+                    peer_ip = str(self._socket.recv(15))
+                    peer_port = str(self._socket.recv(5))
+
+                    if UsersManager.find_user_by_ip(peer_ip) is not None:
+                        self._socket.send("ALGI"+"0"*16)
+                        klog("Sent ALGI" + "0"*16 + "to: %s" %(peer_ip))
+                    else:
+                        session_id = str(self.login_user(peer_ip, peer_port))
+                        klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
+                        self._socket.send("ALGI" + session_id)
+                        klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
+
+            if command == "ALGI":
+                session_id = str(self._socket.recv(16))
+                # TODO store the session_id somewhere !
+                klog("ALGI received form super peer")
+                pass
+
+            if command == "LOGO":
+                peer_session_id = str(self._socket.recv(16))
+                delete_num = self.logout_user(peer_session_id)
+                klog("Received a LOGO, from session_id: %s" %(peer_session_id))
+                self._socket.send("ALGO"+"{0:03d}".format(delete_num))
+                klog("Sent ALGO to session_id: %s" %(peer_session_id))
+
+            if command == "ALGO":
+                print "ALGO received, it's such a sad thing :("
+
+            # Received package looking for super-peer
+            if command == "SUPE":
+                klog("SUPE received")
                 pckt_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
@@ -101,31 +151,38 @@ class ServiceThread(Thread):
                     PacketsManager.add_new_packet(pckt_id, sender_ip)
 
                     if ttl > 1:
-                        # decrease ttl and propagate the message to the peers
+                        # decrease ttl and propagate the message to the peers/superpeers
                         ttl = format_ttl(ttl -1)
 
-                        for peer in PeersManager.find_known_peers():
+                        if self.is_superpeer:
+                            # Respond with an ASUP
+                            sock = connect_socket(sender_ip, sender_port)
+                            sock.send("ASUP" + pckt_id + self.ip + self.port + ttl)
+                            klog("command sent to %s:%s: ASUP pkid:%s %s:%s ttl: %s" % (sender_ip, sender_port, pckt_id, self.ip, self.port, ttl))
+                            sock.close()
 
-                            #query floading to the known peers except for the sender
+                        # propagate the SUPE
+                        for peer in PeersManager.find_known_peers():
                             if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
                                 sock = connect_socket(peer.ip, peer.port)
-                                sock.send(command + pckt_id + sender_ip + sender_port + ttl)
-                                klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, command, pckt_id, sender_ip, sender_port, ttl))
+                                sock.send("SUPE" + pckt_id + sender_ip + sender_port + ttl)
+                                klog("command sent to %s:%s: SUPE pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, pckt_id, sender_ip, sender_port, ttl))
                                 sock.close()
+
 
                     # show yourself to the peer
                     sock = connect_socket(sender_ip, sender_port)
-                    sock.send("ANEA" + pckt_id + self.ip + self.port)
+                    sock.send("ASUP" + pckt_id + self.ip + self.port)
                     sock.close()
 
-            # Received package in reply to a neighbour peer search
-            if command == "ANEA":
+            # Received package in reply to a super-peer search
+            if command == "ASUP":
 
                 pckt_id = str(self._socket.recv(16))
                 peer_ip = str(self._socket.recv(15))
                 peer_port = str(self._socket.recv(5))
 
-                klog("ANEA received from %s:%s" %(peer_ip, peer_port))
+                klog("ASUP received from %s:%s" %(peer_ip, peer_port))
 
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add peer to known peers

@@ -19,18 +19,18 @@ class Service():
     """
 
     pktTable = [] #e' la tabella contenente gli ID dei pacchetti gia' ricevuti in passato
-    #tutte le classi che estendono Service possono accedervi ed e' come se fosse una tabella fatta sul db
 
-    dim_neighTable = 3 #lo inizializzo a zero
-    neighTable = []
+    dim_neighTable = 3
+    neighTable = [] #tabella in cui il superpeer tiene i suoi vicini
 
     fileTable = [] #quando aggiungo un file nella directory, mi salvo qui l'md5 (filename e' il primo campo, filemd5 il secondo)
+    #in questo modo, quando un altro peer mi chiedera' un file io riesco dall'md5 a risalire al nome del file
 
-    myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time)
+    myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time) in modo da verificare se sono passati 20 secondi
 
-    role = [""]
-    super = ["",0]
-    nextSuper = ["",0] #e' il super che verra' utilizzato al prossimo login
+    role = [""] #mio ruolo: P oppure SP
+    super = ["",0] #indirizzo e porta del mio attuale superpeer (quello nel quale sono loggata in questo momento)
+    nextSuper = ["",0] #indirizzo e porta del superpeer che verra' utilizzato al prossimo login
 
     def getRole(self):
         return self.role
@@ -64,12 +64,6 @@ class Service():
     def setMyQueryTable(self,myQueryTable):
         self.myQueryTable = myQueryTable
 
-    def getNeighDim(self):
-        return self.dim_neighTable
-
-    def setNeighDim(self,dim):
-        self.dim_neighTable = dim
-
     def getNeighTable(self):
         return self.neighTable
 
@@ -82,7 +76,7 @@ class Service():
     def setFileTable(self,fileTable):
         self.fileTable = fileTable
 
-    def addNeighbour(self, IP, port):
+    def addNeighbour(self, IP, port): #questo metodo mi servira' solo per i superpeer (visto che i peer normali non hanno vicini)
 
         """
         This method add a neighbour to neighTable. If this table is empty, provides to add the neighbour given by
@@ -169,28 +163,6 @@ class Service():
             print "Error occured in Disconnection from neighbour -> %s" % expt + "\n"
     # end of method closeConn
 
-    def md5_for_file(self,fileName):
-
-        """
-        md5_for_file method get md5 checksum from a fileName given as parameter in function call
-        """
-        #print "Funzione che calcola l'md5 di un file" #TODO: DEBUG MODE
-
-        try:
-            f = open(fileName)
-        except Exception, expt:
-            print "Error: %s" % expt
-        else :
-            md5 = hashlib.md5()
-            while True:
-                data = f.read(128)
-                if not data:
-                    break
-                md5.update(data)
-                #print md5.digest()
-            return md5.digest()
-    # end of md5_for_file method
-
     def addPktToTable(self, pktID): #scrivo sulla tabella che ho esaminato il pacchetto
 
         pktTable = self.getPktTable()
@@ -213,14 +185,15 @@ class Service():
 
         pktTable = self.getPktTable()
 
-        for i in range(0,len(pktTable)):
-
-            if i>=len(pktTable):
+        #rimuovo
+        i = 0
+        while i < len(pktTable):
+            if i >= len(pktTable):
                 break
-
             if now - pktTable[i][1] > 20: #se sono passati piu' di 20 secondi elimino la riga dalla tabella
-
                 pktTable.pop(i)
+            else:
+                i = i+1
 
         self.setPktTable(pktTable)
 
@@ -238,7 +211,7 @@ class Service():
         return False
 
 
-class Query(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
+class Query(threading.Thread, Service): #lo ricevo solo se sono un superpeer
 
     def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
@@ -251,32 +224,38 @@ class Query(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
         self.my_port_form = my_port_form
 
 
-    def searchFiles(self,search_string): #DA COMPLETARE!
+    def searchFiles(self,search_string): #TODO DA CONTROLLARE (deve essere la stessa che c'e' in kazaa_directory_services)
 
         lista_files = []
 
-        #ricerca sulla tabella filesdb di kazaa_directory_services
+        #ricerca nella tabella filesdb di kazaa_directory_services
+        #che e' la tabella dentro la quale ogni superpeer salva i file che sono stati aggiunti nella sua directory
         fileService = kazaa_directory_services.Service()
         filesdb = fileService.getFilesdb()
 
-        lista_files = filesdb #ossia ritorno tutti i files che conosco (in realta' dovrei ritornare solo quelli che matchano)
-                                #sessionID, filemd5, filename
+        for i in range(0,len(filesdb)):
+            if filesdb[i][2].lower().find(search_string.lower()) != -1: #filesdb[i][2] e' il nome del file i-esimo
+                new_file = []
+                new_file.append(filesdb[i][0]) #sessionID
+                new_file.append(filesdb[i][1]) #filemd5
+                new_file.append(filesdb[i][2]) #filename
+                lista_files.append(new_file)
 
-        return lista_files
+        return lista_files #lista con i files che matchano la ricerca
 
 
     def run(self):
 
-        #da quanto ho capito il pacchetto QUER dovrei riceverlo solo se sono un superpeer
+        #il pacchetto QUER lo ricevo solo se sono un superpeer
 
         query = self.sockread(self.socketclient,58)
         print "received QUER" + query + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = query[:16]
-        ipp2p = query[16:31]
-        pp2p = query[31:36]
+        ipp2p = query[16:31] #ip del superpeer che ha effettuato la ricerca
+        pp2p = query[31:36] #porta del superpeer che ha effettuato la ricerca
         ttl = query[36:38]
         ricerca_form = query[38:58]
-        ricerca = ricerca_form.strip(" ") #pulisco la stringa dagli spazi
+        ricerca = ricerca_form.strip(" ")
 
         self.cleanPktTable() #pulizia della tabella dei pacchetti
 
@@ -322,7 +301,7 @@ class Query(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
                 #mando un AQUE a chi ha mandato la query per ogni file trovato
                 for f in range(0,len(files)): #f = indice riga (una riga=un file)
 
-                    IPPort = fileService.getIPPortBySessID(files[f][0]) #dal sessionID ricavo array con IP e porta
+                    IPPort = fileService.getIPPortBySessID(files[f][0]) #dal sessionID ricavo array con IP e porta del peer
                     file_IP = IPPort[0]
                     file_port = IPPort[1]
 
@@ -330,7 +309,7 @@ class Query(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
                     filename = files[f][2] #da formattare
                     filename_form = '%(#)0100s' % {"#" : filename} #formatto il nome del file
 
-                    #invio l'ack a chi ha effettuato la ricerca
+                    #invio l'ack al superpeer che ha effettuato la ricerca
                     neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
                     neigh_sock.sendall("AQUE" + pktID + file_IP + file_port + filemd5 + filename_form)
                     print "sent AQUE" + pktID + file_IP + file_port + filemd5 + filename_form + " to " + ipp2p + ":" + str(pp2p)
@@ -340,7 +319,7 @@ class Query(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
 
     # end of run method
 
-class AckQuery(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
+class AckQuery(threading.Thread, Service): #lo ricevo solo se sono un superpeer
 
     def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
@@ -358,8 +337,8 @@ class AckQuery(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
         ack_query = self.sockread(self.socketclient,152)
         print "received AQUE" + ack_query + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         pktID = ack_query[:16]
-        ipp2p = ack_query[16:31]
-        pp2p = ack_query[31:36]
+        ipp2p = ack_query[16:31] #ip del peer che possiede il file
+        pp2p = ack_query[31:36] #porta del peer che possiede il file
         filemd5 = ack_query[36:52]
         filename = ack_query[52:152]
 
@@ -371,7 +350,7 @@ class AckQuery(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
                     print "AQUE request expired!"
                 else:
 
-                    #aggiorno la tabella dei match si kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
+                    #aggiorno la tabella dei match di kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
                     matchService = kazaa_directory_services.Service()
                     matchTable = matchService.getMatchTable()
 
@@ -391,7 +370,7 @@ class AckQuery(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
     # end of run method
 
 
-class Super(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
+class Super(threading.Thread, Service): #se sono un peer propago a super, se sono un superpeer propago ai vicini e rispondo
 
     def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
@@ -433,7 +412,7 @@ class Super(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
 
                 role = self.getRole()
 
-                if role == "P": #ripropago al mio super peer
+                if role == "P": #se sono un peer, ripropago al mio super peer
 
                     super = self.super
 
@@ -467,7 +446,7 @@ class Super(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
     # end of run method
 
 
-class AckSuper(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
+class AckSuper(threading.Thread, Service): #se sono un peer aggiorno nextSuper, se sono un superpeer aggiorno tabella vicini
 
     def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
@@ -500,11 +479,11 @@ class AckSuper(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
 
                     if role == "P": #sono un peer normale, mi e' arrivata la risposta da un superpeer
 
-                        self.setNextSuper(ipp2p, pp2p)
+                        self.setNextSuper(ipp2p, pp2p) #aggiorno nextSuper
 
                         print "New nextsuperpeer " + ipp2p + ":" + str(pp2p)
 
-                    else: #sono un superpeer, aggiungo alla tabella dei vicini
+                    else: #sono un superpeer, aggiorno la tabella dei vicini
 
                         neighTable = self.getNeighTable()
 
@@ -530,7 +509,7 @@ class AckSuper(threading.Thread, Service): #AGGIORNATO -- DA CONTROLLARE
         print ""
 
 
-class Upload(threading.Thread, Service): #DOVREBBE CONTINUARE AD ANDARE BENE
+class Upload(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, IP_form, port_form):
 

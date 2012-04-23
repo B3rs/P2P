@@ -37,19 +37,19 @@ class Dispatcher(threading.Thread):
 
         time.sleep(1) #TODO DEBUG
 
-        if request=="QUER": #mandati da altri peer
+        if request=="QUER":
             myservice = kazaa_peer_services.Query(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="AQUE": #ricevuti da me
+        elif request=="AQUE":
             myservice = kazaa_peer_services.AckQuery(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="SUPE": #mandati da altri peer
+        elif request=="SUPE":
             myservice = kazaa_peer_services.Super(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="ASUP": #ricevuti da me
+        elif request=="ASUP":
             myservice = kazaa_peer_services.AckSuper(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 

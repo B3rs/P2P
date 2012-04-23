@@ -3,7 +3,7 @@ __author__ = 'GuiducciGrillandaLoPiccolo'
 import kazaa_peer
 import kazaa_peer_services
 import kazaa_directory
-#kazaa_directory_services non serve neanche
+#mentre kazaa_directory_services non serve neanche
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -39,9 +39,9 @@ class KazaaClient(object):
         self.my_port = 9999 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
         self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
-        self.dir_port = 8000 #da spefiche sarebbe l'80
+        self.dir_port = 8000 #da spefiche sarebbe l'80 ma per adesso provo con la 8000
 
-        self.pickedRole = False
+        self.pickedRole = False #non ho ancora scelto il mio ruolo (peer o superpeer)
         self.logged = False #non sono loggato
         self.stop = False #non voglio uscire subito dal programma
 
@@ -133,7 +133,79 @@ class KazaaClient(object):
         # end of checkfile method
 
 
-    def findneigh(self): #AGGIORNATO -- DA CONTROLLARE
+    def login(self):
+
+        """
+        login method control steps to join peer at P2P network
+        """
+        print "Login...\n"
+
+        answer = raw_input("Do you want to change port? (Y/N) ") #sto parlando della porta messa a disposizione per gli altri peer
+                                                                    #secondo me puo' essere utile cambiarla per evitare "address already in use"
+        if answer == "Y":
+            self.my_port = raw_input("Port: ")
+            self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
+
+        superService = kazaa_peer_services.Service()
+        nextSuper = superService.getNextSuper() #recupero quello che avevo settato come prossimo superpeer
+
+        #invio LOGI al superpeer (si tratta di un vero super nel caso io sia un peer, di me stesso nel caso io sia un superpeer)
+        super_sock = self.openConn(nextSuper[0], nextSuper[1]) #passo ip e porta del superpeer che ho scelto
+        super_sock.sendall("LOGI" + self.my_IP_form + self.my_port_form)
+        print "sent LOGI" + self.my_IP_form + str(self.my_port_form) + " to " + nextSuper[0] + ":" + str(nextSuper[1])
+
+        #ricevo ack ALGI
+        ack = self.sockread(super_sock,20)
+        print "received " + ack
+
+        if ack[:4]=="ALGI":
+
+            self.session_ID = ack[4:20]
+            print "Session ID: " + self.session_ID + "\n"
+            #non ho ancora controllato il SESSIONID
+
+            # Check login non riuscito
+            if self.session_ID=="0000000000000000":
+
+                print "Login failed (0x16): try again!"
+                self.logged=False #non sono loggato
+
+            else:
+
+                #aggiorno il super e nextsuper
+                superService = kazaa_peer_services.Service()
+                superService.setSuper(nextSuper[0], nextSuper[1])
+                superService.setNextSuper("",0) #azzero il nextsuper
+
+                #il login e' andato a buon fine, quindi mi metto in ascolto sulla porta specificata per il P2P
+                self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
+                self.myserver.start()
+
+                self.logged=True #sono finalmente loggato
+
+        else:
+
+            print "KO, ack ALGI parsing failed\n"
+            self.logged=False #non sono loggato
+
+        self.closeConn(super_sock)
+
+        print ""
+
+    # end of login method
+
+
+    def nologin(self):
+        """
+        nologin method stop the program execution
+        """
+        print "You're about to exit the program"
+        print "Bye!\n"
+        self.stop = True
+        # end of nologin method
+
+
+    def findneigh(self):
 
         print "Find neighbours..."
 
@@ -174,89 +246,19 @@ class KazaaClient(object):
                 print "sent SUPE" + pktID + self.my_IP_form + str(self.my_port_form) + str(neigh_TTL_form) + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                 self.closeConn(neigh_sock)
 
-        #le risposte a questa richiesta mi arriveranno sulla porta P2P
-
         print ""
 
     # end of findNeigh method
 
 
-    def login(self): #AGGIORNATO -- DA CONTROLLARE
-
-        """
-        login method control steps to join peer at P2P network
-        """
-        print "Login...\n"
-
-        answer = raw_input("Do you want to change port? (Y/N) ") #sto parlando della porta messa a disposizione per gli altri peer
-        if answer == "Y":
-            self.my_port = raw_input("Port: ")
-            self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
-
-        superService = kazaa_peer_services.Service() #recupero il superpeer
-        nextSuper = superService.getNextSuper()
-
-        #invio LOGI al superpeer  (si tratta di un vero super nel caso io sia un peer, di me stesso nel caso io sia un superpeer)
-        super_sock = self.openConn(nextSuper[0], nextSuper[1]) #passo ip e porta del superpeer
-        super_sock.sendall("LOGI" + self.my_IP_form + self.my_port_form)
-        print "sent LOGI" + self.my_IP_form + str(self.my_port_form) + " to " + nextSuper[0] + ":" + str(nextSuper[1])
-
-        #ricevo ack ALGI
-        ack = self.sockread(super_sock,20)
-        print "received " + ack
-
-        if ack[:4]=="ALGI":
-
-            self.session_ID = ack[4:20]
-            print "Session ID: " + self.session_ID + "\n"
-            #non ho ancora controllato il SESSIONID
-
-            # Check login non riuscito
-            if self.session_ID=="0000000000000000":
-                print "Login failed (0x16): try again!"
-                self.logged=False #non sono loggato
-            else:
-                self.logged=True
-
-                #aggiorno il super
-                superService = kazaa_peer_services.Service() #recupero il superpeer
-                superService.setSuper(nextSuper[0], nextSuper[1])
-
-                #il login e' andato a buon fine, quindi mi metto in ascolto sulla porta specificata per il P2P
-                self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
-                self.myserver.start()
-
-        else:
-
-            print "KO, ack ALGI parsing failed\n"
-            self.logged=False #non sono loggato
-
-        self.closeConn(super_sock)
-
-        print ""
-
-    # end of login method
-
-
-    def nologin(self):
-        """
-        nologin method stop the program execution
-        """
-        print "You're about to exit the program"
-        print "Bye!\n"
-        self.stop = True
-        # end of nologin method
-
-
-
-    def addfile(self): #AGGIORNATO - DA CONTROLLARE
+    def addfile(self):
         """
         addfile method allows user to add a new file at Directory's Database
         """
         print "Add file...\n"
 
-        superService = kazaa_peer_services.Service() #recupero il superpeer
-        super = superService.getSuper()
+        superService = kazaa_peer_services.Service()
+        super = superService.getSuper() #recupero il superpeer
 
         filename = raw_input("Insert the name of the file to add: ")
         self.checkfile(filename) #controllo l'esistenza del file nel percorso specificato
@@ -267,21 +269,21 @@ class KazaaClient(object):
         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
         super_sock.sendall("ADFF" + self.session_ID + md5file + filename_form)
         print "sent ADFF" + self.session_ID + md5file + filename_form + " to " + super[0] + ":" + str(super[1])
+
         self.closeConn(super_sock)
 
         #mi salvo la corrispondenza tra filename e filemd5 nella mia tabellina fileTable
-        #ma lo faccio solo se la riga non e' gia' presente
         fileService = kazaa_peer_services.Service()
         fileTable = fileService.getFileTable()
 
         notFound = True
 
         for i in range(0,len(fileTable)):
-            if fileTable[i][1] == md5file:
-                fileTable[i][0] = filename
+            if fileTable[i][1] == md5file and fileTable[i][1] != filename: #se ho trovato lo stesso md5 ma il nome del file non e' lo stesso
+                fileTable[i][0] = filename #aggiorno il filename
                 notFound = False
 
-        if notFound: #il file non era presente nella tabellina fileTable, lo aggiungo
+        if notFound: #se il file non era presente nella tabellina fileTable, lo aggiungo
 
             newFile = []
             newFile.append(filename) #il filename non e' formattato
@@ -296,7 +298,7 @@ class KazaaClient(object):
         # end of addfile method
 
 
-    def delfile(self): #AGGIORNATO - DA CONTROLLARE
+    def delfile(self):
         """
         delfile method allows P2P user to remove a file that has previously shared into the network
         """
@@ -313,12 +315,15 @@ class KazaaClient(object):
         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
         super_sock.sendall("DEFF" + self.session_ID + md5file)
         print "sent DEFF" + self.session_ID + md5file + " to " + super[0] + ":" + str(super[1])
+
         self.closeConn(super_sock)
+
+        #scelgo di non eliminare la corrispondenza nomefile, md5 dalla mia tabellina fileTable
 
         # end of delfile method
 
 
-    def findfile(self): #AGGIORNATO -- DA CONTROLLARE
+    def findfile(self):
         """
         this method allows at peer to specify a search string.
         If this matches a section of file name, the centralized directory says to peer the numbers of md5 checksum's
@@ -327,8 +332,7 @@ class KazaaClient(object):
         """
         print "Search file...\n"
 
-
-        #chiedo stringa da cercare
+        #chiedo all'utente la stringa da cercare
         search = raw_input("Type a search string: ")
         search_form = '%(#)020s' % {"#" : search} #formatto la stringa di ricerca
 
@@ -340,12 +344,12 @@ class KazaaClient(object):
         super_sock.sendall("FIND" + self.session_ID + search_form)
         print "sent FIND" + self.session_ID + search_form + " to " + super[0] + ":" + str(super[1])
 
-        #ricevo AFIN dalla directory
+        #ricevo AFIN dal superpeer
+        time.sleep(20)
         ack = self.sockread(super_sock, 7) #leggo i primi 7B, poi il resto lo leggo dopo perche' non ha lunghezza fissa
 
         if ack[:4]=="AFIN":
 
-            #print "OK, ack received\n" # DEBUG
             self.num_idmd5 = int(ack[4:7])
             print "Number of different md5: " + str(self.num_idmd5) + "\n"
 
@@ -434,7 +438,7 @@ class KazaaClient(object):
     # end of find method
 
 
-    def download(self): #AGGIORNATO -- DA CONTROLLARE
+    def download(self):
         """
         download method allow peer to make a download from any other peer into the network
         """
@@ -442,7 +446,6 @@ class KazaaClient(object):
 
         id_md5 = 0 #fake inizializzazione
         id_copy = 0
-
 
         while id_md5<1 or id_md5>int(self.num_idmd5) or id_copy<1 or id_copy>int(self.num_copy_down[id_md5-1]):
 
@@ -463,7 +466,6 @@ class KazaaClient(object):
                 print "Warning: You mistyped your choice"
 
             else: #scelta corretta quindi inizio con il download vero e proprio
-
 
                 #l'utente vuole scaricare la copia id_md5.id_copy
                 #vado a recuperare le informazioni necessarie e le rinomino per comodita'
@@ -486,47 +488,43 @@ class KazaaClient(object):
                 except IOError: #IOError exception includes socket.error
                     print "Connection with " + IPP2P + "not available"
                 else:
-                    print "Connection with peer enstablished.\n"
-                    #print "Download will start shortly! Be patient"
 
                     # SPEDISCO IL PRIMO MESSAGGIO
                     iodown_socket.sendall("RETR" + filemd5)
 
                     try:
+
                         # ricevo "ARET" dal peer
                         ack = self.sockread(iodown_socket, 10)
+
                     except IOError:
+
                         print "Connection error. The peer " + IPP2P + " is death\n"
+
                     else:
 
                         if ack[:4]=="ARET":
 
-                            #pulisco il filename dagli spazi vuoti
                             filename_clean=str(filename).strip(' ')
 
-                            fout = open(filename_clean,"ab") #a di append, b di binary mode
+                            fout = open(filename_clean,"ab")
 
                             num_chunk = ack[4:10]
 
-                            #pulisco il numero di chunks dagli 0
                             num_chunk_clean = str(num_chunk).lstrip('0')
 
                             for i in range (0,int(num_chunk_clean)): #i e' il numero di chunk
 
-                                #devo leggere altri byte ora
-                                #ne leggo 5 perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
+                                #leggo 5 byte perche' 5 sono quelli che mi diranno poi quanto e' lungo il chunk
                                 try:
 
                                     lungh_form = self.sockread(iodown_socket, 5)
 
                                     lungh = int(lungh_form) #converto in intero
 
-                                    #devo leggere altri byte ora
-                                    #ne leggo lungh perche' quella e' proprio la lunghezza del chunk
+                                    #leggo un numero lungh di byte perche' quella e' proprio la lunghezza del chunk
 
                                     data = self.sockread(iodown_socket, lungh)
-
-                                    #lo devo mettere sul mio file che ho nel mio pc
 
                                     fout.write(data) #scrivo sul file in append
 
@@ -538,7 +536,7 @@ class KazaaClient(object):
 
                             fout.close() #chiudo il file perche' ho finito di scaricarlo
 
-                            self.closeConn(iodown_socket) #chiudo socket
+                            self.closeConn(iodown_socket) #chiudo socket con il peer
 
                         else:
                             print "KO, ack ARET parsing failed\n"
@@ -548,7 +546,7 @@ class KazaaClient(object):
     # end of download method
 
 
-    def logout(self): #AGGIORNATO -- DA CONTROLLARE
+    def logout(self):
 
         """
         this method allows user to logout from P2P network
@@ -556,8 +554,8 @@ class KazaaClient(object):
 
         print "Logout...\n"
 
-        superService = kazaa_peer_services.Service() #recupero il superpeer
-        super = superService.getSuper()
+        superService = kazaa_peer_services.Service()
+        super = superService.getSuper() #recupero il superpeer
 
         #invio LOGO al superpeer
         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
@@ -565,7 +563,7 @@ class KazaaClient(object):
         print "sent LOGO" + self.session_ID + " to " + super[0] + ":" + str(super[1])
 
         #ricevo ALGO dal superpeer
-        ack = self.sockread(super_sock,7) #controllare che siano davvero 3 quelli del num_delete
+        ack = self.sockread(super_sock,7)
         print "received " + ack
 
         if ack[:4]=="ALGO":
@@ -574,6 +572,9 @@ class KazaaClient(object):
             print "Number of deleted files: " + num_delete + "\n"
 
             self.myserver.setCheck()
+
+            superService = kazaa_peer_services.Service()
+            superService.setSuper("",0) #azzero il superpeer
 
             self.logged=False #non sono piu' loggato
 
@@ -593,7 +594,7 @@ class KazaaClient(object):
         # end of error method
 
 
-    def doYourStuff(self): #AGGIORNATO -- DA CONTROLLARE
+    def doYourStuff(self):
 
         """
         This methods allow user to navigate into menu and logging in
@@ -604,16 +605,16 @@ class KazaaClient(object):
             role = raw_input("Do you want to be peer or superpeer? (P/SP) ")
             self.pickedRole = True
 
-            if role == "P": #non ho la tabella dei vicini, ma ho un superpeer
+            if role == "P": #sono un peer: non ho la tabella dei vicini, ma ho un superpeer
 
                 super_ip = raw_input("Superpeer IP: ")
                 super_port = raw_input("Superpeer port: ")
 
-                superService = kazaa_peer_services.Service() #setto il super
+                superService = kazaa_peer_services.Service() #setto quello che diventera' il mio superpeer quando faro' il login
                 superService.setNextSuper(super_ip, super_port)
 
 
-            else: #sono un superpeer, ho la tabella dei vicini e devo attivare il servizio di directory
+            else: #sono un superpeer: ho la tabella dei vicini e devo attivare il servizio di directory
 
                 numNeigh = raw_input("How many neighbours do you want? ")
 
@@ -626,28 +627,28 @@ class KazaaClient(object):
 
                     neighService.addNeighbour(neigh_ip, neigh_port) #aggiungo vicino
 
-                superService = kazaa_peer_services.Service() #setto me stesso come superpeer
-                superService.setNextSuper(self.my_IP_form, self.dir_port)
-
                 #in quanto superpeer mi metto in ascolto sulla porta 80
                 self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port) #mio indirizzo, porta 80
                 self.mydirectory.start()
 
+                superService = kazaa_peer_services.Service()
+                superService.setNextSuper(self.my_IP_form, self.dir_port) #setto me stesso come prossimo superpeer
 
-            #memorizzo il ruolo scelto
+
+            #in ogni caso, memorizzo il ruolo scelto (P o SP)
             roleService = kazaa_peer_services.Service()
             roleService.setRole(role)
 
 
         if self.logged==False:
 
-            print "Do you want to do login? (Y/N)\n" #TODO: eventualmente riorganizzare i gruppi di operazioni
+            print "Do you want to do login? (Y/N)\n"
 
         else: #allora sono loggato
 
             print "Choose between the following options, typing the number:\n"
 
-            print "1. Search neighbours" #pensare in particolare questa funzione (prima cerco il neigh, poi logout, poi login nella nuova directory?)
+            print "1. Search neighbours"
             print "2. Add file"
             print "3. Delete file"
             print "4. Search and Download file"

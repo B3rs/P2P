@@ -219,9 +219,12 @@ class ServiceThread(Thread):
                         self.ui_handler.add_new_peer(peer_ip, peer_port)
 
             elif command == "ALGI":
+                #Normally this is done in the RequestEmitter, but we have the same code here to
+                #prevent crashes in case of closed and re-opened socket
                 session_id = str(read_from_socket(self._socket, 16))
                 klog("ALGI received form super peer: %s", session_id)
-                UsersManager.set_my_session_id(my_session_id)
+                UsersManager.set_my_session_id(session_id)
+                self.ui_handler.login_done(session_id)
 
             elif command == "LOGO":
                 peer_session_id = str(read_from_socket(self._socket, 16))
@@ -284,8 +287,12 @@ class ServiceThread(Thread):
                 klog("ASUP received from %s:%s" %(peer_ip, peer_port))
 
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
-                    # Add peer to known peers
-                    PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+                    #Check if the superpeer war already added as a normal peer
+                    if PeersManager.is_known_peer(Peer(peer_ip, peer_port)):
+                        PeersManager.become_superpeer(peer_ip, peer_port)
+                    else:
+                        PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+
                     self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file

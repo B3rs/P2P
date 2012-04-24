@@ -25,6 +25,14 @@ class Service():
     matchTable = [] #tabella con la collezione di tutti gli AQUE ricevuti (pktID, ipp2p, pp2p, filemd5, filename)
     #la dovro' scorrere per andare poi a costruire la risposta alla FIND
 
+    p2pPort = [0] #porta per il p2p (es.09999)
+
+    def getP2pPort(self):
+        return self.p2pPort
+
+    def setP2pPort(self,p2pPort):
+        self.p2pPort[0] = p2pPort
+
     def getPeersdb(self):
         return self.peersdb
 
@@ -249,7 +257,7 @@ class Service():
 
 class Login(threading.Thread, Service):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -257,7 +265,7 @@ class Login(threading.Thread, Service):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
 
     def run(self):
@@ -288,7 +296,7 @@ class Login(threading.Thread, Service):
 
 class Logout(threading.Thread, Service):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -296,7 +304,7 @@ class Logout(threading.Thread, Service):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
 
     def run(self):
@@ -331,7 +339,7 @@ class Logout(threading.Thread, Service):
 
 class AddFile(threading.Thread, Service):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -339,7 +347,7 @@ class AddFile(threading.Thread, Service):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
 
     def run(self):
@@ -359,7 +367,7 @@ class AddFile(threading.Thread, Service):
 
 class DeleteFile(threading.Thread, Service):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -367,7 +375,7 @@ class DeleteFile(threading.Thread, Service):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
 
     def run(self):
@@ -386,7 +394,7 @@ class DeleteFile(threading.Thread, Service):
 
 class FindFile(threading.Thread, Service):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -394,7 +402,7 @@ class FindFile(threading.Thread, Service):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
 
     def searchFiles(self,search_string): #TODO DA CONTROLLARE (deve essere la stessa che c'e' in kazaa_peer_services)
@@ -425,7 +433,7 @@ class FindFile(threading.Thread, Service):
 
         pktID = self.generate_pktID() #pktID del pacchetto mandato dal peer
 
-        ttl = raw_input("Insert ttl: ")
+        ttl = 2
         ttl_form = '%(#)02d' % {"#" : int(ttl)}
 
         #mando QUER a tutti i miei amici
@@ -435,8 +443,8 @@ class FindFile(threading.Thread, Service):
         for n in range(0,len(neighTable)): #n e' l'indice del vicino
 
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_IP_form + ttl_form + ricerca_form)
-            print "sent QUER" + pktID + self.my_IP_form + str(self.my_IP_form) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
+            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.getP2pPort() + ttl_form + ricerca_form)
+            print "sent QUER" + pktID + self.my_IP_form + str(self.getP2pPort()) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
             self.closeConn(neigh_sock)
 
         #cerco anche all'interno dei miei files

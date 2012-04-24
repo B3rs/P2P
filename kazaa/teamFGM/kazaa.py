@@ -3,7 +3,7 @@ __author__ = 'GuiducciGrillandaLoPiccolo'
 import kazaa_peer
 import kazaa_peer_services
 import kazaa_directory
-#mentre kazaa_directory_services non serve neanche
+import kazaa_directory_services
 
 import socket
 import hashlib #per calcolare l'md5 dei file
@@ -24,10 +24,10 @@ class KazaaClient(object):
         # PEER
 
         #OS X
-        self.my_IP = socket.gethostbyname(socket.gethostname())
+        #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        #self.my_IP = "address"
+        self.my_IP = "5.218.23.66"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -40,6 +40,7 @@ class KazaaClient(object):
         self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
         self.dir_port = 8000 #da spefiche sarebbe l'80 ma per adesso provo con la 8000
+        self.dir_port_form = '%(#)05d' % {"#" : int(self.dir_port)} #porta formattata per bene
 
         self.pickedRole = False #non ho ancora scelto il mio ruolo (peer o superpeer)
         self.logged = False #non sono loggato
@@ -145,6 +146,12 @@ class KazaaClient(object):
         if answer == "Y":
             self.my_port = raw_input("Port: ")
             self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
+
+        roleService = kazaa_peer_services.Service()
+        role = roleService.getRole()
+        if role == "SP": #se sono un superpeer
+            portService = kazaa_directory_services.Service()
+            portService.setP2pPort(self.my_port_form)
 
         superService = kazaa_peer_services.Service()
         nextSuper = superService.getNextSuper() #recupero quello che avevo settato come prossimo superpeer
@@ -608,7 +615,7 @@ class KazaaClient(object):
             if role == "P": #sono un peer: non ho la tabella dei vicini, ma ho un superpeer
 
                 super_ip = raw_input("Superpeer IP: ")
-                super_port = raw_input("Superpeer port: ")
+                super_port = raw_input("Superpeer port: ") #la porta 8000 (oppure 80 da specifiche)
 
                 superService = kazaa_peer_services.Service() #setto quello che diventera' il mio superpeer quando faro' il login
                 superService.setNextSuper(super_ip, super_port)
@@ -623,12 +630,12 @@ class KazaaClient(object):
                 for i in range(0,int(numNeigh)):
 
                     neigh_ip = raw_input("Neighbour IP: ")
-                    neigh_port = raw_input("Neighbour port: ")
+                    neigh_port = raw_input("Neighbour port: ") #la porta P2P (es.9999)
 
                     neighService.addNeighbour(neigh_ip, neigh_port) #aggiungo vicino
 
                 #in quanto superpeer mi metto in ascolto sulla porta 80
-                self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port) #mio indirizzo, porta 80
+                self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port_form) #mio indirizzo, porta 80
                 self.mydirectory.start()
 
                 superService = kazaa_peer_services.Service()

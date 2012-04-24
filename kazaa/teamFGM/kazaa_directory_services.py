@@ -425,7 +425,8 @@ class FindFile(threading.Thread, Service):
 
         pktID = self.generate_pktID() #pktID del pacchetto mandato dal peer
 
-        ttl = raw_input("Insert ttl: ")
+        ttl = 2
+        #ttl = raw_input("Insert ttl: ")
         ttl_form = '%(#)02d' % {"#" : int(ttl)}
 
         #mando QUER a tutti i miei amici
@@ -435,7 +436,7 @@ class FindFile(threading.Thread, Service):
         for n in range(0,len(neighTable)): #n e' l'indice del vicino
 
             neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_IP_form + ttl_form + ricerca_form)
+            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.my_port_form + ttl_form + ricerca_form)
             print "sent QUER" + pktID + self.my_IP_form + str(self.my_IP_form) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
             self.closeConn(neigh_sock)
 

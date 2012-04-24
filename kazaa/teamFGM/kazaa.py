@@ -27,7 +27,7 @@ class KazaaClient(object):
         self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        #self.my_IP = "address"
+        self.my_IP = "5.217.76.58"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -40,6 +40,7 @@ class KazaaClient(object):
         self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
         self.dir_port = 8000 #da spefiche sarebbe l'80 ma per adesso provo con la 8000
+        self.dir_port_form = '%(#)05d' % {"#" : int(self.dir_port)} #porta formattata per bene
 
         self.pickedRole = False #non ho ancora scelto il mio ruolo (peer o superpeer)
         self.logged = False #non sono loggato
@@ -628,7 +629,7 @@ class KazaaClient(object):
                     neighService.addNeighbour(neigh_ip, neigh_port) #aggiungo vicino
 
                 #in quanto superpeer mi metto in ascolto sulla porta 80
-                self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port) #mio indirizzo, porta 80
+                self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port_form) #mio indirizzo, porta 80
                 self.mydirectory.start()
 
                 superService = kazaa_peer_services.Service()

@@ -15,9 +15,11 @@ from custom_utils.files import file_size
 from custom_utils.logging import klog
 import os
 
-aquers = {}
+
 
 class ServiceThread(Thread):
+
+    aquers = {}
 
     def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
@@ -150,13 +152,13 @@ class ServiceThread(Thread):
 
                     ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
 
-                    time.sleep(20)
+                    time.sleep(5)
 
                     #search_id is the packet id of QUER request, it identifies univocally the query
-                    superpeers_result = ServiceThread.get_query_results(search_id)
-                    my_directory_result = FilesManager.find_files_by_query()
+                    superpeers_result = ServiceThread.get_query_results(p_id)
+                    my_directory_result = FilesManager.find_files_by_query(query)
                     result = {}
-                    #costruisco l'array di risultati
+                    #costruisco l array di risultati
                     for r in superpeers_result:
                         if result.has_key(r.hash):
                             result[r.hash].peers.push[{'ip':r.ip, 'port':r.port}]
@@ -170,7 +172,10 @@ class ServiceThread(Thread):
                         else:
                             result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN
-                    sock = self._socket
+
+                    self._socket.close()
+                    peer = UsersManager.find_user_by_session_id(session_id)
+                    sock = connect_socket(peer.ip, peer.port)
                     sock.send("AFIN"+format_deletenum(len(result)))
                     for r in result:
                         sock.send(decode_md5(r.filemd5))
@@ -180,6 +185,7 @@ class ServiceThread(Thread):
                             sock.send(format_ip_address(peer.ip))
                             sock.send(format_port_number(peer.port))
                     #threading.Timer(20, self.search_finished, args=(p_id,)).start()  #calls the fun function with p_id as argument
+                    klog("Sent AFIN")
 
             elif command == "AFIN":
                 klog("AFIN received")
@@ -367,4 +373,3 @@ class ServiceThread(Thread):
             condition = False
             print ex
 
-        klog("request processed correctly")

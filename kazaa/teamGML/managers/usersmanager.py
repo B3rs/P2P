@@ -5,7 +5,7 @@ from custom_utils import hashing
 from models.user import User
 
 MY_SESSIONID = ""
-IS_SUPER_NODE = ""
+IS_SUPER_NODE = False
 USERS = []
 MY_SUPERPEER = None
 

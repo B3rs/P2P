@@ -25,10 +25,12 @@ class RequestEmitter(object):
         self.local_port = local_port
         self.ui_handler = None
 
-    def _coose_random_superpeer(self):
+    def _choose_random_superpeer(self):
         superpeers = PeersManager.find_known_peers(True)
         my_superpeer = superpeers[random.randrange(0, len(superpeers),1)]
         UsersManager.set_superpeer(my_superpeer)
+        klog("Choose this superpeer: %s:%s" %(my_superpeer.ip, str(my_superpeer.port)))
+        self.ui_handler.superpeer_choosen(my_superpeer.ip, my_superpeer.port)
 
     def search_for_superpeers(self, ttl = TTL_FOR_SUPERPEERS_SEARCH ):
         klog("Started query flooding for superpeers, ttl %s" %ttl)
@@ -44,7 +46,7 @@ class RequestEmitter(object):
             sock.send("SUPE" + p_id + format_ip_address(local_ip) + formatted_port + formatted_ttl)
             sock.close()
 
-        threading.Timer(20,self._choose_random_superpeer)
+        threading.Timer(5,self._choose_random_superpeer)
 
     def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):
         klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )

@@ -22,12 +22,16 @@ class RequestEmitter(object):
 
     def search_for_superpeers(self, ttl = TTL_FOR_SUPERPEERS_SEARCH ):
         klog("Started query flooding for superpeers, ttl %s" %ttl)
+
+        p_id = generate_packet_id(16)
+        formatted_port = format_port_number(self.local_port)
+        formatted_ttl = format_ttl(ttl)
+
         for peer in PeersManager.find_known_peers():
             sock = connect_socket(peer.ip, peer.port)
             local_ip = get_local_ip(sock.getsockname()[0])
-            p_id = generate_packet_id(16)
             PacketsManager.add_new_generated_packet(p_id)
-            sock.send("SUPE" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl))
+            sock.send("SUPE" + p_id + format_ip_address(local_ip) + formatted_port + formatted_ttl)
             sock.close()
 
     def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):

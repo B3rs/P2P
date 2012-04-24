@@ -72,7 +72,7 @@ class QKazaaWindow(QMainWindow):
 
     #EVENTS
     def _show_session_id(self, session_id):
-        pass
+        self.ui.sessionIdLabel.setText(session_id)
 
     def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
         item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))

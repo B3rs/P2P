@@ -28,5 +28,6 @@ if __name__ == "__main__":
     bg.start()
 
     ui.show()
+    ui.raise_()
 
     sys.exit(app.exec_())

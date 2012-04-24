@@ -5,5 +5,5 @@
 *.pyc
 .idea/*
 *.autosave
-
+*.idea/
 */*.pyc

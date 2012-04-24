@@ -1,4 +1,4 @@
-__author__ = 'luca'
+__author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 import socket
 

@@ -52,7 +52,7 @@ class RequestEmitter(object):
 
             ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
 
-            def fun(search_id):
+            def search_finished(search_id):
                 #search_id is the packet id of QUER request, it identifies univocally the query
                 superpeers_result = ServiceThread.get_query_results(search_id)
                 my_directory_result = FilesManager.find_files_by_query()
@@ -84,7 +84,7 @@ class RequestEmitter(object):
                         sock.send(format_port_number(peer.port))
                 sock.close()
 
-            threading.Timer(20, fun, args=(p_id,)).start()  #calls the fun function with p_id as argument
+            threading.Timer(20, search_finished, args=(p_id,)).start()  #calls the fun function with p_id as argument
         else:
             my_superpeer = PeersManager.find_my_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)

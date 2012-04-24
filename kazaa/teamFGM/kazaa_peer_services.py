@@ -39,7 +39,7 @@ class Service():
         self.dim_neighTable = dim
 
     def getRole(self):
-        return self.role
+        return self.role[0]
 
     def setRole(self,role):
         self.role[0] = role
@@ -348,28 +348,28 @@ class AckQuery(threading.Thread, Service): #lo ricevo solo se sono un superpeer
         filemd5 = ack_query[36:52]
         filename = ack_query[52:152]
 
-        myQueryTable = self.getMyQueryTable()
+        #myQueryTable = self.getMyQueryTable()
 
-        for i in range(0,len(myQueryTable)):
-            if pktID == myQueryTable[i][0]:
-                if time.time() - myQueryTable[i][1] > 20: #se sono passati piu' di 20 secondi
-                    print "AQUE request expired!"
-                else:
+        #for i in range(0,len(myQueryTable)):
+        #    if pktID == myQueryTable[i][0]:
+        #        if time.time() - myQueryTable[i][1] > 20: #se sono passati piu' di 20 secondi
+        #            print "AQUE request expired!"
+        #        else:
 
-                    #aggiorno la tabella dei match di kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
-                    matchService = kazaa_directory_services.Service()
-                    matchTable = matchService.getMatchTable()
+        #aggiorno la tabella dei match di kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
+        matchService = kazaa_directory_services.Service()
+        matchTable = matchService.getMatchTable()
 
-                    new_match = []
-                    new_match.append(pktID)
-                    new_match.append(ipp2p)
-                    new_match.append(pp2p)
-                    new_match.append(filemd5)
-                    new_match.append(filename)
+        new_match = []
+        new_match.append(pktID)
+        new_match.append(ipp2p)
+        new_match.append(pp2p)
+        new_match.append(filemd5)
+        new_match.append(filename)
 
-                    matchTable.append(new_match)
+        matchTable.append(new_match)
 
-                    matchService.setMatchTable(matchTable)
+        matchService.setMatchTable(matchTable)
 
         print ""
 

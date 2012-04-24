@@ -2,7 +2,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import os
 from custom_utils import hashing
 from models.file import File
-from manager.usersmanager import UserManager
+from managers.usersmanager import UsersManager
 
 # TODO: WARNING!
 # SHARED_PATH = "../shared"
@@ -20,7 +20,7 @@ class FilesManager(object):
             for filename in filenames:
                 path = dirname + "/" + filename
                 md5 = hashing.encode_md5(hashing.calculate_md5_for_file_path(path))
-                file = File(path, filename, md5, UserManager.get_my_session_id)
+                file = File(path, filename, md5, UsersManager.get_my_session_id)
                 cls.shared_files().append(file)
 
     @classmethod

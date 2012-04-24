@@ -1,9 +1,9 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-from mongoengine import *
 
+class User(object):
 
-class User(Document):
-    ip = StringField()
-    port = IntField()
-    session_id = StringField(min_length = 16, max_length = 16)
+    def __init__(self, ip, port, session_id):
+        self.ip = ip
+        self.port = port
+        self.session_id = session_id

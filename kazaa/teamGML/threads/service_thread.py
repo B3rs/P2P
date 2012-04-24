@@ -55,8 +55,19 @@ class ServiceThread(Thread):
             return -1
 
     @classmethod
+    def initialize_for_pckt(cls, search_id):
+        aquers[search_id] = []
+
+    @classmethod
     def add_query_result(cls, search_id, ip, port, hash, filename):
-        aquers[search_id] = {'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename}
+        if aquers.has_key(search_id):
+            aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
+        print "AQUE refused for timeout"
+
+    @classmethod
+    def get_query_results(cls, search_id):
+        if aquers.has_key(search_id):
+            return aquers[search_id]
 
     @classmethod
     def clear_pending_query(cls, search_id):
@@ -119,8 +130,12 @@ class ServiceThread(Thread):
             # Received package in reply to a file research
             elif command == "AQUE":
                 klog("AQUE received")
-
-                #TODO: aggiungere alla lista di attesa dei file da spedire ai client
+                search_id = str(self._socket.recv(16))
+                sender_ip = str(self._socket.recv(15))
+                sender_port = str(self._socket.recv(5))
+                hash = int(self._socket.recv(16))
+                filename = str(self._socket.recv(100))
+                self.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
 
             elif command == "AFIN":
                 klog("AFIN received")

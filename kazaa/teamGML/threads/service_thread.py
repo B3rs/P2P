@@ -14,6 +14,8 @@ from custom_utils.files import file_size
 from custom_utils.logging import klog
 import os
 
+aquers = {}
+
 class ServiceThread(Thread):
 
     def __init__(self, socket, is_superpeer, ip, port, ui_handler):
@@ -51,6 +53,14 @@ class ServiceThread(Thread):
             return numdeleted
         else:
             return -1
+
+    @classmethod
+    def add_query_result(cls, search_id, ip, port, hash, filename):
+        aquers[search_id] = {'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename}
+
+    @classmethod
+    def clear_pending_query(cls, search_id):
+        del aquers[search_id]
 
 
 
@@ -109,6 +119,7 @@ class ServiceThread(Thread):
             # Received package in reply to a file research
             elif command == "AQUE":
                 klog("AQUE received")
+
                 #TODO: aggiungere alla lista di attesa dei file da spedire ai client
 
             elif command == "AFIN":

@@ -1,47 +1,50 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-import mongodbmanager
+
 from custom_utils import hashing
 from models.user import User
 
 MY_SESSIONID = ""
 IS_SUPER_NODE = ""
+USERS = []
+
 
 class UsersManager(object):
 
     @classmethod
     def find_user_by_session_id(cls, session_id):
-        mongodbmanager.connect()
-        return User.objects(session_id=session_id).first()
+        for user in USERS:
+            if user.session_id == session_id:
+                return user
+        return None
 
     @classmethod
     def find_user_by_ip(cls, ip):
-        mongodbmanager.connect()
-        return User.objects(ip = ip).first()
+        for user in USERS:
+            if user.ip == ip:
+                return user
+        return None
 
     @classmethod
     def find_user_by_ip_and_port(cls, ip, port):
-        mongodbmanager.connect()
-        return User.objects(ip = ip, port = port).first()
+        for user in USERS:
+            if user.ip == ip and user.port == port:
+                return user
+        return None
 
     @classmethod
     def create_user(cls, ip, port):
-        mongodbmanager.connect()
-
-        new_user = User(ip=str(ip), port=port, session_id=hashing.generate_session_id())
-        new_user.save()
-        return new_user
+        user = User(ip, port, hashing.generate_session_id())
+        USERS.append(user)
+        return user
 
     @classmethod
     def delete_user(cls, user):
-        mongodbmanager.connect()
-        user.delete()
-
+        USERS.remove(user)
 
     @classmethod
     def delete_all(cls):
-        mongodbmanager.connect()
-        User.drop_collection()
+        USERS = []
 
     @classmethod
     def get_my_session_id(cls):

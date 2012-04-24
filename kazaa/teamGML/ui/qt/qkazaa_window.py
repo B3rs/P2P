@@ -3,10 +3,9 @@ from PyQt4.QtCore import QStringList, SIGNAL, Qt
 from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
-from ui.abstract_ui import AbstractGnutellaUI
 from custom_utils.logging import klog
 
-class QGnutellaWindow(QMainWindow):
+class QKazaaWindow(QMainWindow):
     def __init__(self, request_emitter):
 
         self.request_emitter = request_emitter

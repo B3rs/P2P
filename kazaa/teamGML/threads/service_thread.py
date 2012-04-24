@@ -18,10 +18,8 @@ aquers = {}
 
 class ServiceThread(Thread):
 
-    def __init__(self, socket, is_superpeer, ip, port, ui_handler):
+    def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
-
-        self.is_superpeer = is_superpeer
 
         self.ip = format_ip_address(ip)
         self.port = format_port_number(port)
@@ -89,7 +87,7 @@ class ServiceThread(Thread):
             # Received package looking for a file
             if command == "QUER":
 
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     pckt_id = str(self._socket.recv(16))
                     sender_ip = str(self._socket.recv(15))
                     sender_port = str(self._socket.recv(5))
@@ -161,7 +159,7 @@ class ServiceThread(Thread):
             #
 
             elif command == "LOGI":
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     peer_ip = str(read_from_socket(self._socket, 15))
                     peer_port = str(read_from_socket(self._socket, 5))
 
@@ -173,6 +171,7 @@ class ServiceThread(Thread):
                         klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
                         self._socket.send("ALGI" + session_id)
                         klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
+                        self.ui_handler.add_new_peer(peer_ip, peer_port)
 
             elif command == "ALGI":
                 session_id = str(read_from_socket(self._socket, 16))
@@ -181,11 +180,15 @@ class ServiceThread(Thread):
 
             elif command == "LOGO":
                 peer_session_id = str(read_from_socket(self._socket, 16))
-                klog("Received a LOGO, from session_id: %s" %peer_session_id)
+                peer = UsersManager.find_user_by_session_id(peer_session_id)
+                peer_ip = peer.ip
+                peer_port = peer.port
+                klog("Received a LOGO, from session_id: %s. Peer: %s:%s" %(peer_session_id, peer_ip, peer_port))
 
                 delete_num = self.logout_user(peer_session_id)
                 self._socket.send("ALGO"+ format_deletenum(delete_num))
                 klog("Sent ALGO to session_id: %s deletenum: %d" %(peer_session_id, delete_num))
+                self.ui_handler.remove_peer(peer_ip, peer_port)
 
             elif command == "ALGO":
                 delete_num = read_from_socket(self._socket, 3)
@@ -210,7 +213,7 @@ class ServiceThread(Thread):
                         # decrease ttl and propagate the message to the peers/superpeers
                         ttl = format_ttl(ttl -1)
 
-                        if self.is_superpeer:
+                        if UsersManager.is_super_node():
                             # Respond with an ASUP
                             sock = connect_socket(sender_ip, sender_port)
                             sock.send("ASUP" + pckt_id + self.ip + self.port + ttl)
@@ -238,7 +241,7 @@ class ServiceThread(Thread):
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add peer to known peers
                     PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
-                    self.ui_handler.peers_changed()
+                    self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file
             elif command == "RETR":

@@ -153,8 +153,8 @@ class ServiceThread(Thread):
                     time.sleep(20)
 
                     #search_id is the packet id of QUER request, it identifies univocally the query
-                    superpeers_result = ServiceThread.get_query_results(search_id)
-                    my_directory_result = FilesManager.find_files_by_query()
+                    superpeers_result = ServiceThread.get_query_results(p_id)
+                    my_directory_result = FilesManager.find_files_by_query(query)
                     result = {}
                     #costruisco l'array di risultati
                     for r in superpeers_result:

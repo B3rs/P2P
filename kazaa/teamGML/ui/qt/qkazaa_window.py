@@ -53,6 +53,9 @@ class QKazaaWindow(QMainWindow):
         msg_box.addButton(QMessageBox.Yes)
         msg_box.addButton(QMessageBox.No)
 
+        msg_box.show()
+        msg_box.raise_()
+
         selection = msg_box.exec_()
 
         is_superpeer = (selection == QMessageBox.Yes)

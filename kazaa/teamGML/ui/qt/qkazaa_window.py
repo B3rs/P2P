@@ -1,8 +1,9 @@
-from PyQt4.QtGui import QMainWindow, QListWidgetItem, QTreeWidgetItem, QProgressBar
+from PyQt4.QtGui import QMainWindow, QListWidgetItem, QTreeWidgetItem, QProgressBar, QMessageBox
 from PyQt4.QtCore import QStringList, SIGNAL, Qt
 from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
+from managers.usersmanager import UsersManager
 from custom_utils.logging import klog
 
 class QKazaaWindow(QMainWindow):
@@ -37,6 +38,24 @@ class QKazaaWindow(QMainWindow):
 
         self.connect(self, SIGNAL("log_message_ready"), self._show_log_message)
 
+        self._ask_for_peer_role()
+
+
+    def _ask_for_peer_role(self):
+        msg_box = QMessageBox()
+        msg_box.setText("Are you a super peer?")
+        msg_box.addButton(QMessageBox.Yes)
+        msg_box.addButton(QMessageBox.No)
+
+        selection = msg_box.exec_()
+
+        is_superpeer = (selection == QMessageBox.Yes)
+        UsersManager.set_is_super_node(is_superpeer)
+        if is_superpeer:
+            self.ui.youAreLabel.setText("superpeer")
+        else:
+            self.ui.youAreLabel.setText("peer")
+
 
     #EVENTS
     def _show_log_message(self, message):
@@ -66,7 +85,6 @@ class QKazaaWindow(QMainWindow):
         self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
         self.ui.mainTabWidget.setCurrentIndex(2) #go to the transfer page
 
-    #EVENTS HANDLING
     def _searchNeighboursBtnClicked(self):
         ttl = int(self.ui.ttlPeersSearchSpinBox.value())
         self.request_emitter.search_for_peers(ttl)

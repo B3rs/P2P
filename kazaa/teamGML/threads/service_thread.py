@@ -212,7 +212,7 @@ class ServiceThread(Thread):
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add peer to known peers
                     PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
-                    self.ui_handler.peers_changed()
+                    self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file
             elif command == "RETR":

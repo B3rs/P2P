@@ -147,6 +147,7 @@ class ServiceThread(Thread):
                         klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
                         self._socket.send("ALGI" + session_id)
                         klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
+                        self.ui_handler.add_new_peer(peer_ip, peer_port)
 
             elif command == "ALGI":
                 session_id = str(read_from_socket(self._socket, 16))
@@ -155,11 +156,15 @@ class ServiceThread(Thread):
 
             elif command == "LOGO":
                 peer_session_id = str(read_from_socket(self._socket, 16))
-                klog("Received a LOGO, from session_id: %s" %peer_session_id)
+                peer = UsersManager.find_user_by_session_id(peer_session_id)
+                peer_ip = peer.ip
+                peer_port = peer.port
+                klog("Received a LOGO, from session_id: %s. Peer: %s:%s" %(peer_session_id, peer_ip, peer_port))
 
                 delete_num = self.logout_user(peer_session_id)
                 self._socket.send("ALGO"+ format_deletenum(delete_num))
                 klog("Sent ALGO to session_id: %s deletenum: %d" %(peer_session_id, delete_num))
+                self.ui_handler.remove_peer(peer_ip, peer_port)
 
             elif command == "ALGO":
                 delete_num = read_from_socket(self._socket, 3)

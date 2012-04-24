@@ -50,7 +50,7 @@ class RequestEmitter(object):
 
                 login_sock = connect_socket(my_superpeer.ip, int(my_superpeer.port))
                 login_sock.send("LOGI")
-                login_sock.send(get_local_ip(login_sock.getsockname()[0]))
+                login_sock.send(format_ip_address(get_local_ip(login_sock.getsockname()[0])))
                 login_sock.send(format_port_number(self.local_port))
 
                 try:

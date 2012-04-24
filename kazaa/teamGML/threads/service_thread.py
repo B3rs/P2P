@@ -1,6 +1,7 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
+import time
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
@@ -60,7 +61,8 @@ class ServiceThread(Thread):
     def add_query_result(cls, search_id, ip, port, hash, filename):
         if aquers.has_key(search_id):
             aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
-        print "AQUE refused for timeout"
+        else:
+            print "AQUE refused for timeout"
 
     @classmethod
     def get_query_results(cls, search_id):
@@ -70,8 +72,6 @@ class ServiceThread(Thread):
     @classmethod
     def clear_pending_query(cls, search_id):
         del aquers[search_id]
-
-
 
     def run(self):
 
@@ -133,7 +133,7 @@ class ServiceThread(Thread):
                 sender_port = str(self._socket.recv(5))
                 hash = int(self._socket.recv(16))
                 filename = str(self._socket.recv(100))
-                self.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
+                ServiceThread.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
 
             elif command == "FIND":
                 if UsersManager.is_super_node():
@@ -146,7 +146,39 @@ class ServiceThread(Thread):
                         local_ip = get_local_ip(sock.getsockname()[0])
                         sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
                         sock.close()
-                pass
+
+                    ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
+
+                    time.sleep(20)
+
+                    #search_id is the packet id of QUER request, it identifies univocally the query
+                    superpeers_result = ServiceThread.get_query_results(search_id)
+                    my_directory_result = FilesManager.find_files_by_query()
+                    result = {}
+                    #costruisco l'array di risultati
+                    for r in superpeers_result:
+                        if result.has_key(r.hash):
+                            result[r.hash].peers.push[{'ip':r.ip, 'port':r.port}]
+                        else:
+                            result[r.hash] = {'filemd5':r.hash, 'filename':r.filename, 'peers':[{'ip':r.ip, 'port':r.port}]}
+
+                    for f in my_directory_result:
+                        u = UsersManager.find_user_by_session_id(f.session_id)
+                        if result.has_key(r.hash):
+                            result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
+                        else:
+                            result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
+                        #must send AFIN
+                    sock = self._socket
+                    sock.send("AFIN"+format_deletenum(len(result)))
+                    for r in result:
+                        sock.send(decode_md5(r.filemd5))
+                        sock.send(format_filename(r.filename))
+                        sock.send(format_deletenum(len(r.peers)))
+                        for peer in r.peers:
+                            sock.send(format_ip_address(peer.ip))
+                            sock.send(format_port_number(peer.port))
+                    #threading.Timer(20, self.search_finished, args=(p_id,)).start()  #calls the fun function with p_id as argument
 
             elif command == "AFIN":
                 klog("AFIN received")

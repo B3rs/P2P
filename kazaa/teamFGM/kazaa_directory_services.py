@@ -103,7 +103,7 @@ class Service():
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
         try:
-            #print "Connecting with neighbour " + IP #TODO debug
+            #print "Connecting with neighbour " + IP
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -408,7 +408,7 @@ class FindFile(threading.Thread, Service):
         self.dir_port_form = dir_port_form
 
 
-    def searchFiles(self,search_string): #TODO DA CONTROLLARE (deve essere la stessa che c'e' in kazaa_peer_services)
+    def searchFiles(self,search_string): #ATTENZIONE! deve essere la stessa che c'e' in kazaa_peer_services)
 
         lista_files = []
 
@@ -434,10 +434,23 @@ class FindFile(threading.Thread, Service):
         ricerca_form = findfile[16:36]
         ricerca = ricerca_form.strip(" ")
 
-        pktID = self.generate_pktID() #pktID del pacchetto mandato dal peer
+        #da quando ricevo questo pacchetto ho 20 secondi di tempo per ricevere le risposte dai vari superpeer
+        start = time.time()
 
-        ttl = 2
+        ttl = 2 #ttl statico
         ttl_form = '%(#)02d' % {"#" : int(ttl)}
+
+        pktID = self.generate_pktID() #genero pktID
+
+        #aggiungo il pktID a quelli della myQueryTable cosi' quando mi tornano i pacchetti AQUE di risposta
+        #riesco a capire se devo scartarli o meno in base a quanti secondi sono passati
+        queryService = kazaa_peer_services.Service()
+        myQueryTable = queryService.getMyQueryTable()
+        new_entry = []
+        new_entry.append(pktID)
+        new_entry.append(time.time())
+        myQueryTable.append(new_entry)
+        queryService.setMyQueryTable(myQueryTable)
 
         #mando QUER a tutti i miei amici
         neighService = kazaa_peer_services.Service()
@@ -455,11 +468,11 @@ class FindFile(threading.Thread, Service):
                                             #sessionID, filemd5, filename
 
         if(len(files)==0):
-            print "No file matches with query's search in my superpeer" #TODO debug
+            print "No file matches with query's search in my superpeer"
 
 
         else: #ho trovato almeno un file che matchi la ricerca
-            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer" #TODO debug
+            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer"
 
             #aggiorno la mia tabella matchTable
             for f in range(0,len(files)): #f = indice riga (una riga=un file)
@@ -484,7 +497,10 @@ class FindFile(threading.Thread, Service):
 
                 self.setMatchTable(matchTable) #aggiorno matchTable
 
-        time.sleep(20) #in realta' non e' esattamente cosi' che dovrebbe essere, quindi TODO sistemare
+        while True:
+            if time.time() - start > 20: #se da quando ho iniziato finora sono passati piu' di 20 secondi posso proseguire
+                break
+            time.sleep(1)
 
         #ora devo mandare la mega risposta al peer che ha effettuato la ricerca (che e' ancora la' che aspetta)
 

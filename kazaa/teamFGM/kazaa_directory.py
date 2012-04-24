@@ -35,8 +35,6 @@ class Dispatcher(threading.Thread):
 
         request = self.sockread(self.socketclient,4) #leggo i primi 4 byte per sapere cosa fare
 
-        time.sleep(1) #TODO DEBUG
-
         if request=="LOGI":
             myservice = kazaa_directory_services.Login(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
@@ -101,7 +99,7 @@ class ListenToPeers(threading.Thread):
         self.peer_socket.bind(self.address)
         self.peer_socket.listen(5) #socket per chi vorra' fare download da me
 
-        a=0 #TODO debug
+        a=0 #debug
 
         while self.check == True:
 
@@ -114,7 +112,7 @@ class ListenToPeers(threading.Thread):
                 dispatcher.start()
 
             except Exception,expt:
-                a=a+1 #TODO debug
+                a=a+1 #debug
 
 
 

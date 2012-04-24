@@ -3,21 +3,22 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 from models.peer import Peer
 from custom_utils.formatting import *
 
-PEERS = [] #TODO: remove this into a singleton instance of PeersManager
 
 class PeersManager(object):
+
+    PEERS = []
 
     # @returns array with known peers
     @classmethod
     def find_known_peers(cls, superpeers=False):
         if superpeers:
             matching = []
-            for p in PEERS:
+            for p in PeersManager.PEERS:
                 if p.is_superpeer:
                     matching.append(p)
             return matching
         else:
-            return PEERS
+            return PeersManager.PEERS
 
     @classmethod
     def is_known_peer(cls, peer):
@@ -34,4 +35,10 @@ class PeersManager(object):
     @classmethod
     def add_new_peer(cls, peer):
         if not PeersManager.is_known_peer(peer):
-            PEERS.append(peer)
+            PeersManager.PEERS.append(peer)
+
+    @classmethod
+    def become_superpeer(cls, ip, port):
+        for p in PeersManager.PEERS:
+            if p.ip == ip and p.port == port:
+                p.is_superpeer = True

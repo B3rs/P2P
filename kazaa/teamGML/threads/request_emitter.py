@@ -25,13 +25,6 @@ class RequestEmitter(object):
         self.local_port = local_port
         self.ui_handler = None
 
-    def _choose_random_superpeer(self):
-        superpeers = PeersManager.find_known_peers(True)
-        my_superpeer = superpeers[random.randrange(0, len(superpeers),1)]
-        UsersManager.set_superpeer(my_superpeer)
-        klog("Choose this superpeer: %s:%s" %(my_superpeer.ip, str(my_superpeer.port)))
-        self.ui_handler.superpeer_choosen(my_superpeer.ip, my_superpeer.port)
-
     def search_for_superpeers(self, ttl = TTL_FOR_SUPERPEERS_SEARCH ):
         klog("Started query flooding for superpeers, ttl %s" %ttl)
 
@@ -46,23 +39,49 @@ class RequestEmitter(object):
             sock.send("SUPE" + p_id + format_ip_address(local_ip) + formatted_port + formatted_ttl)
             sock.close()
 
-        threading.Timer(5,self._choose_random_superpeer)
+        def _choose_random_superpeer():
+            superpeers = PeersManager.find_known_peers(True)
 
-    def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):
+            if len(superpeers) > 0:
+                my_superpeer = superpeers[random.randrange(0, len(superpeers),1)]
+                UsersManager.set_superpeer(my_superpeer)
+                klog("Choose this superpeer: %s:%s" %(my_superpeer.ip, str(my_superpeer.port)))
+                klog("Login...")
+
+                login_sock = connect_socket(my_superpeer.ip, int(my_superpeer.port))
+                login_sock.send("LOGI")
+                login_sock.send(format_ip_address(get_local_ip(login_sock.getsockname()[0])))
+                login_sock.send(format_port_number(self.local_port))
+
+                try:
+                    read_from_socket(login_sock, 4) #read ALGI
+                    my_session_id = read_from_socket(login_sock, 16)
+                    login_sock.close()
+
+                    UsersManager.set_my_session_id(my_session_id)
+                    klog("Done. My session id is: %s" %my_session_id)
+
+                    self.ui_handler.superpeer_choosen(my_superpeer.ip, my_superpeer.port)
+                    self.ui_handler.login_done(my_session_id)
+                except Exception, ex:
+                    klog(ex)
+
+        threading.Timer(2, _choose_random_superpeer).start()
+
+    def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
         klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         p_id = generate_packet_id(16)
         PacketsManager.add_new_generated_packet(p_id)
 
-        if as_supernode:
+        if UsersManager.is_super_node():
             # TODO
-            pass
-
+            klog("IMPLEMENT ME PLEASE!")
 
         else:
-            my_superpeer = PeersManager.find_my_superpeer()
+            my_superpeer = UsersManager.get_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)
             local_ip = get_local_ip(sock.getsockname()[0])
-            sock.send("FIND" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
+            sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
             sock.close()
 
     def download_file(self, peer_ip, peer_port, md5, filename):

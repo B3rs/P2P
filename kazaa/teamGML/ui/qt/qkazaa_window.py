@@ -45,6 +45,8 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("new_peer"), self._draw_new_peer)
         self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
 
+        self.connect(self, SIGNAL("login_done"), self._show_session_id)
+
         self._ask_for_peer_role()
 
 
@@ -69,6 +71,9 @@ class QKazaaWindow(QMainWindow):
             self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
 
     #EVENTS
+    def _show_session_id(self, session_id):
+        self.ui.sessionIdLabel.setText(session_id)
+
     def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
         item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))
 
@@ -194,6 +199,8 @@ class QKazaaWindow(QMainWindow):
     def remove_peer(self, ip, port):
         self.emit(SIGNAL("remove_peer"), ip, port)
 
+    def login_done(self, session_id):
+        self.emit(SIGNAL("login_done"), session_id)
 
 
 

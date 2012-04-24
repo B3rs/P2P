@@ -10,11 +10,10 @@ import socket
 
 class ResponseHandlerThread(Thread):
 
-    def __init__(self, is_superpeer, port, ui_handler):
+    def __init__(self, port, ui_handler):
         super(ResponseHandlerThread, self).__init__()
         self.port = port
         self.ui_handler = ui_handler
-        self.is_superpeer = is_superpeer
 
     def run(self):
         #print "Background thread started"
@@ -39,6 +38,6 @@ class ResponseHandlerThread(Thread):
             (socket_client, address) = self.server_socket.accept()
             # This (should) return the correct local ip, it needs a host to evaluate it
             my_remote_ip = sockets.get_local_ip(socket_client.getsockname()[0])
-            s = ServiceThread(socket_client, self.is_superpeer, my_remote_ip, self.port, self.ui_handler)
+            s = ServiceThread(socket_client, my_remote_ip, self.port, self.ui_handler)
             s.start()
 

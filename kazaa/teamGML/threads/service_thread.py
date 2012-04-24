@@ -16,10 +16,8 @@ import os
 
 class ServiceThread(Thread):
 
-    def __init__(self, socket, is_superpeer, ip, port, ui_handler):
+    def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
-
-        self.is_superpeer = is_superpeer
 
         self.ip = format_ip_address(ip)
         self.port = format_port_number(port)
@@ -68,7 +66,7 @@ class ServiceThread(Thread):
             # Received package looking for a file
             if command == "QUER":
 
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     pckt_id = str(self._socket.recv(16))
                     sender_ip = str(self._socket.recv(15))
                     sender_port = str(self._socket.recv(5))
@@ -135,7 +133,7 @@ class ServiceThread(Thread):
             #
 
             elif command == "LOGI":
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     peer_ip = str(read_from_socket(self._socket, 15))
                     peer_port = str(read_from_socket(self._socket, 5))
 
@@ -189,7 +187,7 @@ class ServiceThread(Thread):
                         # decrease ttl and propagate the message to the peers/superpeers
                         ttl = format_ttl(ttl -1)
 
-                        if self.is_superpeer:
+                        if UsersManager.is_super_node():
                             # Respond with an ASUP
                             sock = connect_socket(sender_ip, sender_port)
                             sock.send("ASUP" + pckt_id + self.ip + self.port + ttl)

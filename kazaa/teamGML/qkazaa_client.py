@@ -23,7 +23,7 @@ if __name__ == "__main__":
     logging.UI_LOGGER = ui
 
     # Launch background thread for network handling
-    bg = ResponseHandlerThread(False, PORT, ui)
+    bg = ResponseHandlerThread(PORT, ui)
     bg.daemon = True
     bg.start()
 

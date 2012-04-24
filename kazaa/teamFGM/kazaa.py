@@ -498,11 +498,13 @@ class KazaaClient(object):
 
                     # SPEDISCO IL PRIMO MESSAGGIO
                     iodown_socket.sendall("RETR" + filemd5)
+                    print "RETR" + filemd5
 
                     try:
 
                         # ricevo "ARET" dal peer
                         ack = self.sockread(iodown_socket, 10)
+                        print "received " + ack
 
                     except IOError:
 

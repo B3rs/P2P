@@ -25,13 +25,16 @@ class Service():
     matchTable = [] #tabella con la collezione di tutti gli AQUE ricevuti (pktID, ipp2p, pp2p, filemd5, filename)
     #la dovro' scorrere per andare poi a costruire la risposta alla FIND
 
-    p2pPort = [0] #porta per il p2p (es.09999)
+    p2pPort = [""] #porta per il p2p (es.09999)
 
     def getP2pPort(self):
-        return self.p2pPort
+        return self.p2pPort[0]
 
     def setP2pPort(self,p2pPort):
+        print p2pPort
         self.p2pPort[0] = p2pPort
+        print self.p2pPort[0]
+
 
     def getPeersdb(self):
         return self.peersdb
@@ -452,11 +455,11 @@ class FindFile(threading.Thread, Service):
                                             #sessionID, filemd5, filename
 
         if(len(files)==0):
-            print "No file matches with query's search" #TODO debug
+            print "No file matches with query's search in my superpeer" #TODO debug
 
 
         else: #ho trovato almeno un file che matchi la ricerca
-            print "Found #" + str(len(files)) + " files that meet query's search" #TODO debug
+            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer" #TODO debug
 
             #aggiorno la mia tabella matchTable
             for f in range(0,len(files)): #f = indice riga (una riga=un file)
@@ -481,16 +484,16 @@ class FindFile(threading.Thread, Service):
 
                 self.setMatchTable(matchTable) #aggiorno matchTable
 
-        print self.getMatchTable()
-
         time.sleep(20) #in realta' non e' esattamente cosi' che dovrebbe essere, quindi TODO sistemare
 
         #ora devo mandare la mega risposta al peer che ha effettuato la ricerca (che e' ancora la' che aspetta)
 
         matchTable = self.getMatchTable() #pktID, ipp2p, pp2p, filemd5, filename
-        #puo' essere che piu' file con lo stesso md5 hanno nome di file differente,
+        #puo' essere che piu' file con lo stesso md5 abbiano nome di file differente,
         #in quanto provenienti da differenti supernodi, si utilizza un solo nome tra quelli possibili,
         #lasciando tale scelta  libera nella implementazione.
+
+        print matchTable
 
         #formattazione pacchetto finale:
         #AFIN.idmd5[3B].{Filemd5_i[16B].Filename_i[100B].#copy_i[3B].{IPP2P_i_j[15B].PP2P_i_j[5B]}(j=1..#copy_i)}(i=1..#idmd5)
@@ -520,8 +523,8 @@ class FindFile(threading.Thread, Service):
                         break
                     if matchTable[j][0] == pktID and i!=j and matchTable[i][3] == matchTable[j][3]: #se i due md5 sono uguali
                         num_copy = num_copy + 1
-                        cur_ip = matchTable[i][1]
-                        cur_port = matchTable[i][2]
+                        cur_ip = matchTable[j][1]
+                        cur_port = matchTable[j][2]
                         ip_porta += cur_ip + cur_port #aggiungo ip e porta della copia corrente
                         matchTable.pop(j) #elimino la riga
                     else:

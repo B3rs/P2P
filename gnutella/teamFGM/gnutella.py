@@ -39,9 +39,9 @@ class GnutellaPeer(object):
         self.myserver.start()
 
         #vicini onnipresenti
-        self.n1_IP = "192.168.0.100"
+        self.n1_IP = "192.168.0.2"
         self.n1_port = 6503
-        self.n2_IP = "192.168.0.187"
+        self.n2_IP = "192.168.0.3"
         self.n2_port = 6503
 
         #tabella vicini

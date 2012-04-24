@@ -3,6 +3,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import socket
 from threading import Thread
 from models.peer import Peer
+import random
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
 from managers.filesmanager import FilesManager
@@ -24,6 +25,11 @@ class RequestEmitter(object):
         self.local_port = local_port
         self.ui_handler = None
 
+    def _coose_random_superpeer(self):
+        superpeers = PeersManager.find_known_peers(True)
+        my_superpeer = superpeers[random.randrange(0, len(superpeers),1)]
+        UsersManager.set_superpeer(my_superpeer)
+
     def search_for_superpeers(self, ttl = TTL_FOR_SUPERPEERS_SEARCH ):
         klog("Started query flooding for superpeers, ttl %s" %ttl)
 
@@ -37,6 +43,8 @@ class RequestEmitter(object):
             PacketsManager.add_new_generated_packet(p_id)
             sock.send("SUPE" + p_id + format_ip_address(local_ip) + formatted_port + formatted_ttl)
             sock.close()
+
+        threading.Timer(20,self._choose_random_superpeer)
 
     def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):
         klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )

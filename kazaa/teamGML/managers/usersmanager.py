@@ -7,6 +7,7 @@ from models.user import User
 MY_SESSIONID = ""
 IS_SUPER_NODE = ""
 USERS = []
+MY_SUPERPEER = None
 
 
 class UsersManager(object):
@@ -61,3 +62,7 @@ class UsersManager(object):
     @classmethod
     def set_is_super_node(cls, is_super_node):
         IS_SUPER_NODE = is_super_node
+
+    @classmethod
+    def set_superpeer(cls, peer):
+        MY_SUPERPEER = peer

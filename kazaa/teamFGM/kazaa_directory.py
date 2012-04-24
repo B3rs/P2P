@@ -8,7 +8,7 @@ import time
 
 class Dispatcher(threading.Thread):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
         threading.Thread.__init__(self)
 
@@ -16,7 +16,7 @@ class Dispatcher(threading.Thread):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
 
@@ -38,23 +38,23 @@ class Dispatcher(threading.Thread):
         time.sleep(1) #TODO DEBUG
 
         if request=="LOGI":
-            myservice = kazaa_directory_services.Login(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = kazaa_directory_services.Login(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
         elif request=="LOGO":
-            myservice = kazaa_directory_services.Logout(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = kazaa_directory_services.Logout(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
         elif request=="ADFF":
-            myservice = kazaa_directory_services.AddFile(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = kazaa_directory_services.AddFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
         elif request=="DEFF":
-            myservice = kazaa_directory_services.DeleteFile(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = kazaa_directory_services.DeleteFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
         elif request=="FIND":
-            myservice = kazaa_directory_services.FindFile(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
+            myservice = kazaa_directory_services.FindFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
         else:
@@ -65,13 +65,13 @@ class Dispatcher(threading.Thread):
 
 class ListenToPeers(threading.Thread):
 
-    def __init__(self, my_IP_form, my_port_form):
+    def __init__(self, my_IP_form, dir_port_form):
 
         #print "metodo init"
 
         threading.Thread.__init__(self)
         self.my_IP_form = my_IP_form
-        self.my_port_form = my_port_form
+        self.dir_port_form = dir_port_form
         self.check = True
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
@@ -94,7 +94,7 @@ class ListenToPeers(threading.Thread):
     def run(self):
 
 
-        self.address = (self.my_IP_form, int(self.my_port_form))
+        self.address = (self.my_IP_form, int(self.dir_port_form))
 
         # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -110,7 +110,7 @@ class ListenToPeers(threading.Thread):
 
                 #print "Peer " + AddrClient[0] + " connected"
 
-                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form)
+                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.dir_port_form)
                 dispatcher.start()
 
             except Exception,expt:

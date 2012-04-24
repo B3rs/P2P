@@ -32,6 +32,12 @@ class Service():
     super = ["",0] #indirizzo e porta del mio attuale superpeer (quello nel quale sono loggata in questo momento)
     nextSuper = ["",0] #indirizzo e porta del superpeer che verra' utilizzato al prossimo login
 
+    def getNeighDim(self):
+        return self.dim_neighTable
+
+    def setNeighDim(self,dim):
+        self.dim_neighTable = dim
+
     def getRole(self):
         return self.role
 

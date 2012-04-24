@@ -9,6 +9,8 @@ def generate_session_id(size=16):
     chars = string.ascii_uppercase + string.digits
     return ''.join(random.choice(chars) for x in range(size))
 
+def generate_packet_id(size=16):
+    return generate_session_id(size)
 
 def encode_md5(md5_string):
     return base64.b64encode(md5_string)

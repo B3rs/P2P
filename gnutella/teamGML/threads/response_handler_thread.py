@@ -5,6 +5,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
 from service_thread import ServiceThread
+from custom_utils import sockets
 import socket
 
 class ResponseHandlerThread(Thread):
@@ -35,6 +36,8 @@ class ResponseHandlerThread(Thread):
         while 1:
             #print "Waiting for connection "
             (socket_client, address) = self.server_socket.accept()
-            s = ServiceThread(socket_client, self.ip, self.port, self.ui_handler)
+            # This (should) return the correct local ip, it needs a host to evaluate it
+            my_remote_ip = sockets.get_local_ip(socket_client.getsockname()[0])
+            s = ServiceThread(socket_client, my_remote_ip, self.port, self.ui_handler)
             s.start()
 

@@ -139,6 +139,7 @@ class ServiceThread(Thread):
                 if UsersManager.is_super_node():
                     session_id = str(self._socket.recv(16))
                     query = str(self._socket.recv(20))
+                    p_id = generate_packet_id(16)
 
                     # Launch a request to the other super peers with the query
                     for superpeer in PeersManager.find_known_peers(True):

@@ -91,7 +91,7 @@
      </layout>
     </item>
     <item>
-     <widget class="QTabWidget" name="mainTabWidget">
+     <widget class="QTabWidget" name="tabsWidget">
       <property name="currentIndex">
        <number>1</number>
       </property>
@@ -221,7 +221,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_6">
+      <widget class="QWidget" name="superPeersTab">
        <attribute name="title">
         <string>Superpeers</string>
        </attribute>

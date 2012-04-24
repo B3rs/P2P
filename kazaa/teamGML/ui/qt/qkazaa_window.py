@@ -58,9 +58,9 @@ class QKazaaWindow(QMainWindow):
         UsersManager.set_is_super_node(is_superpeer)
         if is_superpeer:
             self.ui.youAreLabel.setText("superpeer")
+            self.ui.tabsWidget.removeTab(1)
         else:
             self.ui.youAreLabel.setText("peer")
-
 
     #EVENTS
     def _draw_new_superpeer(self, superpeer_ip, superpeer_port):

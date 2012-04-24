@@ -1,6 +1,6 @@
 import sys
 from PyQt4.QtGui import QApplication, QMainWindow
-from ui.qt.qgnutella_window import QGnutellaWindow
+from ui.qt.qkazaa_window import QKazaaWindow
 from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
@@ -17,13 +17,13 @@ if __name__ == "__main__":
 
     #Setup the UI
     app = QApplication(sys.argv)
-    ui = QGnutellaWindow(request_emitter)
+    ui = QKazaaWindow(request_emitter)
 
     #Set the UI to the logger function to show the log messages also in the UI
     logging.UI_LOGGER = ui
 
     # Launch background thread for network handling
-    bg = ResponseHandlerThread(PORT, ui)
+    bg = ResponseHandlerThread(False, PORT, ui)
     bg.daemon = True
     bg.start()
 

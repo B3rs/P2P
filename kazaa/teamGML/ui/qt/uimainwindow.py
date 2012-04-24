@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mainwindow.ui'
+# Form implementation generated from reading ui file 'designer/mainwindow.ui'
 #
-# Created: Mon Apr 16 10:20:11 2012
+# Created: Tue Apr 24 09:58:17 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,12 +17,10 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(640, 480)
+        MainWindow.resize(663, 561)
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.centralwidget)
-        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
-        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.label = QtGui.QLabel(self.centralwidget)
         font = QtGui.QFont()
@@ -35,6 +33,25 @@ class Ui_MainWindow(object):
         self.label_2.setAlignment(QtCore.Qt.AlignCenter)
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.verticalLayout.addWidget(self.label_2)
+        self.horizontalLayout_5 = QtGui.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(_fromUtf8("horizontalLayout_5"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem)
+        self.label_11 = QtGui.QLabel(self.centralwidget)
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.horizontalLayout_5.addWidget(self.label_11)
+        self.youAreLabel = QtGui.QLabel(self.centralwidget)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.youAreLabel.setFont(font)
+        self.youAreLabel.setObjectName(_fromUtf8("youAreLabel"))
+        self.horizontalLayout_5.addWidget(self.youAreLabel)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_5.addItem(spacerItem1)
+        self.verticalLayout.addLayout(self.horizontalLayout_5)
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem2)
         self.mainTabWidget = QtGui.QTabWidget(self.centralwidget)
         self.mainTabWidget.setObjectName(_fromUtf8("mainTabWidget"))
         self.tab = QtGui.QWidget()
@@ -43,8 +60,8 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
         self.horizontalLayout = QtGui.QHBoxLayout()
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
-        spacerItem = QtGui.QSpacerItem(418, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout.addItem(spacerItem)
+        spacerItem3 = QtGui.QSpacerItem(418, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem3)
         self.label_9 = QtGui.QLabel(self.tab)
         self.label_9.setObjectName(_fromUtf8("label_9"))
         self.horizontalLayout.addWidget(self.label_9)
@@ -83,8 +100,8 @@ class Ui_MainWindow(object):
         self.peerPort.setText(_fromUtf8(""))
         self.peerPort.setObjectName(_fromUtf8("peerPort"))
         self.horizontalLayout_2.addWidget(self.peerPort)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem1)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem4)
         self.addPeerBtn = QtGui.QPushButton(self.tab)
         self.addPeerBtn.setObjectName(_fromUtf8("addPeerBtn"))
         self.horizontalLayout_2.addWidget(self.addPeerBtn)
@@ -160,8 +177,8 @@ class Ui_MainWindow(object):
         self.label_4.setFont(font)
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.horizontalLayout_4.addWidget(self.label_4)
-        spacerItem2 = QtGui.QSpacerItem(358, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_4.addItem(spacerItem2)
+        spacerItem5 = QtGui.QSpacerItem(358, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_4.addItem(spacerItem5)
         self.verticalLayout_6.addLayout(self.horizontalLayout_4)
         self.mainTabWidget.addTab(self.tab_4, _fromUtf8(""))
         self.tab_5 = QtGui.QWidget()
@@ -173,7 +190,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.addWidget(self.loggingTextBrowser)
         self.mainTabWidget.addTab(self.tab_5, _fromUtf8(""))
         self.verticalLayout.addWidget(self.mainTabWidget)
-        self.verticalLayout_2.addLayout(self.verticalLayout)
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtGui.QStatusBar(MainWindow)
         self.statusbar.setObjectName(_fromUtf8("statusbar"))
@@ -185,8 +201,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "MainWindow", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("MainWindow", "Gnutella client", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MainWindow", "Kazaa client", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("MainWindow", "by Ferrari Luca, Bersani Marco, Lodi Giovanni", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_11.setText(QtGui.QApplication.translate("MainWindow", "You are a:", None, QtGui.QApplication.UnicodeUTF8))
+        self.youAreLabel.setText(QtGui.QApplication.translate("MainWindow", "peer", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setText(QtGui.QApplication.translate("MainWindow", "TTL:", None, QtGui.QApplication.UnicodeUTF8))
         self.searchNeighboursBtn.setText(QtGui.QApplication.translate("MainWindow", "Search neighbours", None, QtGui.QApplication.UnicodeUTF8))
         self.peersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))

@@ -66,3 +66,8 @@ class UsersManager(object):
     @classmethod
     def set_superpeer(cls, peer):
         UsersManager.MY_SUPERPEER = peer
+
+    @classmethod
+    def get_superpeer(cls):
+        return UsersManager.MY_SUPERPEER
+

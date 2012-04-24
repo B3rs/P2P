@@ -68,18 +68,17 @@ class RequestEmitter(object):
 
         threading.Timer(2, _choose_random_superpeer).start()
 
-    def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):
+    def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
         klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         p_id = generate_packet_id(16)
         PacketsManager.add_new_generated_packet(p_id)
 
-        if as_supernode:
+        if UsersManager.is_super_node():
             # TODO
-            pass
-
+            klog("IMPLEMENT ME PLEASE!")
 
         else:
-            my_superpeer = PeersManager.find_my_superpeer()
+            my_superpeer = UsersManager.get_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)
             local_ip = get_local_ip(sock.getsockname()[0])
             sock.send("FIND" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))

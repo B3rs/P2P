@@ -44,7 +44,7 @@ class FilesManager(object):
 
     # @returns array with matches path
     @classmethod
-    def find_files_by_query(cls, query, shared_path = SHARED_PATH):
+    def find_files_by_query(cls, query, user_session_id = None, shared_path = SHARED_PATH):
         query = query.lower().strip(' ')
 
         # Loop in the shared files directory and look for occurrence
@@ -52,7 +52,11 @@ class FilesManager(object):
 
         for file in cls.shared_files():
             if file.filename.lower().find(query) != -1:
-                matches.append(file)
+                if user_session_id:
+                    if user_session_id != file.session_id:
+                        matches.append(file)
+                else:
+                    matches.append(file)
         return matches
 
     @classmethod

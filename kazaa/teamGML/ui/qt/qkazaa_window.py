@@ -1,9 +1,11 @@
-from PyQt4.QtGui import QMainWindow, QListWidgetItem, QTreeWidgetItem, QProgressBar
+from PyQt4.QtGui import QMainWindow, QListWidgetItem, QTreeWidgetItem, QProgressBar, QMessageBox
 from PyQt4.QtCore import QStringList, SIGNAL, Qt
 from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
+from managers.usersmanager import UsersManager
 from custom_utils.logging import klog
+from models.peer import Peer
 
 class QKazaaWindow(QMainWindow):
     def __init__(self, request_emitter):
@@ -21,14 +23,15 @@ class QKazaaWindow(QMainWindow):
         self._redraw_shared_files()
 
         #Show the known neighbours
-        self._redraw_peers()
+        self._redraw_neighbours_peers()
 
         #Connect the signals to events
         self.ui.searchBtn.clicked.connect(self._searchBtnClicked)
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
-        self.ui.searchNeighboursBtn.clicked.connect(self._searchNeighboursBtnClicked)
-        self.ui.addPeerBtn.clicked.connect(self._addPeerBtnClicked)
-        self.connect(self, SIGNAL("peers_changed"), self._redraw_peers)
+        self.ui.addNeighbourPeerBtn.clicked.connect(self._addNeighourPeerBtnClicked)
+        self.ui.searchSuperPeerBtn.clicked.connect(self._searchSuperPeerBtnClicked)
+
+        self.connect(self, SIGNAL("neighbours_peers_changed"), self._redraw_neighbours_peers)
         self.connect(self, SIGNAL("shared_files_changed"), self._redraw_shared_files)
         self.connect(self, SIGNAL("new_result_file"), self._draw_new_result_file)
 
@@ -37,19 +40,71 @@ class QKazaaWindow(QMainWindow):
 
         self.connect(self, SIGNAL("log_message_ready"), self._show_log_message)
 
+        self.connect(self, SIGNAL("superpeer_choosen"), self._show_choosen_superpeer)
+        self.connect(self, SIGNAL("new_superpeer"), self._draw_new_superpeer)
+        self.connect(self, SIGNAL("new_peer"), self._draw_new_peer)
+        self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
+
+        self._ask_for_peer_role()
+
+
+    def _ask_for_peer_role(self):
+        msg_box = QMessageBox()
+        msg_box.setText("Are you a super peer?")
+        msg_box.addButton(QMessageBox.Yes)
+        msg_box.addButton(QMessageBox.No)
+
+        msg_box.show()
+        msg_box.raise_()
+
+        selection = msg_box.exec_()
+
+        is_superpeer = (selection == QMessageBox.Yes)
+        UsersManager.set_is_super_node(is_superpeer)
+        if is_superpeer:
+            self.ui.youAreLabel.setText("superpeer")
+            self.ui.tabsWidget.removeTab(1) #remove the "Superpeers" tab
+        else:
+            self.ui.youAreLabel.setText("peer")
+            self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
 
     #EVENTS
+    def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
+        item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))
+
+    def _remove_peer(self, peer_ip, peer_port):
+        items_found = self.ui.mypeersTreeWidget.findItems(peer_ip, Qt.MatchExactly, 0)
+
+        if len(items_found) > 0:
+
+            #search the port
+            for i in items_found:
+                if i.text(1) == peer_port:
+                    self.ui.mypeersTreeWidget.removeItemWidget(i, 0)
+                    self.ui.mypeersTreeWidget.removeItemWidget(i, 1)
+
+
+    def _draw_new_peer(self, peer_ip, peer_port):
+        item = QTreeWidgetItem(self.ui.mypeersTreeWidget, QStringList([str(peer_ip), str(peer_port)]))
+
+    def _show_choosen_superpeer(self, ip, port):
+        self.ui.superPeerLabel.setText("%s:%d" %(ip, int(port)))
+
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)
 
-    def _addPeerBtnClicked(self):
+    def _searchSuperPeerBtnClicked(self):
+        self.ui.superpeersTreeWidget.clear()
+        self.request_emitter.search_for_superpeers()
+
+    def _addNeighourPeerBtnClicked(self):
         ip = self.ui.peerIP.text()
         port = self.ui.peerPort.text()
 
         if len(port) > 1 and len(ip.split(".")) == 4:
             # Add peer to PeerManager and to list
-            PeersManager.add_new_peer(ip, port)
-            self.peers_changed()
+            PeersManager.add_new_peer(Peer(ip, port))
+            self.neighbours_peers_changed()
 
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
@@ -66,15 +121,11 @@ class QKazaaWindow(QMainWindow):
         self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
         self.ui.mainTabWidget.setCurrentIndex(2) #go to the transfer page
 
-    #EVENTS HANDLING
-    def _searchNeighboursBtnClicked(self):
-        ttl = int(self.ui.ttlPeersSearchSpinBox.value())
-        self.request_emitter.search_for_peers(ttl)
 
-    def _redraw_peers(self):
-        self.ui.peersTreeWidget.clear()
+    def _redraw_neighbours_peers(self):
+        self.ui.neighboursPeersTreeWidget.clear()
         for peer in PeersManager.find_known_peers():
-            item = QTreeWidgetItem(self.ui.peersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
+            item = QTreeWidgetItem(self.ui.neighboursPeersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
 
     def _redraw_shared_files(self):
         self.ui.sharedFilesListWidget.clear()
@@ -116,8 +167,8 @@ class QKazaaWindow(QMainWindow):
     def add_new_result_file(self, filename, peer_ip, peer_port, file_md5):
         self.emit(SIGNAL("new_result_file"), filename, peer_ip, peer_port, file_md5)
 
-    def peers_changed(self):
-        self.emit(SIGNAL("peers_changed"))
+    def neighbours_peers_changed(self):
+        self.emit(SIGNAL("neighbours_peers_changed"))
 
     def shared_files_changed(self):
         self.emit(SIGNAL("shared_files_changed"))
@@ -130,6 +181,19 @@ class QKazaaWindow(QMainWindow):
 
     def show_log_message(self, message):
         self.emit(SIGNAL("log_message_ready"), message)
+
+    def superpeer_choosen(self, ip, port):
+        self.emit(SIGNAL("superpeer_choosen"), ip, port)
+
+    def add_new_superpeer(self, ip, port):
+        self.emit(SIGNAL("new_superpeer"), ip, port)
+
+    def add_new_peer(self, ip, port):
+        self.emit(SIGNAL("new_peer"), ip, port)
+
+    def remove_peer(self, ip, port):
+        self.emit(SIGNAL("remove_peer"), ip, port)
+
 
 
 

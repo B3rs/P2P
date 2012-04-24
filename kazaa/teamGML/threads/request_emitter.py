@@ -3,13 +3,18 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import socket
 from threading import Thread
 from models.peer import Peer
+import random
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
+from managers.filesmanager import FilesManager
+from managers.usersmanager import UsersManager
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.logging import *
 from custom_utils.sockets import *
 from threads.download_thread import DownloadThread
+from threads.service_thread import ServiceThread
+import threading
 
 TTL_FOR_SUPERPEERS_SEARCH = 4
 TTL_FOR_FILES_SEARCH = 3
@@ -19,6 +24,11 @@ class RequestEmitter(object):
     def __init__(self, local_port):
         self.local_port = local_port
         self.ui_handler = None
+
+    def _coose_random_superpeer(self):
+        superpeers = PeersManager.find_known_peers(True)
+        my_superpeer = superpeers[random.randrange(0, len(superpeers),1)]
+        UsersManager.set_superpeer(my_superpeer)
 
     def search_for_superpeers(self, ttl = TTL_FOR_SUPERPEERS_SEARCH ):
         klog("Started query flooding for superpeers, ttl %s" %ttl)
@@ -34,17 +44,18 @@ class RequestEmitter(object):
             sock.send("SUPE" + p_id + format_ip_address(local_ip) + formatted_port + formatted_ttl)
             sock.close()
 
+        threading.Timer(20,self._choose_random_superpeer)
+
     def search_for_files(self, query, as_supernode = False, ttl = TTL_FOR_FILES_SEARCH ):
         klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         p_id = generate_packet_id(16)
         PacketsManager.add_new_generated_packet(p_id)
 
         if as_supernode:
-            for superpeer in PeersManager.find_known_peers(True):
-                sock = connect_socket(superpeer.ip, superpeer.port)
-                local_ip = get_local_ip(sock.getsockname()[0])
-                sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
-                sock.close()
+            # TODO
+            pass
+
+
         else:
             my_superpeer = PeersManager.find_my_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)

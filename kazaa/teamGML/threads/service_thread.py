@@ -1,6 +1,7 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
+import time
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
@@ -14,12 +15,12 @@ from custom_utils.files import file_size
 from custom_utils.logging import klog
 import os
 
+aquers = {}
+
 class ServiceThread(Thread):
 
-    def __init__(self, socket, is_superpeer, ip, port, ui_handler):
+    def __init__(self, socket, ip, port, ui_handler):
         self._socket = socket
-
-        self.is_superpeer = is_superpeer
 
         self.ip = format_ip_address(ip)
         self.port = format_port_number(port)
@@ -52,7 +53,25 @@ class ServiceThread(Thread):
         else:
             return -1
 
+    @classmethod
+    def initialize_for_pckt(cls, search_id):
+        aquers[search_id] = []
 
+    @classmethod
+    def add_query_result(cls, search_id, ip, port, hash, filename):
+        if aquers.has_key(search_id):
+            aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
+        else:
+            print "AQUE refused for timeout"
+
+    @classmethod
+    def get_query_results(cls, search_id):
+        if aquers.has_key(search_id):
+            return aquers[search_id]
+
+    @classmethod
+    def clear_pending_query(cls, search_id):
+        del aquers[search_id]
 
     def run(self):
 
@@ -68,7 +87,7 @@ class ServiceThread(Thread):
             # Received package looking for a file
             if command == "QUER":
 
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     pckt_id = str(self._socket.recv(16))
                     sender_ip = str(self._socket.recv(15))
                     sender_port = str(self._socket.recv(5))
@@ -109,7 +128,57 @@ class ServiceThread(Thread):
             # Received package in reply to a file research
             elif command == "AQUE":
                 klog("AQUE received")
-                #TODO: aggiungere alla lista di attesa dei file da spedire ai client
+                search_id = str(self._socket.recv(16))
+                sender_ip = str(self._socket.recv(15))
+                sender_port = str(self._socket.recv(5))
+                hash = int(self._socket.recv(16))
+                filename = str(self._socket.recv(100))
+                ServiceThread.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
+
+            elif command == "FIND":
+                if UsersManager.is_super_node():
+                    session_id = str(self._socket.recv(16))
+                    query = str(self._socket.recv(20))
+
+                    # Launch a request to the other super peers with the query
+                    for superpeer in PeersManager.find_known_peers(True):
+                        sock = connect_socket(superpeer.ip, superpeer.port)
+                        local_ip = get_local_ip(sock.getsockname()[0])
+                        sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
+                        sock.close()
+
+                    ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
+
+                    time.sleep(20)
+
+                    #search_id is the packet id of QUER request, it identifies univocally the query
+                    superpeers_result = ServiceThread.get_query_results(search_id)
+                    my_directory_result = FilesManager.find_files_by_query()
+                    result = {}
+                    #costruisco l'array di risultati
+                    for r in superpeers_result:
+                        if result.has_key(r.hash):
+                            result[r.hash].peers.push[{'ip':r.ip, 'port':r.port}]
+                        else:
+                            result[r.hash] = {'filemd5':r.hash, 'filename':r.filename, 'peers':[{'ip':r.ip, 'port':r.port}]}
+
+                    for f in my_directory_result:
+                        u = UsersManager.find_user_by_session_id(f.session_id)
+                        if result.has_key(r.hash):
+                            result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
+                        else:
+                            result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
+                        #must send AFIN
+                    sock = self._socket
+                    sock.send("AFIN"+format_deletenum(len(result)))
+                    for r in result:
+                        sock.send(decode_md5(r.filemd5))
+                        sock.send(format_filename(r.filename))
+                        sock.send(format_deletenum(len(r.peers)))
+                        for peer in r.peers:
+                            sock.send(format_ip_address(peer.ip))
+                            sock.send(format_port_number(peer.port))
+                    #threading.Timer(20, self.search_finished, args=(p_id,)).start()  #calls the fun function with p_id as argument
 
             elif command == "AFIN":
                 klog("AFIN received")
@@ -135,7 +204,7 @@ class ServiceThread(Thread):
             #
 
             elif command == "LOGI":
-                if self.is_superpeer:
+                if UsersManager.is_super_node():
                     peer_ip = str(read_from_socket(self._socket, 15))
                     peer_port = str(read_from_socket(self._socket, 5))
 
@@ -147,6 +216,7 @@ class ServiceThread(Thread):
                         klog("Received a LOGI, from: %s, port: %s. Session id created: %s" %(peer_ip, peer_port, session_id))
                         self._socket.send("ALGI" + session_id)
                         klog("Sent ALGI to: %s, port: %s" %(peer_ip, peer_port))
+                        self.ui_handler.add_new_peer(peer_ip, peer_port)
 
             elif command == "ALGI":
                 session_id = str(read_from_socket(self._socket, 16))
@@ -155,11 +225,15 @@ class ServiceThread(Thread):
 
             elif command == "LOGO":
                 peer_session_id = str(read_from_socket(self._socket, 16))
-                klog("Received a LOGO, from session_id: %s" %peer_session_id)
+                peer = UsersManager.find_user_by_session_id(peer_session_id)
+                peer_ip = peer.ip
+                peer_port = peer.port
+                klog("Received a LOGO, from session_id: %s. Peer: %s:%s" %(peer_session_id, peer_ip, peer_port))
 
                 delete_num = self.logout_user(peer_session_id)
                 self._socket.send("ALGO"+ format_deletenum(delete_num))
                 klog("Sent ALGO to session_id: %s deletenum: %d" %(peer_session_id, delete_num))
+                self.ui_handler.remove_peer(peer_ip, peer_port)
 
             elif command == "ALGO":
                 delete_num = read_from_socket(self._socket, 3)
@@ -184,7 +258,7 @@ class ServiceThread(Thread):
                         # decrease ttl and propagate the message to the peers/superpeers
                         ttl = format_ttl(ttl -1)
 
-                        if self.is_superpeer:
+                        if UsersManager.is_super_node():
                             # Respond with an ASUP
                             sock = connect_socket(sender_ip, sender_port)
                             sock.send("ASUP" + pckt_id + self.ip + self.port + ttl)
@@ -212,7 +286,7 @@ class ServiceThread(Thread):
                 if PacketsManager.is_generated_packet_still_valid(pckt_id):
                     # Add peer to known peers
                     PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
-                    self.ui_handler.peers_changed()
+                    self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file
             elif command == "RETR":

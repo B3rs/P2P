@@ -5,6 +5,7 @@ from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
 from managers.usersmanager import UsersManager
 from custom_utils.logging import klog
+from models.peer import Peer
 
 class QKazaaWindow(QMainWindow):
     def __init__(self, request_emitter):
@@ -99,7 +100,7 @@ class QKazaaWindow(QMainWindow):
 
         if len(port) > 1 and len(ip.split(".")) == 4:
             # Add peer to PeerManager and to list
-            PeersManager.add_new_peer(ip, port)
+            PeersManager.add_new_peer(Peer(ip, port))
             self.neighbours_peers_changed()
 
     def _searchBtnClicked(self):
@@ -121,7 +122,7 @@ class QKazaaWindow(QMainWindow):
     def _redraw_neighbours_peers(self):
         self.ui.neighboursPeersTreeWidget.clear()
         for peer in PeersManager.find_known_peers():
-            item = QTreeWidgetItem(self.ui.peersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
+            item = QTreeWidgetItem(self.ui.neighboursPeersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
 
     def _redraw_shared_files(self):
         self.ui.sharedFilesListWidget.clear()

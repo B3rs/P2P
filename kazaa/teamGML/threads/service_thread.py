@@ -135,6 +135,19 @@ class ServiceThread(Thread):
                 filename = str(self._socket.recv(100))
                 self.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
 
+            elif command == "FIND":
+                if UsersManager.is_super_node():
+                    session_id = str(self._socket.recv(16))
+                    query = str(self._socket.recv(20))
+
+                    # Launch a request to the other super peers with the query
+                    for superpeer in PeersManager.find_known_peers(True):
+                        sock = connect_socket(superpeer.ip, superpeer.port)
+                        local_ip = get_local_ip(sock.getsockname()[0])
+                        sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
+                        sock.close()
+                pass
+
             elif command == "AFIN":
                 klog("AFIN received")
                 num = int(read_from_socket(self._socket, 3))

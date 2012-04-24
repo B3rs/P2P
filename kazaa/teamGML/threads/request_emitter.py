@@ -44,11 +44,14 @@ class RequestEmitter(object):
         PacketsManager.add_new_generated_packet(p_id)
 
         if as_supernode:
+            # TODO this lines have been moved are here for reference and because there's no handling, plese remove them ASAP
+            #---
             for superpeer in PeersManager.find_known_peers(True):
                 sock = connect_socket(superpeer.ip, superpeer.port)
                 local_ip = get_local_ip(sock.getsockname()[0])
                 sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
                 sock.close()
+            #---
 
             ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
 

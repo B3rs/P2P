@@ -29,6 +29,8 @@ class QKazaaWindow(QMainWindow):
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
         self.ui.searchNeighboursBtn.clicked.connect(self._searchNeighboursBtnClicked)
         self.ui.addPeerBtn.clicked.connect(self._addPeerBtnClicked)
+        self.ui.searchSuperPeerBtn.clicked.connect(self._searchSuperPeerBtnClicked)
+
         self.connect(self, SIGNAL("peers_changed"), self._redraw_peers)
         self.connect(self, SIGNAL("shared_files_changed"), self._redraw_shared_files)
         self.connect(self, SIGNAL("new_result_file"), self._draw_new_result_file)
@@ -37,6 +39,9 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("upload_file_changed"), self._draw_upload_item)
 
         self.connect(self, SIGNAL("log_message_ready"), self._show_log_message)
+
+        self.connect(self, SIGNAL("superpeer_choosen"), self._show_choosen_superpeer)
+        self.connect(self, SIGNAL("new_superpeer"), self._draw_new_superpeer)
 
         self._ask_for_peer_role()
 
@@ -58,8 +63,17 @@ class QKazaaWindow(QMainWindow):
 
 
     #EVENTS
+    def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
+        item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))
+
+    def _show_choosen_superpeer(self, ip, port):
+        self.ui.superPeerLabel.setText("%s:%d" %(ip, int(port)))
+
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)
+
+    def _searchSuperPeerBtnClicked(self):
+        self.request_emitter.search_for_superpeers()
 
     def _addPeerBtnClicked(self):
         ip = self.ui.peerIP.text()
@@ -148,6 +162,12 @@ class QKazaaWindow(QMainWindow):
 
     def show_log_message(self, message):
         self.emit(SIGNAL("log_message_ready"), message)
+
+    def superpeer_choosen(self, ip, port):
+        self.emit(SIGNAL("superpeer_choosen"), ip, port)
+
+    def add_new_superpeer(self, ip, port):
+        self.emit(SIGNAL("new_superpeer"), ip, port)
 
 
 

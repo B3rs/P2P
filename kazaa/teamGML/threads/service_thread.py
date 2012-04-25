@@ -320,12 +320,13 @@ class ServiceThread(Thread):
                 self._socket.send("ARET")   #sending the ack command
                 remote_ip = self._socket.getpeername()[0]
                 my_session_id = UsersManager.get_my_session_id()
-                if UsersManager.is_super_node():
-                    my_session_id = "0"*16
+
                 # Get the file matching the md5
                 klog("finding file with md5: %s, session_id %s" %(md5, my_session_id))
 
-                file = FilesManager.find_file_by_hash_and_sessionid(md5, my_session_id)
+                file = None
+                if UsersManager.is_super_node():
+                    file = FilesManager.find_file_by_hash(md5)
                 if file:
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))
 

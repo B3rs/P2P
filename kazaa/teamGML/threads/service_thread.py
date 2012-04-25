@@ -169,28 +169,29 @@ class ServiceThread(Thread):
                     for f in my_directory_result:
                         if f.is_my_file():
                             if result.has_key(f.hash):
-                                result[f.hash].peers.append({'ip':self.ip, 'port':self.port})
+                                result[f.hash]['peers'].append({'ip':self.ip, 'port':self.port})
                             else:
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':self.ip, 'port':self.port}]}
                         else:
                             u = UsersManager.find_user_by_session_id(f.session_id)
                             if result.has_key(f.hash):
-                                result[f.hash].peers.append({'ip':u.ip, 'port':u.port})
+                                result[f.hash]['peers'].append({'ip':u.ip, 'port':u.port})
                             else:
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN
 
                     self._socket.close()
+
                     peer = UsersManager.find_user_by_session_id(session_id)
                     sock = connect_socket(peer.ip, peer.port)
                     sock.send("AFIN"+format_deletenum(len(result)))
-                    for r in result:
-                        sock.send(decode_md5(r.filemd5))
-                        sock.send(format_filename(r.filename))
-                        sock.send(format_deletenum(len(r.peers)))
-                        for peer in r.peers:
-                            sock.send(format_ip_address(peer.ip))
-                            sock.send(format_port_number(peer.port))
+                    for key, r in result.items():
+                        sock.send(decode_md5(r['filemd5']))
+                        sock.send(format_filename(r['filename']))
+                        sock.send(format_deletenum(len(r['peers'])))
+                        for peer in r['peers']:
+                            sock.send(format_ip_address(peer['ip']))
+                            sock.send(format_port_number(peer['port']))
                     #threading.Timer(20, self.search_finished, args=(p_id,)).start()  #calls the fun function with p_id as argument
                     klog("Sent AFIN")
 

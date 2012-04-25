@@ -162,20 +162,20 @@ class ServiceThread(Thread):
                     #costruisco l array di risultati
                     for r in superpeers_result:
                         if result.has_key(r.hash):
-                            result[r.hash].peers.push[{'ip':r.ip, 'port':r.port}]
+                            result[r.hash].peers.append([{'ip':r.ip, 'port':r.port}])
                         else:
                             result[r.hash] = {'filemd5':r.hash, 'filename':r.filename, 'peers':[{'ip':r.ip, 'port':r.port}]}
 
                     for f in my_directory_result:
                         if f.is_my_file():
                             if result.has_key(f.hash):
-                                result[f.hash].peers.push[{'ip':self.ip, 'port':self.port}]
+                                result[f.hash].peers.append({'ip':self.ip, 'port':self.port})
                             else:
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':self.ip, 'port':self.port}]}
                         else:
                             u = UsersManager.find_user_by_session_id(f.session_id)
                             if result.has_key(f.hash):
-                                result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
+                                result[f.hash].peers.append({'ip':u.ip, 'port':u.port})
                             else:
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN

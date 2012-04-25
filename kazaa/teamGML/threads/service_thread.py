@@ -57,23 +57,23 @@ class ServiceThread(Thread):
 
     @classmethod
     def initialize_for_pckt(cls, search_id):
-        aquers[search_id] = []
+        ServiceThread.aquers[search_id] = []
 
     @classmethod
     def add_query_result(cls, search_id, ip, port, hash, filename):
-        if aquers.has_key(search_id):
-            aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
+        if ServiceThread.aquers.has_key(search_id):
+            ServiceThread.aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
         else:
             print "AQUE refused for timeout"
 
     @classmethod
     def get_query_results(cls, search_id):
-        if aquers.has_key(search_id):
-            return aquers[search_id]
+        if ServiceThread.aquers.has_key(search_id):
+            return ServiceThread.aquers[search_id]
 
     @classmethod
     def clear_pending_query(cls, search_id):
-        del aquers[search_id]
+        del ServiceThread.aquers[search_id]
 
     def run(self):
 
@@ -157,6 +157,7 @@ class ServiceThread(Thread):
                     #search_id is the packet id of QUER request, it identifies univocally the query
                     superpeers_result = ServiceThread.get_query_results(p_id)
                     my_directory_result = FilesManager.find_files_by_query(query)
+                    ServiceThread.clear_pending_query(p_id)
                     result = {}
                     #costruisco l array di risultati
                     for r in superpeers_result:

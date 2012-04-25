@@ -113,7 +113,7 @@ class RequestEmitter(object):
         sock.send(decode_md5(file.hash))
         sock.close()
 
-    def unregister_all_files(self):
+    def unregister_all_files_to_supernode(self):
         for file in FilesManager.shared_files():
             self.unregister_file(file)
 

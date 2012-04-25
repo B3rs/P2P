@@ -80,10 +80,10 @@ class QKazaaWindow(QMainWindow):
         self.ui.neighboursPeersTreeWidget.clear()
 
     def _reloadSharedFiles(self):
-        self.request_emitter.unregister_all_files()
+        self.request_emitter.unregister_all_files_to_supernode()
         FilesManager.load_my_files()
         self._redraw_shared_files()
-        self.request_emitter.register_all_files()
+        self.request_emitter.register_all_files_to_supernode()
 
     def _show_session_id(self, session_id):
         self.ui.sessionIdLabel.setText(session_id)

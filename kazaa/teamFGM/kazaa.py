@@ -80,7 +80,7 @@ class KazaaClient(object):
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
         try:
-            #print "Connecting with Neighbour " + IP #TODO debug
+            #print "Connecting with Neighbour " + IP
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -103,7 +103,7 @@ class KazaaClient(object):
         """
         md5_for_file method get md5 checksum from a fileName given as parameter in function call
         """
-        #print "Funzione che calcola l'md5 di un file" #TODO: DEBUG MODE
+        #print "Funzione che calcola l'md5 di un file"
 
         try:
             f = open(fileName)
@@ -351,8 +351,7 @@ class KazaaClient(object):
         super_sock.sendall("FIND" + self.session_ID + search_form)
         print "sent FIND" + self.session_ID + search_form + " to " + super[0] + ":" + str(super[1])
 
-        #ricevo AFIN dal superpeer
-        time.sleep(20)
+        #ricevo AFIN dal superpeer (da qui aspettero' circa 20 secondi per ottenere la risposta)
         ack = self.sockread(super_sock, 7) #leggo i primi 7B, poi il resto lo leggo dopo perche' non ha lunghezza fissa
 
         if ack[:4]=="AFIN":

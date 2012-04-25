@@ -151,7 +151,7 @@ class Service():
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
         try:
-            #print "Connecting with neighbour " + IP #TODO debug
+            #print "Connecting with neighbour " + IP
             neigh_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             neigh_socket.connect(neigh_addr)
         except IOError, expt: #IOError exception includes a sub-exception socket.error
@@ -230,7 +230,7 @@ class Query(threading.Thread, Service): #lo ricevo solo se sono un superpeer
         self.my_port_form = my_port_form
 
 
-    def searchFiles(self,search_string): #TODO DA CONTROLLARE (deve essere la stessa che c'e' in kazaa_directory_services)
+    def searchFiles(self,search_string): #ATTENZIONE! deve essere la stessa che c'e' in kazaa_directory_services)
 
         lista_files = []
 
@@ -296,11 +296,11 @@ class Query(threading.Thread, Service): #lo ricevo solo se sono un superpeer
                                                 #sessionID, filemd5, filename
 
             if(len(files)==0):
-                print "No file matches with query's search" #TODO debug
+                print "No file matches with query's search"
 
 
             else: #ho trovato almeno un file che matchi la ricerca
-                print "Found #" + str(len(files)) + " files that meet query's search" #TODO debug
+                print "Found #" + str(len(files)) + " files that meet query's search"
 
                 fileService = kazaa_directory_services.Service()
 
@@ -348,28 +348,30 @@ class AckQuery(threading.Thread, Service): #lo ricevo solo se sono un superpeer
         filemd5 = ack_query[36:52]
         filename = ack_query[52:152]
 
-        #myQueryTable = self.getMyQueryTable()
+        #ripristino il pezzo di codice seguente che in passato avevamo commentato
+        #adesso dovrebbe funzionare tranquillamente :)
+        myQueryTable = self.getMyQueryTable()
 
-        #for i in range(0,len(myQueryTable)):
-        #    if pktID == myQueryTable[i][0]:
-        #        if time.time() - myQueryTable[i][1] > 20: #se sono passati piu' di 20 secondi
-        #            print "AQUE request expired!"
-        #        else:
+        for i in range(0,len(myQueryTable)):
+            if pktID == myQueryTable[i][0]:
+                if time.time() - myQueryTable[i][1] > 20: #se sono passati piu' di 20 secondi
+                    print "AQUE request expired!"
+                else:
 
-        #aggiorno la tabella dei match di kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
-        matchService = kazaa_directory_services.Service()
-        matchTable = matchService.getMatchTable()
+                    #aggiorno la tabella dei match di kazaa_directory_services che sara' poi letta per costruire la risposta al FIND
+                    matchService = kazaa_directory_services.Service()
+                    matchTable = matchService.getMatchTable()
 
-        new_match = []
-        new_match.append(pktID)
-        new_match.append(ipp2p)
-        new_match.append(pp2p)
-        new_match.append(filemd5)
-        new_match.append(filename)
+                    new_match = []
+                    new_match.append(pktID)
+                    new_match.append(ipp2p)
+                    new_match.append(pp2p)
+                    new_match.append(filemd5)
+                    new_match.append(filename)
 
-        matchTable.append(new_match)
+                    matchTable.append(new_match)
 
-        matchService.setMatchTable(matchTable)
+                    matchService.setMatchTable(matchTable)
 
         print ""
 
@@ -589,7 +591,7 @@ class Upload(threading.Thread, Service):
                     self.socketclient.sendall(chunk_last_form + buff)
                 print "End of upload of " + filename + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
                 file.close()
-                #print "ho chiuso il file" #TODO debug
+                #print "ho chiuso il file"
             except EOFError:
                 print "You have read a EOF char"
 

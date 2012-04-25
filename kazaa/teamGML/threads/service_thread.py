@@ -168,7 +168,7 @@ class ServiceThread(Thread):
 
                     for f in my_directory_result:
                         u = UsersManager.find_user_by_session_id(f.session_id)
-                        if result.has_key(r.hash):
+                        if result.has_key(f.hash):
                             result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
                         else:
                             result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}

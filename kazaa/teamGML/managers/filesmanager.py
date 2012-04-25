@@ -5,11 +5,11 @@ from models.file import File
 from managers.usersmanager import UsersManager
 
 # TODO: WARNING!
-# SHARED_PATH = "../shared"
 # That way path is defined from this file location, but it doesn't work,
 # because the method it's called form another file in a different location...
 # TODO find a way to evaluate the path in a way that is transparent to the caller of the method
-SHARED_PATH = "../shared"
+#SHARED_PATH = "../shared" # If u are a normal person
+SHARED_PATH = "shared"  # If u are GIO
 FILES = []
 
 class FilesManager(object):

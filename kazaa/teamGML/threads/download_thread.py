@@ -5,7 +5,7 @@ from custom_utils.logging import klog
 from custom_utils.hashing import *
 from custom_utils.sockets import read_from_socket
 
-DOWNLOAD_FOLDER = "../downloads"
+DOWNLOAD_FOLDER = "downloads"
 
 class DownloadThread(Thread):
 

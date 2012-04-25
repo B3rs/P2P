@@ -200,8 +200,8 @@ class ServiceThread(Thread):
                 klog("%d files found" %num)
 
                 for i in range(0, num):
-                    file_md5 = str(self._socket.recv(16))
-                    file_name = str(self._socket.recv(100)).strip(" ")
+                    file_md5 = str(read_from_socket(self._socket, 16))
+                    file_name = str(read_from_socket(self._socket, 100)).strip(" ")
                     copies_num = int(read_from_socket(self._socket, 3))
 
                     for j in range(0, copies_num):

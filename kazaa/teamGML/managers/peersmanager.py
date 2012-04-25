@@ -42,3 +42,7 @@ class PeersManager(object):
         for p in PeersManager.PEERS:
             if p.ip == ip and p.port == port:
                 p.is_superpeer = True
+
+    @classmethod
+    def remove_all_peers(cls):
+        PeersManager.PEERS = []

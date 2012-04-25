@@ -75,11 +75,14 @@ class QKazaaWindow(QMainWindow):
     #EVENTS
 
     def _clearAllNeighbours(self):
-        pass
+        PeersManager.remove_all_peers()
+        self.ui.neighboursPeersTreeWidget.clear()
 
     def _reloadSharedFiles(self):
-        pass
-
+        self.request_emitter.unregister_all_files()
+        FilesManager.load_my_files()
+        self._redraw_shared_files()
+        self.request_emitter.register_all_files()
 
     def _show_session_id(self, session_id):
         self.ui.sessionIdLabel.setText(session_id)

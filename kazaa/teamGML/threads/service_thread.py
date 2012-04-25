@@ -167,11 +167,17 @@ class ServiceThread(Thread):
                             result[r.hash] = {'filemd5':r.hash, 'filename':r.filename, 'peers':[{'ip':r.ip, 'port':r.port}]}
 
                     for f in my_directory_result:
-                        u = UsersManager.find_user_by_session_id(f.session_id)
-                        if result.has_key(r.hash):
-                            result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
+                        if f.is_my_file():
+                            if result.has_key(f.hash):
+                                result[f.hash].peers.push[{'ip':self.ip, 'port':self.port}]
+                            else:
+                                result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':self.ip, 'port':self.port}]}
                         else:
-                            result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
+                            u = UsersManager.find_user_by_session_id(f.session_id)
+                            if result.has_key(f.hash):
+                                result[f.hash].peers.push[{'ip':u.ip, 'port':u.port}]
+                            else:
+                                result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN
 
                     self._socket.close()

@@ -47,8 +47,8 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("new_peer"), self._draw_new_peer)
         self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
 
-        self.connect(self, SIGNAL("login_done"), self._show_session_id)
-        self.connect(self, SIGNAL("login_done"), self._reloadSharedFiles)
+        self.connect(self, SIGNAL("login_done"), self._login_done)
+
 
         self._ask_for_peer_role()
 
@@ -75,6 +75,17 @@ class QKazaaWindow(QMainWindow):
 
     #EVENTS
 
+    def _login_done(self, session_id):
+        try:
+            if int(session_id) == 0:
+                self.ui.sessionIdLabel.setText("Errore, esisti gia nel supernodo.")
+                return
+        except Exception:
+            pass
+
+        self.ui.sessionIdLabel.setText(session_id)
+        self.request_emitter.register_all_files_to_supernode()
+
     def _clearAllNeighbours(self):
         PeersManager.remove_all_peers()
         self.ui.neighboursPeersTreeWidget.clear()
@@ -85,8 +96,6 @@ class QKazaaWindow(QMainWindow):
         self._redraw_shared_files()
         self.request_emitter.register_all_files_to_supernode()
 
-    def _show_session_id(self, session_id):
-        self.ui.sessionIdLabel.setText(session_id)
 
     def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
         item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))

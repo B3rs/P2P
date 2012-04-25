@@ -48,6 +48,7 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
 
         self.connect(self, SIGNAL("login_done"), self._show_session_id)
+        self.connect(self, SIGNAL("login_done"), self._reloadSharedFiles)
 
         self._ask_for_peer_role()
 

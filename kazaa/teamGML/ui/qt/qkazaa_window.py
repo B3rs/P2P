@@ -30,6 +30,8 @@ class QKazaaWindow(QMainWindow):
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
         self.ui.addNeighbourPeerBtn.clicked.connect(self._addNeighourPeerBtnClicked)
         self.ui.searchSuperPeerBtn.clicked.connect(self._searchSuperPeerBtnClicked)
+        self.ui.clearNeighboursBtn.clicked.connect(self._clearAllNeighbours)
+        self.ui.reloadSharedFilesBtn.clicked.connect(self._reloadSharedFiles)
 
         self.connect(self, SIGNAL("neighbours_peers_changed"), self._redraw_neighbours_peers)
         self.connect(self, SIGNAL("shared_files_changed"), self._redraw_shared_files)
@@ -46,6 +48,7 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
 
         self.connect(self, SIGNAL("login_done"), self._show_session_id)
+        self.connect(self, SIGNAL("login_done"), self._reloadSharedFiles)
 
         self._ask_for_peer_role()
 
@@ -71,6 +74,17 @@ class QKazaaWindow(QMainWindow):
             self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
 
     #EVENTS
+
+    def _clearAllNeighbours(self):
+        PeersManager.remove_all_peers()
+        self.ui.neighboursPeersTreeWidget.clear()
+
+    def _reloadSharedFiles(self):
+        self.request_emitter.unregister_all_files()
+        FilesManager.load_my_files()
+        self._redraw_shared_files()
+        self.request_emitter.register_all_files()
+
     def _show_session_id(self, session_id):
         self.ui.sessionIdLabel.setText(session_id)
 

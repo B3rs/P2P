@@ -358,7 +358,7 @@ class ServiceThread(Thread):
                 klog("Received a ADFF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                 self.add_file(peer_session_id, file_hash, file_name)
 
-            elif command == "DELF":
+            elif command == "DEFF":
                 peer_session_id = str(read_from_socket(self._socket, 16))
                 file_hash = encode_md5(read_from_socket(self._socket, 16))
                 self.remove_file(peer_session_id, file_hash)

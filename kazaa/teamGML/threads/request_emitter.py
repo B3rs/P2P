@@ -91,3 +91,29 @@ class RequestEmitter(object):
         # Star a thread that will take care of the download and of the socket management
         dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
         dlThread.start()
+
+    def register_file_to_supernode(self, file):
+        my_superpeer = UsersManager.get_superpeer()
+        sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+        local_ip = get_local_ip(sock.getsockname()[0])
+        sock.send("ADFF" + UsersManager.get_my_session_id())
+        sock.send(decode_md5(file.hash))
+        sock.send(format_filename(file.filename))
+        sock.close()
+
+    def register_all_files_to_supernode(self):
+        for file in FilesManager.shared_files():
+            self.register_file_to_supernode(file)
+
+    def unregister_file(self, file):
+        my_superpeer = UsersManager.get_superpeer()
+        sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+        local_ip = get_local_ip(sock.getsockname()[0])
+        sock.send("DEFF" + UsersManager.get_my_session_id())
+        sock.send(decode_md5(file.hash))
+        sock.close()
+
+    def unregister_all_files(self):
+        for file in FilesManager.shared_files():
+            self.unregister_file(file)
+

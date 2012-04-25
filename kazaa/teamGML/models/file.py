@@ -7,4 +7,4 @@ class File(object):
         self.hash = hash
         self.session_id = session_id
     def is_my_file(self):
-        return self.filepath == ""
+        return self.filepath != None or self.filepath != ""

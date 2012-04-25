@@ -20,7 +20,11 @@ class FilesManager(object):
             for filename in filenames:
                 path = dirname + "/" + filename
                 md5 = hashing.encode_md5(hashing.calculate_md5_for_file_path(path))
-                file = File(path, filename, md5, UsersManager.get_my_session_id)
+                file = None
+                if UsersManager.is_super_node():
+                    file = File(path, filename, md5, "0"*16)
+                else:
+                    file = File(path, filename, md5, UsersManager.get_my_session_id)
                 cls.shared_files().append(file)
 
     @classmethod

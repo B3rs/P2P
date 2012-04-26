@@ -1,10 +1,9 @@
 __author__ = 'maurizio'
-
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'Node_GUIka.ui'
 #
-# Created: Thu Apr 26 20:57:18 2012
+# Created: Thu Apr 26 22:34:18 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -53,9 +52,6 @@ class Ui_NodeWindow(object):
         self.Node_Root_IP = QtGui.QLineEdit(self.Find_Supernode_TAB)
         self.Node_Root_IP.setGeometry(QtCore.QRect(140, 20, 201, 22))
         self.Node_Root_IP.setObjectName(_fromUtf8("Node_Root_IP"))
-        self.Node_ActualSuperNode_IP_text = QtGui.QTextBrowser(self.Find_Supernode_TAB)
-        self.Node_ActualSuperNode_IP_text.setGeometry(QtCore.QRect(105, 224, 256, 31))
-        self.Node_ActualSuperNode_IP_text.setObjectName(_fromUtf8("Node_ActualSuperNode_IP_text"))
         self.Node_START_Btn = QtGui.QPushButton(self.Find_Supernode_TAB)
         self.Node_START_Btn.setGeometry(QtCore.QRect(462, 17, 97, 27))
         self.Node_START_Btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -86,16 +82,13 @@ class Ui_NodeWindow(object):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.label.setObjectName(_fromUtf8("label"))
         self.label_2 = QtGui.QLabel(self.Find_Supernode_TAB)
-        self.label_2.setGeometry(QtCore.QRect(80, 230, 21, 17))
+        self.label_2.setGeometry(QtCore.QRect(120, 230, 21, 17))
         self.label_2.setText(QtGui.QApplication.translate("NodeWindow", "IP:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.label_3 = QtGui.QLabel(self.Find_Supernode_TAB)
-        self.label_3.setGeometry(QtCore.QRect(380, 230, 41, 17))
+        self.label_3.setGeometry(QtCore.QRect(320, 230, 41, 17))
         self.label_3.setText(QtGui.QApplication.translate("NodeWindow", "Port:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.Node_ActualSuperNode_Port_text = QtGui.QTextBrowser(self.Find_Supernode_TAB)
-        self.Node_ActualSuperNode_Port_text.setGeometry(QtCore.QRect(420, 225, 71, 31))
-        self.Node_ActualSuperNode_Port_text.setObjectName(_fromUtf8("Node_ActualSuperNode_Port_text"))
         self.label_4 = QtGui.QLabel(self.Find_Supernode_TAB)
         self.label_4.setGeometry(QtCore.QRect(270, 64, 291, 20))
         font = QtGui.QFont()
@@ -130,6 +123,14 @@ class Ui_NodeWindow(object):
         self.label_9.setGeometry(QtCore.QRect(15, 63, 31, 22))
         self.label_9.setText(QtGui.QApplication.translate("NodeWindow", "TTL:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.Node_ActualSuperNode_IP_text = QtGui.QLabel(self.Find_Supernode_TAB)
+        self.Node_ActualSuperNode_IP_text.setGeometry(QtCore.QRect(160, 227, 111, 22))
+        self.Node_ActualSuperNode_IP_text.setText(QtGui.QApplication.translate("NodeWindow", "no connection", None, QtGui.QApplication.UnicodeUTF8))
+        self.Node_ActualSuperNode_IP_text.setObjectName(_fromUtf8("Node_ActualSuperNode_IP_text"))
+        self.Node_ActualSuperNode_Port_text = QtGui.QLabel(self.Find_Supernode_TAB)
+        self.Node_ActualSuperNode_Port_text.setGeometry(QtCore.QRect(360, 228, 111, 22))
+        self.Node_ActualSuperNode_Port_text.setText(QtGui.QApplication.translate("NodeWindow", "no connection", None, QtGui.QApplication.UnicodeUTF8))
+        self.Node_ActualSuperNode_Port_text.setObjectName(_fromUtf8("Node_ActualSuperNode_Port_text"))
         self.tabWidget.addTab(self.Find_Supernode_TAB, _fromUtf8(""))
         self.Addfile_TAB = QtGui.QWidget()
         self.Addfile_TAB.setObjectName(_fromUtf8("Addfile_TAB"))
@@ -251,7 +252,6 @@ class Ui_NodeWindow(object):
 
         self.retranslateUi(NodeWindow)
         self.tabWidget.setCurrentIndex(0)
-        QtCore.QObject.connect(self.Node_Neigh_tree, QtCore.SIGNAL(_fromUtf8("itemDoubleClicked(QTreeWidgetItem*,int)")), self.Node_ActualSuperNode_IP_text.repaint)
         QtCore.QMetaObject.connectSlotsByName(NodeWindow)
 
     def retranslateUi(self, NodeWindow):

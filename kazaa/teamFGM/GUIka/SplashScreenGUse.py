@@ -3,10 +3,9 @@ __author__ = 'maurizio'
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from Splash_GUIka import Ui_MainWindow
-from Node_GUIka import Ui_NodeWindow
-from SuperNode_GUIka import Ui_SuperNode
+import sys
 
-class GUIkaUse(QMainWindow):
+class SplashGUIkaUse(QMainWindow):
     def __init__(self):
 
         QMainWindow.__init__(self)
@@ -15,8 +14,8 @@ class GUIkaUse(QMainWindow):
         self.splashUi = Ui_MainWindow()
         self.splashUi.setupUi(self)
 
-        self.superNodeUi = Ui_SuperNode()
-        self.superNodeUi.setupUi(self)
+        self.startNode = False
+        self.startSupernode = False
 
         #Connect the signals to events
         self.splashUi.Splash_nodeBtn.clicked.connect(self._NodeBtnClicked)
@@ -24,10 +23,12 @@ class GUIkaUse(QMainWindow):
         self.splashUi.Splash_NothingBtn.clicked.connect(self._NothingBtnClicked)
 
     #Events definition
-    def _NodeBtnClicked(self,message):
-        self.splashUi.Splash_statusbar.
+    def _NodeBtnClicked(self):
+        self.startNode = True
 
+    def _SuperNodeBtnClicked(self):
+        self.startSupernode = True
 
-        self.splashUi.Splash_nodeBtn
-        self.superNodeUi.ChangeSuperNode_Btn.
+    def _NothingBtnClicked(self):
+        sys.exit(app.exec_())
 

@@ -69,7 +69,6 @@ class ListenToPeers(threading.Thread):
         threading.Thread.__init__(self)
         self.my_IP_form = my_IP_form
         self.my_port_form = my_port_form
-        self.check = True
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
 
@@ -84,8 +83,6 @@ class ListenToPeers(threading.Thread):
         return lettiTot #restituisco la stringa letta
         # end of sockread method
 
-    def setCheck(self):
-        self.check = False
 
 
     def run(self):
@@ -100,7 +97,7 @@ class ListenToPeers(threading.Thread):
 
         a=0 #debug
 
-        while self.check == True:
+        while True:
 
             try:
                 (SocketClient,AddrClient) = self.peer_socket.accept() # la accept restituisce la nuova socket del client connesso, e il suo indirizzo
@@ -115,4 +112,4 @@ class ListenToPeers(threading.Thread):
 
     def exit(self):
 
-        self.peer_socket.close() #dovrei sbloccare l'accept, giusto? quindi dovrebbe terminare tutto, giusto? #TODO testare
+        self.peer_socket.close()

@@ -35,7 +35,6 @@ class Service():
         self.p2pPort[0] = p2pPort
         print self.p2pPort[0]
 
-
     def getPeersdb(self):
         return self.peersdb
 

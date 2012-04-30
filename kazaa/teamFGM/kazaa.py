@@ -14,7 +14,7 @@ import time
 
 class KazaaClient(object):
 
-    def __init__(self): #AGGIORNATO -- DA CONTROLLARE
+    def __init__(self):
 
         """
         This method set the program parameters, such as IPP2P:P2P to allow others connection from/to other peers
@@ -141,25 +141,24 @@ class KazaaClient(object):
         """
         print "Login...\n"
 
-        answer = raw_input("Do you want to change port? (Y/N) ") #sto parlando della porta messa a disposizione per gli altri peer
-                                                                    #secondo me puo' essere utile cambiarla per evitare "address already in use"
-        if answer == "Y":
-            self.my_port = raw_input("Port: ")
-            self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
-
         roleService = kazaa_peer_services.Service()
         role = roleService.getRole()
-        if role == "SP": #se sono un superpeer
-            portService = kazaa_directory_services.Service()
-            portService.setP2pPort(self.my_port_form)
+        if role == "P": #se sono un peer
+            #do all'utente la possibilita' di cambiare la porta del p2p
+            #questo puo' essere utile se mi sono appena sloggato da un superpeer e mi sto loggando ad un altro
+            #se sono un superpeer non do questa possibilita'
+            answer = raw_input("Do you want to change port? (Y/N) ")
+            if answer == "Y":
+                self.my_port = raw_input("Port: ")
+                self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
         superService = kazaa_peer_services.Service()
         nextSuper = superService.getNextSuper() #recupero quello che avevo settato come prossimo superpeer
 
         #invio LOGI al superpeer (si tratta di un vero super nel caso io sia un peer, di me stesso nel caso io sia un superpeer)
-        super_sock = self.openConn(nextSuper[0], nextSuper[1]) #passo ip e porta del superpeer che ho scelto
+        super_sock = self.openConn(nextSuper[0], nextSuper[2]) #passo ip e porta del superpeer che ho scelto
         super_sock.sendall("LOGI" + self.my_IP_form + self.my_port_form)
-        print "sent LOGI" + self.my_IP_form + str(self.my_port_form) + " to " + nextSuper[0] + ":" + str(nextSuper[1])
+        print "sent LOGI" + self.my_IP_form + str(self.my_port_form) + " to " + nextSuper[0] + ":" + str(nextSuper[2])
 
         #ricevo ack ALGI
         ack = self.sockread(super_sock,20)
@@ -181,8 +180,8 @@ class KazaaClient(object):
 
                 #aggiorno il super e nextsuper
                 superService = kazaa_peer_services.Service()
-                superService.setSuper(nextSuper[0], nextSuper[1])
-                superService.setNextSuper("",0) #azzero il nextsuper
+                superService.setSuper(nextSuper[0], nextSuper[1], nextSuper[2])
+                superService.setNextSuper("",0,0) #azzero il nextsuper
 
                 #il login e' andato a buon fine, quindi mi metto in ascolto sulla porta specificata per il P2P
                 self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
@@ -238,7 +237,7 @@ class KazaaClient(object):
             superService = kazaa_peer_services.Service() #recupero il superpeer
             super = superService.getSuper()
 
-            super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+            super_sock = self.openConn(super[0], super[1]) #passo ip e porta p2p del superpeer
             super_sock.sendall("SUPE" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
             print "sent SUPE" + pktID + self.my_IP_form + str(self.my_port_form) + str(neigh_TTL_form) + " to " + super[0] + ":" + str(super[1])
             self.closeConn(super_sock)
@@ -273,9 +272,9 @@ class KazaaClient(object):
         filename_form = '%(#)0100s' % {"#" : filename} #formatto il nome del file
 
         #invio ADFF al superpeer
-        super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+        super_sock = self.openConn(super[0], super[2]) #passo ip e porta del superpeer
         super_sock.sendall("ADFF" + self.session_ID + md5file + filename_form)
-        print "sent ADFF" + self.session_ID + md5file + filename_form + " to " + super[0] + ":" + str(super[1])
+        print "sent ADFF" + self.session_ID + md5file + filename_form + " to " + super[0] + ":" + str(super[2])
 
         self.closeConn(super_sock)
 
@@ -319,9 +318,9 @@ class KazaaClient(object):
         md5file = self.md5_for_file(filename) #calcolo l'md5 del file
 
         #invio ADFF al superpeer
-        super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+        super_sock = self.openConn(super[0], super[2]) #passo ip e porta del superpeer
         super_sock.sendall("DEFF" + self.session_ID + md5file)
-        print "sent DEFF" + self.session_ID + md5file + " to " + super[0] + ":" + str(super[1])
+        print "sent DEFF" + self.session_ID + md5file + " to " + super[0] + ":" + str(super[2])
 
         self.closeConn(super_sock)
 
@@ -347,9 +346,9 @@ class KazaaClient(object):
         super = superService.getSuper()
 
         #invio FIND al superpeer
-        super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+        super_sock = self.openConn(super[0], super[2]) #passo ip e porta del superpeer
         super_sock.sendall("FIND" + self.session_ID + search_form)
-        print "sent FIND" + self.session_ID + search_form + " to " + super[0] + ":" + str(super[1])
+        print "sent FIND" + self.session_ID + search_form + " to " + super[0] + ":" + str(super[2])
 
         #ricevo AFIN dal superpeer (da qui aspettero' circa 20 secondi per ottenere la risposta)
         ack = self.sockread(super_sock, 7) #leggo i primi 7B, poi il resto lo leggo dopo perche' non ha lunghezza fissa
@@ -566,9 +565,9 @@ class KazaaClient(object):
         super = superService.getSuper() #recupero il superpeer
 
         #invio LOGO al superpeer
-        super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+        super_sock = self.openConn(super[0], super[2]) #passo ip e porta del superpeer
         super_sock.sendall("LOGO" + self.session_ID)
-        print "sent LOGO" + self.session_ID + " to " + super[0] + ":" + str(super[1])
+        print "sent LOGO" + self.session_ID + " to " + super[0] + ":" + str(super[2])
 
         #ricevo ALGO dal superpeer
         ack = self.sockread(super_sock,7)
@@ -582,7 +581,7 @@ class KazaaClient(object):
             self.myserver.setCheck()
 
             superService = kazaa_peer_services.Service()
-            superService.setSuper("",0) #azzero il superpeer
+            superService.setSuper("",0,0) #azzero il superpeer
 
             self.logged=False #non sono piu' loggato
 
@@ -616,10 +615,11 @@ class KazaaClient(object):
             if role == "P": #sono un peer: non ho la tabella dei vicini, ma ho un superpeer
 
                 super_ip = raw_input("Superpeer IP: ")
-                super_port = raw_input("Superpeer port: ") #la porta 8000 (oppure 80 da specifiche)
+                super_p2p_port = raw_input("Superpeer p2p port: ") #la porta p2p (la 9999 ad esempio)
+                super_dir_port = raw_input("Superpeer directory port: ") #la porta 8000 (oppure 80 da specifiche)
 
                 superService = kazaa_peer_services.Service() #setto quello che diventera' il mio superpeer quando faro' il login
-                superService.setNextSuper(super_ip, super_port)
+                superService.setNextSuper(super_ip, super_p2p_port, super_dir_port)
 
 
             else: #sono un superpeer: ho la tabella dei vicini e devo attivare il servizio di directory
@@ -635,12 +635,19 @@ class KazaaClient(object):
 
                     neighService.addNeighbour(neigh_ip, neigh_port) #aggiungo vicino
 
+                #dico a kazaa_directory_services qual'e' la mia porta per il p2p
+                portService = kazaa_directory_services.Service()
+                portService.setP2pPort(self.my_port_form)
+
                 #in quanto superpeer mi metto in ascolto sulla porta 80
                 self.mydirectory = kazaa_directory.ListenToPeers(self.my_IP_form, self.dir_port_form) #mio indirizzo, porta 80
                 self.mydirectory.start()
 
                 superService = kazaa_peer_services.Service()
-                superService.setNextSuper(self.my_IP_form, self.dir_port) #setto me stesso come prossimo superpeer
+                superService.setNextSuper(self.my_IP_form, self.my_port, self.dir_port) #setto me stesso come prossimo superpeer
+                #nel caso io mi volessi loggare userei me stesso come superpeer di riferimento
+                #se non mi loggo, il mio servizio di directory funziona lo stesso senza problemi
+                #in quanto il thread kazaa_directory.ListenToPeers e' attivo gia' da ora
 
 
             #in ogni caso, memorizzo il ruolo scelto (P o SP)

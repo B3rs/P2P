@@ -29,8 +29,8 @@ class Service():
     myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time) in modo da verificare se sono passati 20 secondi
 
     role = [""] #mio ruolo: P oppure SP
-    super = ["",0] #indirizzo e porta del mio attuale superpeer (quello nel quale sono loggata in questo momento)
-    nextSuper = ["",0] #indirizzo e porta del superpeer che verra' utilizzato al prossimo login
+    super = ["",0,0] #indirizzo, porta p2p, porta directory del mio attuale superpeer
+    nextSuper = ["",0,0] #indirizzo, porta p2p, porta directory del superpeer che verra' utilizzato al prossimo login
 
     def getNeighDim(self):
         return self.dim_neighTable
@@ -47,16 +47,18 @@ class Service():
     def getSuper(self):
         return self.super
 
-    def setSuper(self,IP,port):
+    def setSuper(self,IP,p2p_port,dir_port):
         self.super[0] = IP
-        self.super[1] = port
+        self.super[1] = p2p_port
+        self.super[2] = dir_port
 
     def getNextSuper(self):
         return self.nextSuper
 
-    def setNextSuper(self,IP,port):
+    def setNextSuper(self,IP,p2p_port,dir_port):
         self.nextSuper[0] = IP
-        self.nextSuper[1] = port
+        self.nextSuper[1] = p2p_port
+        self.nextSuper[2] = dir_port
 
     def getPktTable(self):
         return self.pktTable
@@ -410,6 +412,8 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
 
             #procedo con tutto il resto
 
+            role = self.getRole()
+
             #se il ttl e' maggiore di 1 devo ripropagare il pacchetto dopo aver decrementato il ttl
             #se tra i miei vicini c'e' anche chi ha effettuato la richiesta non devo mandarlo a lui
             if int(ttl)>1:
@@ -418,16 +422,16 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                 ttl_decr = int(ttl) - 1
                 ttl_form = '%(#)02d' % {"#" : int(ttl_decr)} #porta formattata per bene
 
-                role = self.getRole()
-
                 if role == "P": #se sono un peer, ripropago al mio super peer
 
                     super = self.super
 
-                    super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
-                    super_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
-                    print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + super[0] + ":" + str(super[1])
-                    self.closeConn(super_sock)
+                    if super[0] != ipp2p and super[1] != int(pp2p):
+
+                        super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
+                        super_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
+                        print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + super[0] + ":" + str(super[1])
+                        self.closeConn(super_sock)
 
                 else: #se sono superpeer, propago a tutti i miei vicini e rispondo con un ASUP
 
@@ -443,11 +447,12 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                             print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                             self.closeConn(neigh_sock)
 
-                    #rispondo inviando ASUP a chi ha effettuato la ricerca
-                    neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
-                    neigh_sock.sendall("ASUP" + pktID + self.my_IP_form + self.my_port_form)
-                    print "sent ASUP" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + str(pp2p)
-                    self.closeConn(neigh_sock)
+            if role == "SP":
+                #rispondo inviando ASUP a chi ha effettuato la ricerca
+                neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
+                neigh_sock.sendall("ASUP" + pktID + self.my_IP_form + self.my_port_form)
+                print "sent ASUP" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + str(pp2p)
+                self.closeConn(neigh_sock)
 
         print ""
 
@@ -487,7 +492,7 @@ class AckSuper(threading.Thread, Service): #se sono un peer aggiorno nextSuper, 
 
                     if role == "P": #sono un peer normale, mi e' arrivata la risposta da un superpeer
 
-                        self.setNextSuper(ipp2p, pp2p) #aggiorno nextSuper
+                        self.setNextSuper(ipp2p, pp2p, "8000") #aggiorno nextSuper con dati raccolti #TODO qui ho messo 8000 a mano, poi andra' sostituito con 80
 
                         print "New nextsuperpeer " + ipp2p + ":" + str(pp2p)
 

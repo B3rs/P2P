@@ -579,8 +579,6 @@ class KazaaClient(object):
             num_delete = ack[4:7]
             print "Number of deleted files: " + num_delete + "\n"
 
-            self.myserver.setCheck()
-
             superService = kazaa_peer_services.Service()
             superService.setSuper("",0,0) #azzero il superpeer
 

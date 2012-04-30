@@ -1,14 +1,11 @@
 __author__ = 'GuiducciGrillandaLoPiccolo'
 
-import kazaa_directory_services
-
 import socket # networking module
 import threading
-import time
 
 class Dispatcher(threading.Thread):
 
-    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
+    def __init__(self, socketclient, addrclient, my_IP_form, my_port_form):
 
         threading.Thread.__init__(self)
 
@@ -16,7 +13,7 @@ class Dispatcher(threading.Thread):
         self.socketclient = socketclient
         self.addrclient = addrclient
         self.my_IP_form = my_IP_form
-        self.dir_port_form = dir_port_form
+        self.my_port_form = my_port_form
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
 
@@ -35,24 +32,24 @@ class Dispatcher(threading.Thread):
 
         request = self.sockread(self.socketclient,4) #leggo i primi 4 byte per sapere cosa fare
 
-        if request=="LOGI":
-            myservice = kazaa_directory_services.Login(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
+        if request=="QUER":
+            myservice = kazaa_peer_services.Query(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="LOGO":
-            myservice = kazaa_directory_services.Logout(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
+        elif request=="AQUE":
+            myservice = kazaa_peer_services.AckQuery(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="ADFF":
-            myservice = kazaa_directory_services.AddFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
+        elif request=="SUPE":
+            myservice = kazaa_peer_services.Super(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="DEFF":
-            myservice = kazaa_directory_services.DeleteFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
+        elif request=="ASUP":
+            myservice = kazaa_peer_services.AckSuper(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
-        elif request=="FIND":
-            myservice = kazaa_directory_services.FindFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
+        elif request=="RETR":
+            myservice = kazaa_peer_services.Upload(self.socketclient, self.addrclient, self.my_IP_form, self.my_port_form)
             myservice.start()
 
         else:
@@ -63,13 +60,13 @@ class Dispatcher(threading.Thread):
 
 class ListenToPeers(threading.Thread):
 
-    def __init__(self, my_IP_form, dir_port_form):
+    def __init__(self, my_IP_form, my_port_form):
 
         #print "metodo init"
 
         threading.Thread.__init__(self)
         self.my_IP_form = my_IP_form
-        self.dir_port_form = dir_port_form
+        self.my_port_form = my_port_form
         self.check = True
 
     def sockread(self, socket, numToRead): #in ingresso ricevo la socket e il numero di byte da leggere
@@ -92,7 +89,7 @@ class ListenToPeers(threading.Thread):
     def run(self):
 
 
-        self.address = (self.my_IP_form, int(self.dir_port_form))
+        self.address = (self.my_IP_form, int(self.my_port_form))
 
         # Metto a disposizione una porta per il peer to peer
         self.peer_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
@@ -108,12 +105,12 @@ class ListenToPeers(threading.Thread):
 
                 #print "Peer " + AddrClient[0] + " connected"
 
-                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.dir_port_form)
+                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form)
                 dispatcher.start()
 
             except Exception,expt:
-                a=a+1 #debug
+                a=a+1 # debug
 
+    def exit(self):
 
-
-        self.peer_socket.close()
+        self.peer_socket.close() #dovrei sbloccare l'accept, giusto? quindi dovrebbe terminare tutto, giusto? #TODO testare

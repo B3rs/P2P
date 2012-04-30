@@ -1,15 +1,8 @@
 __author__ = 'GuiducciGrillandaLoPiccolo'
 
-import kazaa_directory_services
-
 import socket # networking module
 import threading
-import os
-import re
 import time
-import hashlib #per calcolare l'md5 dei file
-import string
-import random
 
 
 class Service():

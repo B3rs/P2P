@@ -1,10 +1,5 @@
 __author__ = 'GuiducciGrillandaLoPiccolo'
 
-import kazaa_peer
-import kazaa_peer_services
-import kazaa_directory
-import kazaa_directory_services
-
 import socket
 import hashlib #per calcolare l'md5 dei file
 import copy
@@ -25,10 +20,10 @@ class KazaaClient(object):
         # PEER
 
         #OS X
-        self.my_IP = socket.gethostbyname(socket.gethostname())
+        #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        #self.my_IP = "5.218.23.66"
+        self.my_IP = "192.168.0.103"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}

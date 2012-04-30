@@ -5,6 +5,9 @@ import kazaa_peer_services
 import socket # networking module
 import threading
 import time
+import thread
+import threading
+import os
 
 class Dispatcher(threading.Thread):
 
@@ -114,6 +117,6 @@ class ListenToPeers(threading.Thread):
             except Exception,expt:
                 a=a+1 # debug
 
+    def exit(self):
 
-
-        self.peer_socket.close()
+        self.peer_socket.close() #dovrei sbloccare l'accept, giusto? quindi dovrebbe terminare tutto, giusto? #TODO testare

@@ -11,6 +11,7 @@ import copy
 import string
 import random
 import time
+import sys
 
 class KazaaClient(object):
 
@@ -24,10 +25,10 @@ class KazaaClient(object):
         # PEER
 
         #OS X
-        #self.my_IP = socket.gethostbyname(socket.gethostname())
+        self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "5.218.23.66"
+        #self.my_IP = "5.218.23.66"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -585,6 +586,8 @@ class KazaaClient(object):
 
             self.logged=False #non sono piu' loggato
 
+            self.myserver.exit() #dovrebbe in qualche modo killare il thread in ascolto sulla porta p2p
+
         else :
             print "KO, ack parsing failed\n"
             self.logged=True #sono ancora loggato
@@ -709,3 +712,5 @@ if __name__ == "__main__":
     while kc.stop==False:
 
         kc.doYourStuff() #stampa del menu ed esecuzione dell'opera
+
+    sys.exit()

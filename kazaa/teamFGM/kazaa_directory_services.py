@@ -31,9 +31,7 @@ class Service():
         return self.p2pPort[0]
 
     def setP2pPort(self,p2pPort):
-        print p2pPort
         self.p2pPort[0] = p2pPort
-        print self.p2pPort[0]
 
     def getPeersdb(self):
         return self.peersdb

@@ -90,6 +90,6 @@ class PacketsManager(object):
     @classmethod
     def is_local_search(cls, packet_id):
         for id in PacketsManager.LOCAL_SEARCHES:
-            if packet_id == id and PacketsManager.is_generated_packet_still_valid(packet_id):
+            if packet_id == id:
                 return True
         return False

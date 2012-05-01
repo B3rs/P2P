@@ -74,13 +74,26 @@ class RequestEmitter(object):
         PacketsManager.add_new_generated_packet(p_id)
 
         if UsersManager.is_super_node():
-            # TODO
-            klog("IMPLEMENT ME PLEASE!")
+            # We need to search both locally and in the network
+            PacketsManager.register_packet_id_as_local_search(p_id)
+
+            # Perform a local search here.
+            for file in FilesManager.find_files_by_query(query):
+                owner = UsersManager.find_user_by_session_id(file.session_id)
+                self.ui_handler.add_new_result_file(file.filename, owner.ip, owner.port, encode_md5(file.hash))
+
+            # ...and send a QUER in the network, its results will be handled properly and should not interfere with
+            # the ones of the local search
+            for superpeer in PeersManager.find_known_peers(True):
+                sock = connect_socket(superpeer.ip, superpeer.port)
+                local_ip = get_local_ip(sock.getsockname()[0])
+                sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
+                sock.close()
+
 
         else:
             my_superpeer = UsersManager.get_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)
-            local_ip = get_local_ip(sock.getsockname()[0])
             sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
             sock.close()
 

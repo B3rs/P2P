@@ -11,6 +11,8 @@ class PacketsManager(object):
 
     PACKETS = []
     GENERATED_PACKETS = []
+    # Will contain only the packet id, so that all the handling will fallback to the normal packets methods
+    LOCAL_SEARCHES = []
 
 
     # @returns array with known peers
@@ -74,5 +76,20 @@ class PacketsManager(object):
             delta = time.time() - PacketsManager.get_generated_packet_by_id(packet_id).timestamp
             print delta
             if delta <= TIME_THRESHOLD:
+                return True
+        return False
+
+    #
+    #   Method for the local search handling
+    #
+    @classmethod
+    def register_packet_id_as_local_search(cls, packet_id):
+        if PacketsManager.is_generated_packet_id_known(packet_id) and not PacketsManager.is_local_search(packet_id):
+            PacketsManager.LOCAL_SEARCHES.append(packet_id)
+
+    @classmethod
+    def is_local_search(cls, packet_id):
+        for id in PacketsManager.LOCAL_SEARCHES:
+            if packet_id == id and PacketsManager.is_generated_packet_still_valid(packet_id):
                 return True
         return False

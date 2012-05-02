@@ -69,7 +69,6 @@ class RequestEmitter(object):
         threading.Timer(2, _choose_random_superpeer).start()
 
     def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
-        klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         p_id = generate_packet_id(16)
         PacketsManager.add_new_generated_packet(p_id)
 
@@ -80,7 +79,8 @@ class RequestEmitter(object):
             # Perform a local search here.
             for file in FilesManager.find_files_by_query(query):
                 owner = UsersManager.find_user_by_session_id(file.session_id)
-                self.ui_handler.add_new_result_file(file.filename, owner.ip, owner.port, encode_md5(file.hash))
+                if owner:
+                    self.ui_handler.add_new_result_file(file.filename, owner.ip, owner.port, encode_md5(file.hash))
 
             # ...and send a QUER in the network, its results will be handled properly and should not interfere with
             # the ones of the local search
@@ -89,16 +89,17 @@ class RequestEmitter(object):
                 local_ip = get_local_ip(sock.getsockname()[0])
                 sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
                 sock.close()
-
-
+            klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
         else:
             my_superpeer = UsersManager.get_superpeer()
-            sock = connect_socket(my_superpeer.ip, my_superpeer.port)
-            sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
-            # We need also some handling for those stupid peers that do not close the socket...
-            #time.sleep(5)
-            if read_from_socket(sock, 3) == 'AFIN':
-                ServiceThread.afin_received(sock, self.ui_handler)
+            if my_superpeer:
+                sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+                sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
+                klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
+                # We need also some handling for those stupid peers that do not close the socket...
+                #time.sleep(5)
+                if read_from_socket(sock, 4) == 'AFIN':
+                    ServiceThread.afin_received(sock, self.ui_handler)
 
     def download_file(self, peer_ip, peer_port, md5, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)

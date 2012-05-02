@@ -75,6 +75,26 @@ class ServiceThread(Thread):
     def clear_pending_query(cls, search_id):
         del ServiceThread.aquers[search_id]
 
+    @classmethod
+    def afin_received(cls, sock, ui_handler):
+        num = int(read_from_socket(sock, 3))
+        klog("%d files found" %num)
+
+        for i in range(0, num):
+            file_md5 = str(read_from_socket(sock, 16))
+            file_name = str(read_from_socket(sock, 100)).strip(" ")
+            copies_num = int(read_from_socket(sock, 3))
+
+            for j in range(0, copies_num):
+                peer_ip = str(sock.recv(15))
+                peer_port = str(sock.recv(5))
+
+                # Add the result to the result list and show it on screen if is nor my filw
+                if peer_ip != format_ip_address(get_local_ip(sock.getsockname()[0])):
+                    klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
+                    ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
+
+
     def run(self):
 
         try:
@@ -121,8 +141,8 @@ class ServiceThread(Thread):
                                 sock = connect_socket(sender_ip, sender_port)
 
                                 sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
-                                sock.send(decode_md5(f.md5))
-                                sock.send(format_filename(filename))
+                                sock.send(decode_md5(f.hash))
+                                sock.send(format_filename(f.filename))
                                 klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, f.hash, f.filename))
 
                                 sock.close()
@@ -133,9 +153,14 @@ class ServiceThread(Thread):
                 search_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
-                hash = int(self._socket.recv(16))
-                filename = str(self._socket.recv(100))
-                ServiceThread.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
+                hash = encode_md5(self._socket.recv(16))
+                filename = str(self._socket.recv(100)).strip(" ")
+                if PacketsManager.is_local_search(search_id):
+                    if PacketsManager.is_generated_packet_still_valid(search_id):
+                        klog("Found %s from %s:%s" % (filename, sender_ip, sender_port))
+                        self.ui_handler.add_new_result_file(filename, sender_ip, sender_port, hash)
+                else:
+                    ServiceThread.add_query_result(search_id, sender_ip, sender_port, hash, filename)
 
             elif command == "FIND":
                 if UsersManager.is_super_node():
@@ -180,10 +205,12 @@ class ServiceThread(Thread):
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN
 
-                    self._socket.close()
+                    #self._socket.close()
+
 
                     peer = UsersManager.find_user_by_session_id(session_id)
-                    sock = connect_socket(peer.ip, peer.port)
+                    #sock = connect_socket(peer.ip, peer.port)
+                    sock = self._socket
                     sock.send("AFIN"+format_deletenum(len(result)))
                     for key, r in result.items():
                         sock.send(decode_md5(r['filemd5']))
@@ -197,21 +224,8 @@ class ServiceThread(Thread):
 
             elif command == "AFIN":
                 klog("AFIN received")
-                num = int(read_from_socket(self._socket, 3))
-                klog("%d files found" %num)
+                ServiceThread.afin_received(self._socket, self.ui_handler)
 
-                for i in range(0, num):
-                    file_md5 = str(read_from_socket(self._socket, 16))
-                    file_name = str(read_from_socket(self._socket, 100)).strip(" ")
-                    copies_num = int(read_from_socket(self._socket, 3))
-
-                    for j in range(0, copies_num):
-                        peer_ip = str(self._socket.recv(15))
-                        peer_port = str(self._socket.recv(5))
-
-                        klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
-                        # Add the result to the result list and show it on screen
-                        self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
 
 
             #
@@ -324,9 +338,8 @@ class ServiceThread(Thread):
                 # Get the file matching the md5
                 klog("finding file with md5: %s, session_id %s" %(md5, my_session_id))
 
-                file = None
-                if UsersManager.is_super_node():
-                    file = FilesManager.find_file_by_hash(md5)
+                file = FilesManager.find_file_by_hash(md5)
+
                 if file:
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))
 
@@ -363,7 +376,7 @@ class ServiceThread(Thread):
             elif command == "ADFF":
                 peer_session_id = str(read_from_socket(self._socket, 16))
                 file_hash = encode_md5(read_from_socket(self._socket, 16))
-                file_name = str(read_from_socket(self._socket, 16)).strip(' ')
+                file_name = str(read_from_socket(self._socket, 100)).strip(' ')
                 klog("Received a ADFF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                 self.add_file(peer_session_id, file_hash, file_name)
 

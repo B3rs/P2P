@@ -10,9 +10,11 @@ from managers.usersmanager import UsersManager
 # TODO find a way to evaluate the path in a way that is transparent to the caller of the method
 #SHARED_PATH = "../shared" # If u are a normal person
 SHARED_PATH = "shared"  # If u are GIO
-FILES = []
+
 
 class FilesManager(object):
+
+    FILES = []
 
     @classmethod
     def load_my_files(cls):
@@ -49,7 +51,7 @@ class FilesManager(object):
     # @returns array with matches path
     @classmethod
     def find_files_by_query(cls, query, user_session_id = None, shared_path = SHARED_PATH):
-        query = query.lower().strip(' ')
+        query = str(query).lower().strip(' ') # Typecast to avoid problems with QString
 
         # Loop in the shared files directory and look for occurrence
         matches = []
@@ -78,6 +80,6 @@ class FilesManager(object):
 
     @classmethod
     def shared_files(cls):
-        return FILES
+        return FilesManager.FILES
 
 

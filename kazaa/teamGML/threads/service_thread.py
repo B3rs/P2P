@@ -368,7 +368,7 @@ class ServiceThread(Thread):
             elif command == "ADFF":
                 peer_session_id = str(read_from_socket(self._socket, 16))
                 file_hash = encode_md5(read_from_socket(self._socket, 16))
-                file_name = str(read_from_socket(self._socket, 16)).strip(' ')
+                file_name = str(read_from_socket(self._socket, 100)).strip(' ')
                 klog("Received a ADFF, from: %s. Hash: %s. Filename: %s." %(peer_session_id, file_hash, file_name))
                 self.add_file(peer_session_id, file_hash, file_name)
 

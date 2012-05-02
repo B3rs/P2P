@@ -89,9 +89,10 @@ class ServiceThread(Thread):
                 peer_ip = str(sock.recv(15))
                 peer_port = str(sock.recv(5))
 
-                klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
-                # Add the result to the result list and show it on screen
-                ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
+                # Add the result to the result list and show it on screen if is nor my filw
+                if peer_ip != format_ip_address(get_local_ip(sock.getsockname()[0])):
+                    klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
+                    ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
 
 
     def run(self):

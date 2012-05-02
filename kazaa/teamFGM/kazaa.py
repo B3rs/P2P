@@ -28,7 +28,7 @@ class KazaaClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "192.168.0.103"
+        self.my_IP = "169.254.148.96"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -635,13 +635,15 @@ class KazaaClient(object):
             roleService.setRole(role)
 
 
+        print "Choose between the following options, typing the number:\n"
+
         if self.logged==False:
 
-            print "Do you want to do login? (Y/N)\n"
+            print "1. Search neighbours"
+            print "2. Login"
+            print "3. Exit"
 
         else: #allora sono loggato
-
-            print "Choose between the following options, typing the number:\n"
 
             print "1. Search neighbours"
             print "2. Add file"
@@ -653,8 +655,9 @@ class KazaaClient(object):
 
         optNoLog = {
 
-            'Y' : self.login,
-            'N' : self.nologin,
+            '1' : self.findneigh,
+            '2' : self.login,
+            '3' : self.nologin,
 
         }
 

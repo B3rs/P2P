@@ -140,8 +140,8 @@ class ServiceThread(Thread):
                                 sock = connect_socket(sender_ip, sender_port)
 
                                 sock.send(command + pckt_id + format_ip_address(self.ip) + format_port_number(self.port))
-                                sock.send(decode_md5(f.md5))
-                                sock.send(format_filename(filename))
+                                sock.send(decode_md5(f.hash))
+                                sock.send(format_filename(f.filename))
                                 klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, f.hash, f.filename))
 
                                 sock.close()

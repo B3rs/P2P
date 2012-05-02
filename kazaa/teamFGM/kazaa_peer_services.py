@@ -15,6 +15,8 @@ class Service():
 
     pktTable = [] #e' la tabella contenente gli ID dei pacchetti gia' ricevuti in passato
 
+    rootTable = [] #tabella in cui ciascun peer tiene i suoi root (questi root possono essere sia peer che superpeer)
+
     dim_neighTable = 3
     neighTable = [] #tabella in cui il superpeer tiene i suoi vicini
 
@@ -27,11 +29,6 @@ class Service():
     super = ["",0,0] #indirizzo, porta p2p, porta directory del mio attuale superpeer
     nextSuper = ["",0,0] #indirizzo, porta p2p, porta directory del superpeer che verra' utilizzato al prossimo login
 
-    def getNeighDim(self):
-        return self.dim_neighTable
-
-    def setNeighDim(self,dim):
-        self.dim_neighTable = dim
 
     def getRole(self):
         return self.role[0]
@@ -67,6 +64,18 @@ class Service():
     def setMyQueryTable(self,myQueryTable):
         self.myQueryTable = myQueryTable
 
+    def getRootTable(self):
+        return self.rootTable
+
+    def setRootTable(self,rootTable):
+        self.rootTable = rootTable
+
+    def getNeighDim(self):
+        return self.dim_neighTable
+
+    def setNeighDim(self,dim):
+        self.dim_neighTable = dim
+
     def getNeighTable(self):
         return self.neighTable
 
@@ -78,6 +87,29 @@ class Service():
 
     def setFileTable(self,fileTable):
         self.fileTable = fileTable
+
+    def addRoot(self, IP, port):
+
+        #salvo nella tabella gli IP e le porte gia' formattate per bene
+
+        #formatto IP
+        IP_split = IP.split(".")
+        IP_1 = '%(#)03d' % {"#" : int(IP_split[0])}
+        IP_2 = '%(#)03d' % {"#" : int(IP_split[1])}
+        IP_3 = '%(#)03d' % {"#" : int(IP_split[2])}
+        IP_4 = '%(#)03d' % {"#" : int(IP_split[3])}
+        IP_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+
+        #formatto porta
+        port_form = '%(#)05d' % {"#" : int(port)} #porta formattata per bene
+
+        newline = []
+        newline.append(IP_form)
+        newline.append(port_form)
+        self.rootTable.append(newline) #inserisco la nuova riga nella tabella dei root
+
+        print self.rootTable
+
 
     def addNeighbour(self, IP, port): #questo metodo mi servira' solo per i superpeer (visto che i peer normali non hanno vicini)
 

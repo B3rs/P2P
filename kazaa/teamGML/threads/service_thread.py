@@ -138,9 +138,9 @@ class ServiceThread(Thread):
                 if PacketsManager.is_local_search(search_id):
                     if PacketsManager.is_generated_packet_still_valid(search_id):
                         klog("Found %s from %s:%s" % (filename, sender_ip, sender_port))
-                        self.ui_handler.add_new_result_file(filename, sender_ip, sender_port, encode_md5(hash))
+                        self.ui_handler.add_new_result_file(filename, sender_ip, sender_port, hash)
                 else:
-                    ServiceThread.add_query_result(search_id, sender_ip, sender_port, encode_md5(hash), filename)
+                    ServiceThread.add_query_result(search_id, sender_ip, sender_port, hash, filename)
 
             elif command == "FIND":
                 if UsersManager.is_super_node():

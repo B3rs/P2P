@@ -10,9 +10,11 @@ from managers.usersmanager import UsersManager
 # TODO find a way to evaluate the path in a way that is transparent to the caller of the method
 #SHARED_PATH = "../shared" # If u are a normal person
 SHARED_PATH = "shared"  # If u are GIO
-FILES = []
+
 
 class FilesManager(object):
+
+    FILES = []
 
     @classmethod
     def load_my_files(cls):
@@ -78,6 +80,6 @@ class FilesManager(object):
 
     @classmethod
     def shared_files(cls):
-        return FILES
+        return FilesManager.FILES
 
 

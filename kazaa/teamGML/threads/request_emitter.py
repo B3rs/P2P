@@ -95,7 +95,8 @@ class RequestEmitter(object):
             my_superpeer = UsersManager.get_superpeer()
             sock = connect_socket(my_superpeer.ip, my_superpeer.port)
             sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
-            sock.close()
+            ServiceThread.afin_received(sock, self.ui_handler)
+            #sock.close()
 
     def download_file(self, peer_ip, peer_port, md5, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)

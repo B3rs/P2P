@@ -75,6 +75,25 @@ class ServiceThread(Thread):
     def clear_pending_query(cls, search_id):
         del ServiceThread.aquers[search_id]
 
+    @classmethod
+    def afin_received(cls, sock, ui_handler):
+        num = int(read_from_socket(sock, 3))
+        klog("%d files found" %num)
+
+        for i in range(0, num):
+            file_md5 = str(read_from_socket(sock, 16))
+            file_name = str(read_from_socket(sock, 100)).strip(" ")
+            copies_num = int(read_from_socket(sock, 3))
+
+            for j in range(0, copies_num):
+                peer_ip = str(sock.recv(15))
+                peer_port = str(sock.recv(5))
+
+                klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
+                # Add the result to the result list and show it on screen
+                ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
+
+
     def run(self):
 
         try:
@@ -185,10 +204,12 @@ class ServiceThread(Thread):
                                 result[f.hash] = {'filemd5':f.hash, 'filename':f.filename, 'peers':[{'ip':u.ip, 'port':u.port}]}
                         #must send AFIN
 
-                    self._socket.close()
+                    #self._socket.close()
+
 
                     peer = UsersManager.find_user_by_session_id(session_id)
-                    sock = connect_socket(peer.ip, peer.port)
+                    #sock = connect_socket(peer.ip, peer.port)
+                    sock = self._socket
                     sock.send("AFIN"+format_deletenum(len(result)))
                     for key, r in result.items():
                         sock.send(decode_md5(r['filemd5']))
@@ -202,21 +223,8 @@ class ServiceThread(Thread):
 
             elif command == "AFIN":
                 klog("AFIN received")
-                num = int(read_from_socket(self._socket, 3))
-                klog("%d files found" %num)
+                ServiceThread.afin_received(self._socket, self.ui_handler)
 
-                for i in range(0, num):
-                    file_md5 = str(read_from_socket(self._socket, 16))
-                    file_name = str(read_from_socket(self._socket, 100)).strip(" ")
-                    copies_num = int(read_from_socket(self._socket, 3))
-
-                    for j in range(0, copies_num):
-                        peer_ip = str(self._socket.recv(15))
-                        peer_port = str(self._socket.recv(5))
-
-                        klog("Found %s from %s:%s" % (file_name,peer_ip, peer_port))
-                        # Add the result to the result list and show it on screen
-                        self.ui_handler.add_new_result_file(file_name, peer_ip, peer_port, encode_md5(file_md5))
 
 
             #

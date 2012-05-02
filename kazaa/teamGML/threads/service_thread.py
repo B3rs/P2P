@@ -133,7 +133,7 @@ class ServiceThread(Thread):
                 search_id = str(self._socket.recv(16))
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
-                hash = int(self._socket.recv(16))
+                hash = encode_md5(self._socket.recv(16))
                 filename = str(self._socket.recv(100))
                 if PacketsManager.is_local_search(search_id):
                     if PacketsManager.is_generated_packet_still_valid(search_id):

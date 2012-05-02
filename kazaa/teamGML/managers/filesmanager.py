@@ -49,7 +49,7 @@ class FilesManager(object):
     # @returns array with matches path
     @classmethod
     def find_files_by_query(cls, query, user_session_id = None, shared_path = SHARED_PATH):
-        query = query.lower().strip(' ')
+        query = str(query).lower().strip(' ') # Typecast to avoid problems with QString
 
         # Loop in the shared files directory and look for occurrence
         matches = []

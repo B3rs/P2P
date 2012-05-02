@@ -84,7 +84,7 @@ class RequestEmitter(object):
 
             # ...and send a QUER in the network, its results will be handled properly and should not interfere with
             # the ones of the local search
-            for superpeer in PeersManager.find_known_peers(True):
+            for superpeer in PeersManager.find_known_peers():
                 sock = connect_socket(superpeer.ip, superpeer.port)
                 local_ip = get_local_ip(sock.getsockname()[0])
                 sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))

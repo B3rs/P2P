@@ -80,7 +80,7 @@ class RequestEmitter(object):
             for file in FilesManager.find_files_by_query(query):
                 owner = UsersManager.find_user_by_session_id(file.session_id)
                 if owner:
-                    self.ui_handler.add_new_result_file(file.filename, owner.ip, owner.port, encode_md5(file.hash))
+                    self.ui_handler.add_new_result_file(file.filename, owner.ip, owner.port, file.hash)
 
             # ...and send a QUER in the network, its results will be handled properly and should not interfere with
             # the ones of the local search

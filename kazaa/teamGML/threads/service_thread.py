@@ -134,7 +134,7 @@ class ServiceThread(Thread):
                 sender_ip = str(self._socket.recv(15))
                 sender_port = str(self._socket.recv(5))
                 hash = encode_md5(self._socket.recv(16))
-                filename = str(self._socket.recv(100))
+                filename = str(self._socket.recv(100)).strip(" ")
                 if PacketsManager.is_local_search(search_id):
                     if PacketsManager.is_generated_packet_still_valid(search_id):
                         klog("Found %s from %s:%s" % (filename, sender_ip, sender_port))

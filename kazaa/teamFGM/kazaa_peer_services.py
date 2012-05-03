@@ -453,7 +453,7 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
 
                     super = self.super
 
-                    if super[0] != ipp2p and super[1] != int(pp2p):
+                    if super[0]=="" and super[1]==0 and super[0] != ipp2p and super[1] != int(pp2p):
 
                         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
                         super_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)

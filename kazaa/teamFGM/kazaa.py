@@ -28,7 +28,7 @@ class KazaaClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "169.254.148.96"
+        self.my_IP = "192.168.0.103"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -142,16 +142,16 @@ class KazaaClient(object):
         """
         print "Login...\n"
 
-        roleService = kazaa_peer_services.Service()
-        role = roleService.getRole()
-        if role == "P": #se sono un peer
+        #roleService = kazaa_peer_services.Service()
+        #role = roleService.getRole()
+        #if role == "P": #se sono un peer
             #do all'utente la possibilita' di cambiare la porta del p2p
             #questo puo' essere utile se mi sono appena sloggato da un superpeer e mi sto loggando ad un altro
             #se sono un superpeer non do questa possibilita'
-            answer = raw_input("Do you want to change port? (Y/N) ")
-            if answer == "Y":
-                self.my_port = raw_input("Port: ")
-                self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
+        #    answer = raw_input("Do you want to change port? (Y/N) ")
+        #    if answer == "Y":
+        #        self.my_port = raw_input("Port: ")
+        #        self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
         superService = kazaa_peer_services.Service()
         nextSuper = superService.getNextSuper() #recupero quello che avevo settato come prossimo superpeer
@@ -183,10 +183,6 @@ class KazaaClient(object):
                 superService = kazaa_peer_services.Service()
                 superService.setSuper(nextSuper[0], nextSuper[1], nextSuper[2])
                 superService.setNextSuper("",0,0) #azzero il nextsuper
-
-                #il login e' andato a buon fine, quindi mi metto in ascolto sulla porta specificata per il P2P
-                self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
-                self.myserver.start()
 
                 self.logged=True #sono finalmente loggato
 
@@ -611,6 +607,10 @@ class KazaaClient(object):
                 root_port = raw_input("Root port: ") #la porta P2P (es.9999)
 
                 rootService.addRoot(root_ip, root_port) #aggiungo root
+
+            #in ogni caso, mi metto in ascolto sulla porta p2p
+            self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
+            self.myserver.start()
 
 
             if role=="SP": #se sono un superpeer, devo attivare il servizio di directory

@@ -449,20 +449,27 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                 ttl_decr = int(ttl) - 1
                 ttl_form = '%(#)02d' % {"#" : int(ttl_decr)} #porta formattata per bene
 
-                if role == "P": #se sono un peer, ripropago al mio super peer
+                #in ogni caso, propago ai miei root
+                rootTable = self.getRootTable()
+                for n in range(0,len(rootTable)):
+                    root_sock = self.openConn(rootTable[n][0], rootTable[n][1]) #passo ip e porta
+                    root_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
+                    print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + rootTable[n][0] + ":" + str(rootTable[n][1])
+                    self.closeConn(root_sock)
+
+                if role == "P": #se sono un peer, ripropago anche al mio super peer se ce l'ho
 
                     super = self.super
 
-                    if super[0]=="" and super[1]==0 and super[0] != ipp2p and super[1] != int(pp2p):
+                    if super[0] != "" and super[1] != 0 and super[0] != ipp2p and super[1] != int(pp2p):
 
                         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
                         super_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
                         print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + super[0] + ":" + str(super[1])
                         self.closeConn(super_sock)
 
-                else: #se sono superpeer, propago a tutti i miei vicini e rispondo con un ASUP
+                else: #se sono superpeer, propago anche a tutti i miei vicini superpeer se ne ho
 
-                    #propago
                     neighTable = self.getNeighTable()
 
                     for n in range(0,len(neighTable)): #n e' l'indice del vicino
@@ -474,8 +481,7 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                             print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                             self.closeConn(neigh_sock)
 
-            if role == "SP":
-                #rispondo inviando ASUP a chi ha effettuato la ricerca
+            if role == "SP": #se sono un superpeer rispondo inviando ASUP a chi ha effettuato la ricerca
                 neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
                 neigh_sock.sendall("ASUP" + pktID + self.my_IP_form + self.my_port_form)
                 print "sent ASUP" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + str(pp2p)

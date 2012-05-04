@@ -26,8 +26,8 @@ class Service():
     myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time) in modo da verificare se sono passati 20 secondi
 
     role = [""] #mio ruolo: P oppure SP
-    super = ["",0,0] #indirizzo, porta p2p, porta directory del mio attuale superpeer
-    nextSuper = ["",0,0] #indirizzo, porta p2p, porta directory del superpeer che verra' utilizzato al prossimo login
+    super = ["",0] #indirizzo, porta p2 del mio attuale superpeer
+    nextSuper = ["",0] #indirizzo, porta p2p del superpeer che verra' utilizzato al prossimo login
 
 
     def getRole(self):
@@ -39,18 +39,16 @@ class Service():
     def getSuper(self):
         return self.super
 
-    def setSuper(self,IP,p2p_port,dir_port):
+    def setSuper(self,IP,p2p_port):
         self.super[0] = IP
         self.super[1] = p2p_port
-        self.super[2] = dir_port
 
     def getNextSuper(self):
         return self.nextSuper
 
-    def setNextSuper(self,IP,p2p_port,dir_port):
+    def setNextSuper(self,IP,p2p_port):
         self.nextSuper[0] = IP
         self.nextSuper[1] = p2p_port
-        self.nextSuper[2] = dir_port
 
     def getPktTable(self):
         return self.pktTable
@@ -525,7 +523,7 @@ class AckSuper(threading.Thread, Service): #se sono un peer aggiorno nextSuper, 
 
                     if role == "P": #sono un peer normale, mi e' arrivata la risposta da un superpeer
 
-                        self.setNextSuper(ipp2p, pp2p, "80") #aggiorno nextSuper con dati raccolti #TODO qui ho messo 80 a mano (volendo si puo' trovare un metodo migliore)
+                        self.setNextSuper(ipp2p, pp2p) #aggiorno nextSuper con dati raccolti
 
                         print "New nextsuperpeer " + ipp2p + ":" + str(pp2p)
 

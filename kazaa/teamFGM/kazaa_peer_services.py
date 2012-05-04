@@ -525,7 +525,7 @@ class AckSuper(threading.Thread, Service): #se sono un peer aggiorno nextSuper, 
 
                     if role == "P": #sono un peer normale, mi e' arrivata la risposta da un superpeer
 
-                        self.setNextSuper(ipp2p, pp2p, "8000") #aggiorno nextSuper con dati raccolti #TODO qui ho messo 8000 a mano, poi andra' sostituito con 80
+                        self.setNextSuper(ipp2p, pp2p, "80") #aggiorno nextSuper con dati raccolti #TODO qui ho messo 80 a mano (volendo si puo' trovare un metodo migliore)
 
                         print "New nextsuperpeer " + ipp2p + ":" + str(pp2p)
 

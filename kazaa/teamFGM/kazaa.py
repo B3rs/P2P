@@ -40,7 +40,7 @@ class KazaaClient(object):
         self.my_port = 9999 # porta che io rendo disponibile per altri peer quando vogliono fare download da me
         self.my_port_form = '%(#)05d' % {"#" : int(self.my_port)} #porta formattata per bene
 
-        self.dir_port = 8000 #da spefiche sarebbe l'80 ma per adesso provo con la 8000
+        self.dir_port = 80
         self.dir_port_form = '%(#)05d' % {"#" : int(self.dir_port)} #porta formattata per bene
 
         self.pickedRole = False #non ho ancora scelto il mio ruolo (peer o superpeer)

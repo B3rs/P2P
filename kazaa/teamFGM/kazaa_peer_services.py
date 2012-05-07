@@ -15,6 +15,8 @@ class Service():
 
     pktTable = [] #e' la tabella contenente gli ID dei pacchetti gia' ricevuti in passato
 
+    rootTable = [] #tabella in cui ciascun peer tiene i suoi root (questi root possono essere sia peer che superpeer)
+
     dim_neighTable = 3
     neighTable = [] #tabella in cui il superpeer tiene i suoi vicini
 
@@ -24,14 +26,9 @@ class Service():
     myQueryTable = [] #tabella in cui io salvo le mie ricerche (pktid,time) in modo da verificare se sono passati 20 secondi
 
     role = [""] #mio ruolo: P oppure SP
-    super = ["",0,0] #indirizzo, porta p2p, porta directory del mio attuale superpeer
-    nextSuper = ["",0,0] #indirizzo, porta p2p, porta directory del superpeer che verra' utilizzato al prossimo login
+    super = ["",0] #indirizzo, porta p2 del mio attuale superpeer
+    nextSuper = ["",0] #indirizzo, porta p2p del superpeer che verra' utilizzato al prossimo login
 
-    def getNeighDim(self):
-        return self.dim_neighTable
-
-    def setNeighDim(self,dim):
-        self.dim_neighTable = dim
 
     def getRole(self):
         return self.role[0]
@@ -42,18 +39,16 @@ class Service():
     def getSuper(self):
         return self.super
 
-    def setSuper(self,IP,p2p_port,dir_port):
+    def setSuper(self,IP,p2p_port):
         self.super[0] = IP
         self.super[1] = p2p_port
-        self.super[2] = dir_port
 
     def getNextSuper(self):
         return self.nextSuper
 
-    def setNextSuper(self,IP,p2p_port,dir_port):
+    def setNextSuper(self,IP,p2p_port):
         self.nextSuper[0] = IP
         self.nextSuper[1] = p2p_port
-        self.nextSuper[2] = dir_port
 
     def getPktTable(self):
         return self.pktTable
@@ -67,6 +62,18 @@ class Service():
     def setMyQueryTable(self,myQueryTable):
         self.myQueryTable = myQueryTable
 
+    def getRootTable(self):
+        return self.rootTable
+
+    def setRootTable(self,rootTable):
+        self.rootTable = rootTable
+
+    def getNeighDim(self):
+        return self.dim_neighTable
+
+    def setNeighDim(self,dim):
+        self.dim_neighTable = dim
+
     def getNeighTable(self):
         return self.neighTable
 
@@ -78,6 +85,29 @@ class Service():
 
     def setFileTable(self,fileTable):
         self.fileTable = fileTable
+
+    def addRoot(self, IP, port):
+
+        #salvo nella tabella gli IP e le porte gia' formattate per bene
+
+        #formatto IP
+        IP_split = IP.split(".")
+        IP_1 = '%(#)03d' % {"#" : int(IP_split[0])}
+        IP_2 = '%(#)03d' % {"#" : int(IP_split[1])}
+        IP_3 = '%(#)03d' % {"#" : int(IP_split[2])}
+        IP_4 = '%(#)03d' % {"#" : int(IP_split[3])}
+        IP_form = IP_1 + "." + IP_2 + "." + IP_3 + "." + IP_4 #IP formattato per bene
+
+        #formatto porta
+        port_form = '%(#)05d' % {"#" : int(port)} #porta formattata per bene
+
+        newline = []
+        newline.append(IP_form)
+        newline.append(port_form)
+        self.rootTable.append(newline) #inserisco la nuova riga nella tabella dei root
+
+        print self.rootTable
+
 
     def addNeighbour(self, IP, port): #questo metodo mi servira' solo per i superpeer (visto che i peer normali non hanno vicini)
 
@@ -417,20 +447,27 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                 ttl_decr = int(ttl) - 1
                 ttl_form = '%(#)02d' % {"#" : int(ttl_decr)} #porta formattata per bene
 
-                if role == "P": #se sono un peer, ripropago al mio super peer
+                #in ogni caso, propago ai miei root
+                rootTable = self.getRootTable()
+                for n in range(0,len(rootTable)):
+                    root_sock = self.openConn(rootTable[n][0], rootTable[n][1]) #passo ip e porta
+                    root_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
+                    print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + rootTable[n][0] + ":" + str(rootTable[n][1])
+                    self.closeConn(root_sock)
+
+                if role == "P": #se sono un peer, ripropago anche al mio super peer se ce l'ho
 
                     super = self.super
 
-                    if super[0] != ipp2p and super[1] != int(pp2p):
+                    if super[0] != "" and super[1] != 0 and super[0] != ipp2p and super[1] != int(pp2p):
 
                         super_sock = self.openConn(super[0], super[1]) #passo ip e porta del superpeer
                         super_sock.sendall("SUPE" + pktID + ipp2p + pp2p + ttl_form)
                         print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + super[0] + ":" + str(super[1])
                         self.closeConn(super_sock)
 
-                else: #se sono superpeer, propago a tutti i miei vicini e rispondo con un ASUP
+                else: #se sono superpeer, propago anche a tutti i miei vicini superpeer se ne ho
 
-                    #propago
                     neighTable = self.getNeighTable()
 
                     for n in range(0,len(neighTable)): #n e' l'indice del vicino
@@ -442,8 +479,7 @@ class Super(threading.Thread, Service): #se sono un peer propago a super, se son
                             print "sent SUPE" + pktID + ipp2p + str(pp2p) + ttl_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
                             self.closeConn(neigh_sock)
 
-            if role == "SP":
-                #rispondo inviando ASUP a chi ha effettuato la ricerca
+            if role == "SP": #se sono un superpeer rispondo inviando ASUP a chi ha effettuato la ricerca
                 neigh_sock = self.openConn(ipp2p, int(pp2p)) #passo ip e porta
                 neigh_sock.sendall("ASUP" + pktID + self.my_IP_form + self.my_port_form)
                 print "sent ASUP" + pktID + self.my_IP_form + self.my_port_form + " to " + ipp2p + ":" + str(pp2p)
@@ -487,7 +523,7 @@ class AckSuper(threading.Thread, Service): #se sono un peer aggiorno nextSuper, 
 
                     if role == "P": #sono un peer normale, mi e' arrivata la risposta da un superpeer
 
-                        self.setNextSuper(ipp2p, pp2p, "8000") #aggiorno nextSuper con dati raccolti #TODO qui ho messo 8000 a mano, poi andra' sostituito con 80
+                        self.setNextSuper(ipp2p, pp2p) #aggiorno nextSuper con dati raccolti
 
                         print "New nextsuperpeer " + ipp2p + ":" + str(pp2p)
 

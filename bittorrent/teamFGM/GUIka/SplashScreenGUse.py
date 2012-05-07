@@ -2,7 +2,7 @@ __author__ = 'maurizio'
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from Splash_GUIka import Ui_MainWindow
+from bittorrent.teamFGM.GUIka.Splash_GUIka import Ui_MainWindow
 import sys
 
 class SplashGUIkaUse(QMainWindow):

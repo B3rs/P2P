@@ -8,7 +8,7 @@ from custom_utils.logging import klog
 from models.peer import Peer
 
 class QKazaaWindow(QMainWindow):
-    def __init__(self, request_emitter):
+    def __init__(self, request_emitter, is_superpeer=False):
 
         self.request_emitter = request_emitter
         self.request_emitter.ui_handler = self
@@ -25,6 +25,16 @@ class QKazaaWindow(QMainWindow):
         #Show the known neighbours
         self._redraw_neighbours_peers()
 
+        #Change the UI based on is_superpeer
+        if is_superpeer:
+            self.ui.sessionGroupBox.setVisible(False)
+            self.ui.youAreLabel.setText("superpeer")
+        else:
+            self.ui.youAreLabel.setText("peer")
+            self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
+
+        self.ui.logoutBtn.setVisible(False)
+
         #Connect the signals to events
         self.ui.searchBtn.clicked.connect(self._searchBtnClicked)
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
@@ -32,6 +42,7 @@ class QKazaaWindow(QMainWindow):
         self.ui.searchSuperPeerBtn.clicked.connect(self._searchSuperPeerBtnClicked)
         self.ui.clearNeighboursBtn.clicked.connect(self._clearAllNeighbours)
         self.ui.reloadSharedFilesBtn.clicked.connect(self._reloadSharedFiles)
+        self.ui.logoutBtn.clicked.connect(self._logout)
 
         self.connect(self, SIGNAL("neighbours_peers_changed"), self._redraw_neighbours_peers)
         self.connect(self, SIGNAL("shared_files_changed"), self._redraw_shared_files)
@@ -50,30 +61,14 @@ class QKazaaWindow(QMainWindow):
         self.connect(self, SIGNAL("login_done"), self._login_done)
 
 
-        self._ask_for_peer_role()
-
-
-    def _ask_for_peer_role(self):
-        msg_box = QMessageBox()
-        msg_box.setText("Are you a super peer?")
-        msg_box.addButton(QMessageBox.Yes)
-        msg_box.addButton(QMessageBox.No)
-
-        msg_box.show()
-        msg_box.raise_()
-
-        selection = msg_box.exec_()
-
-        is_superpeer = (selection == QMessageBox.Yes)
-        UsersManager.set_is_super_node(is_superpeer)
-        if is_superpeer:
-            self.ui.youAreLabel.setText("superpeer")
-            self.ui.tabsWidget.removeTab(1) #remove the "Superpeers" tab
-        else:
-            self.ui.youAreLabel.setText("peer")
-            self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
-
     #EVENTS
+
+    def _logout(self):
+        if self.request_emitter.logout() != -1:
+            self.ui.logoutBtn.setVisible(False)
+            self.ui.searchSuperPeerBtn.setVisible(True)
+            self.ui.sessionIdLabel.setText("")
+            self.ui.superPeerLabel.setText("")
 
     def _login_done(self, session_id):
         try:
@@ -117,6 +112,8 @@ class QKazaaWindow(QMainWindow):
 
     def _show_choosen_superpeer(self, ip, port):
         self.ui.superPeerLabel.setText("%s:%d" %(ip, int(port)))
+        self.ui.logoutBtn.setVisible(True)
+        self.ui.searchSuperPeerBtn.setVisible(False)
 
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)

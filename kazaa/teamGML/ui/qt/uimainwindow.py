@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'designer/mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Apr 25 12:51:30 2012
+# Created: Mon May  7 11:10:32 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -147,6 +147,11 @@ class Ui_MainWindow(object):
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
         spacerItem8 = QtGui.QSpacerItem(398, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem8)
+        self.logoutBtn = QtGui.QPushButton(self.superPeersTab)
+        self.logoutBtn.setEnabled(True)
+        self.logoutBtn.setMinimumSize(QtCore.QSize(0, 70))
+        self.logoutBtn.setObjectName(_fromUtf8("logoutBtn"))
+        self.horizontalLayout_6.addWidget(self.logoutBtn)
         self.searchSuperPeerBtn = QtGui.QPushButton(self.superPeersTab)
         self.searchSuperPeerBtn.setMinimumSize(QtCore.QSize(0, 70))
         self.searchSuperPeerBtn.setObjectName(_fromUtf8("searchSuperPeerBtn"))
@@ -283,7 +288,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabsWidget.setCurrentIndex(0)
+        self.tabsWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -303,6 +308,7 @@ class Ui_MainWindow(object):
         self.superPeerLabel.setText(QtGui.QApplication.translate("MainWindow", "none", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setText(QtGui.QApplication.translate("MainWindow", "Your sessionid:", None, QtGui.QApplication.UnicodeUTF8))
         self.sessionIdLabel.setText(QtGui.QApplication.translate("MainWindow", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.logoutBtn.setText(QtGui.QApplication.translate("MainWindow", "Logout", None, QtGui.QApplication.UnicodeUTF8))
         self.searchSuperPeerBtn.setText(QtGui.QApplication.translate("MainWindow", "Search a super peer!", None, QtGui.QApplication.UnicodeUTF8))
         self.superpeersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "SuperPeer IP", None, QtGui.QApplication.UnicodeUTF8))
         self.superpeersTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "SuperPeer Port", None, QtGui.QApplication.UnicodeUTF8))

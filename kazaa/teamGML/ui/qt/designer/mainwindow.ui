@@ -93,7 +93,7 @@
     <item>
      <widget class="QTabWidget" name="tabsWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -335,6 +335,22 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="logoutBtn">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>70</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Logout</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="searchSuperPeerBtn">

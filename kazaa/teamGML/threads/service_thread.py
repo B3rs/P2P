@@ -177,7 +177,7 @@ class ServiceThread(Thread):
 
                     ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
 
-                    time.sleep(5)
+                    time.sleep(20)
 
                     #search_id is the packet id of QUER request, it identifies univocally the query
                     superpeers_result = ServiceThread.get_query_results(p_id)

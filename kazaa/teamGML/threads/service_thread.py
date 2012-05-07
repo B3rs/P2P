@@ -122,18 +122,7 @@ class ServiceThread(Thread):
 
                         PacketsManager.add_new_packet(pckt_id, sender_ip)
 
-                        if int(ttl) > 1:
-                            # decrease ttl propagate the message to the peers
-                            ttl = format_ttl(ttl -1)
-
-                            for superpeer in PeersManager.find_known_peers(superpeers=True):
-                                #query flooding to the known superpeers peers except for the sender
-                                if not PeersManager.are_same_peer(superpeer, Peer(sender_ip, sender_port)):
-                                    sock = connect_socket(superpeer.ip, superpeer.port)
-                                    sock.send(command + pckt_id + sender_ip + sender_port + str(ttl) + query)
-                                    klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (superpeer.ip, superpeer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
-                                    sock.close()
-
+                        if int(ttl) > 0:
 
                             # look for the requested file
                             for f in FilesManager.find_files_by_query(query):
@@ -146,6 +135,20 @@ class ServiceThread(Thread):
                                 klog("command sent %s pkid:%s %s:%s md5: %s filename: %s" % (command, pckt_id, self.ip, self.port, f.hash, f.filename))
 
                                 sock.close()
+
+                            # decrease ttl propagate the message to the peers
+                            ttl = format_ttl(ttl -1)
+
+                            if int(ttl) > 0:
+                                for superpeer in PeersManager.find_known_peers(superpeers=True):
+                                    #query flooding to the known superpeers peers except for the sender
+                                    if not PeersManager.are_same_peer(superpeer, Peer(sender_ip, sender_port)):
+                                        sock = connect_socket(superpeer.ip, superpeer.port)
+                                        sock.send(command + pckt_id + sender_ip + sender_port + str(ttl) + query)
+                                        klog("command sent to %s:%s: %s pkid:%s %s:%s ttl: %s query: %s" % (superpeer.ip, superpeer.port, command, pckt_id, sender_ip, sender_port, ttl, query))
+                                        sock.close()
+
+
 
             # Received package in reply to a file research
             elif command == "AQUE":
@@ -286,24 +289,26 @@ class ServiceThread(Thread):
 
                     PacketsManager.add_new_packet(pckt_id, sender_ip)
 
-                    if ttl > 1:
-                        # decrease ttl and propagate the message to the peers/superpeers
-                        ttl = format_ttl(ttl -1)
+                    if int(ttl) > 0:
 
                         if UsersManager.is_super_node():
                             # Respond with an ASUP
                             sock = connect_socket(sender_ip, sender_port)
-                            sock.send("ASUP" + pckt_id + self.ip + self.port + ttl)
+                            sock.send("ASUP" + pckt_id + self.ip + self.port + str(ttl))
                             klog("command sent to %s:%s: ASUP pkid:%s %s:%s ttl: %s" % (sender_ip, sender_port, pckt_id, self.ip, self.port, ttl))
                             sock.close()
 
-                        # propagate the SUPE
-                        for peer in PeersManager.find_known_peers():
-                            if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
-                                sock = connect_socket(peer.ip, peer.port)
-                                sock.send("SUPE" + pckt_id + sender_ip + sender_port + ttl)
-                                klog("command sent to %s:%s: SUPE pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, pckt_id, sender_ip, sender_port, ttl))
-                                sock.close()
+                        # decrease ttl and propagate the message to the peers/superpeers
+                        ttl = format_ttl(ttl -1)
+
+                        if int(ttl) > 0:
+                            # propagate the SUPE
+                            for peer in PeersManager.find_known_peers():
+                                if not PeersManager.are_same_peer(peer, Peer(sender_ip, sender_port)):
+                                    sock = connect_socket(peer.ip, peer.port)
+                                    sock.send("SUPE" + pckt_id + sender_ip + sender_port + str(ttl))
+                                    klog("command sent to %s:%s: SUPE pkid:%s %s:%s ttl: %s" % (peer.ip, peer.port, pckt_id, sender_ip, sender_port, ttl))
+                                    sock.close()
 
 
             # Received package in reply to a super-peer search

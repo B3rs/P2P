@@ -79,7 +79,23 @@ class FilesManager(object):
         return False
 
     @classmethod
+    def find_files_by_sessionid(cls, session_id):
+        results = []
+        for file in cls.shared_files():
+            if file.session_id == session_id:
+                results.append(file)
+        return results
+
+
+    @classmethod
     def shared_files(cls):
         return FilesManager.FILES
 
+    @classmethod
+    def delete_files_for_user(cls, user):
+        deleted_count = 0
+        for f in cls.find_files_by_sessionid(user.session_id):
+            cls.delete_file(f)
+            deleted_count += 1
+        return deleted_count
 

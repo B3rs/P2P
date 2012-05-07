@@ -66,7 +66,8 @@ class RequestEmitter(object):
                 except Exception, ex:
                     klog(ex)
 
-        threading.Timer(2, _choose_random_superpeer).start()
+        if not UsersManager.is_super_node():
+            threading.Timer(2, _choose_random_superpeer).start()
 
     def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
         p_id = generate_packet_id(16)

@@ -27,8 +27,8 @@ class QKazaaWindow(QMainWindow):
 
         #Change the UI based on is_superpeer
         if is_superpeer:
+            self.ui.sessionGroupBox.setVisible(False)
             self.ui.youAreLabel.setText("superpeer")
-            self.ui.tabsWidget.removeTab(1) #remove the "Superpeers" tab
         else:
             self.ui.youAreLabel.setText("peer")
             self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab

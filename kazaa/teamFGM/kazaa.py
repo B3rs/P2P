@@ -28,7 +28,7 @@ class KazaaClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "169.254.185.62"
+        self.my_IP = "192.168.1.110"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -580,9 +580,9 @@ class KazaaClient(object):
         """
 
         if self.pickedRole==False:
-            role = '@' #inizializzazione a valore fittizio della variabile role
-            while role != 'P' or role != "SP": #ciclo while che obbliga l'utente a non compiere un mistype
-                role = raw_input("Do you want to be peer or superpeer? (P/SP) ")
+
+            role = raw_input("Do you want to be peer or superpeer? (P/SP) ")
+
             self.pickedRole = True
 
             #in ogni caso, popolo una tabellina in cui metto i root
@@ -600,7 +600,7 @@ class KazaaClient(object):
 
             #in ogni caso, mi metto in ascolto sulla porta p2p
             self.myserver = kazaa_peer.ListenToPeers(self.my_IP_form, self.my_port_form)
-            self.myserver.start()
+            self.myserver.start() # mando in esecuzione il thread che accetta le connessioni dagli altri peers
 
 
             if role=="SP": #se sono un superpeer, devo attivare il servizio di directory

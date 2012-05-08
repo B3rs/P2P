@@ -327,7 +327,7 @@ class ServiceThread(Thread):
                         PeersManager.become_superpeer(peer_ip, peer_port)
                         self.ui_handler.add_new_superpeer(peer_ip, peer_port)
                     else:
-                        if peer_ip != self.ip and peer_port != self.port:
+                        if peer_ip != self.ip:
                             PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
                             self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 

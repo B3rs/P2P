@@ -104,7 +104,7 @@ class ListenToPeers(threading.Thread):
 
                 #print "Peer " + AddrClient[0] + " connected"
 
-                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form)
+                dispatcher = Dispatcher(SocketClient,AddrClient,self.my_IP_form,self.my_port_form) #eseguo il thread che effettua il dispatch delle richieste
                 dispatcher.start()
 
             except Exception,expt:

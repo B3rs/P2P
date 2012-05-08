@@ -146,17 +146,17 @@ class KazaaClient(object):
         pktID =  self.generate_pktID()
 
         queryService = kazaa_peer_services.Service()
-        myQueryTable = queryService.getMyQueryTable()
+        myQueryTable = queryService.getMyQueryTable() #recupero la tabella delle query
         new_entry = []
         new_entry.append(pktID)
         new_entry.append(time.time())
-        myQueryTable.append(new_entry)
-        queryService.setMyQueryTable(myQueryTable)
+        myQueryTable.append(new_entry) # aggiungo una entry alla tabella
+        queryService.setMyQueryTable(myQueryTable) # carico la nuova tabella
 
         #mando la richiesta ai miei root
         rootService = kazaa_peer_services.Service()
-        rootTable = rootService.getRootTable()
-        for n in range(0,len(rootTable)):
+        rootTable = rootService.getRootTable() # recupero la tabella dei miei root
+        for n in range(0,len(rootTable)): # per ogni elemento della tabella sopra mando il pkt "SUPE"
             root_sock = self.openConn(rootTable[n][0], rootTable[n][1]) #passo ip e porta
             root_sock.sendall("SUPE" + pktID + self.my_IP_form + self.my_port_form + neigh_TTL_form)
             print "sent SUPE" + pktID + self.my_IP_form + str(self.my_port_form) + str(neigh_TTL_form) + " to " + rootTable[n][0] + ":" + str(rootTable[n][1])
@@ -202,7 +202,7 @@ class KazaaClient(object):
 
                 #aggiorno il super e nextsuper
                 superService = kazaa_peer_services.Service()
-                superService.setSuper(nextSuper[0], nextSuper[1])
+                superService.setSuper(nextSuper[0], nextSuper[1]) #memorizzo il supernodo cui sono connesso
                 superService.setNextSuper("",0) #azzero il nextsuper
 
                 self.logged=True #sono finalmente loggato
@@ -236,7 +236,7 @@ class KazaaClient(object):
         print "Add file...\n"
 
         superService = kazaa_peer_services.Service()
-        super = superService.getSuper() #recupero il superpeer
+        super = superService.getSuper() #recupero il supernodo
 
         filename = raw_input("Insert the name of the file to add: ")
         self.checkfile(filename) #controllo l'esistenza del file nel percorso specificato
@@ -244,8 +244,8 @@ class KazaaClient(object):
         filename_form = '%(#)0100s' % {"#" : filename} #formatto il nome del file
 
         #invio ADFF al superpeer
-        super_sock = self.openConn(super[0], self.dir_port) #superpeer
-        super_sock.sendall("ADFF" + self.session_ID + md5file + filename_form)
+        super_sock = self.openConn(super[0], self.dir_port) #apro la connessione verso il supernodo
+        super_sock.sendall("ADFF" + self.session_ID + md5file + filename_form) # invio il pkt ADFF
         print "sent ADFF" + self.session_ID + md5file + filename_form + " to " + super[0] + ":" + str(self.dir_port)
 
         self.closeConn(super_sock)
@@ -268,10 +268,10 @@ class KazaaClient(object):
             newFile.append(md5file)
             fileTable.append(newFile)
 
-        fileService.setFileTable(fileTable)
+        fileService.setFileTable(fileTable) #faccio il push della nuova tabellina
 
         print "fileTable"
-        print fileService.getFileTable()
+        print fileService.getFileTable() #stampo il contenuto
 
         # end of addfile method
 
@@ -282,15 +282,15 @@ class KazaaClient(object):
         """
         print "Delete file...\n"
 
-        superService = kazaa_peer_services.Service() #recupero il superpeer
-        super = superService.getSuper()
+        superService = kazaa_peer_services.Service()
+        super = superService.getSuper() #recupero il superpeer cui sono connesso
 
         filename = raw_input("Insert the name of the file to delete: ")
         self.checkfile(filename) #controllo l'esistenza del file nel percorso specificato
         md5file = self.md5_for_file(filename) #calcolo l'md5 del file
 
         #invio ADFF al superpeer
-        super_sock = self.openConn(super[0], self.dir_port) #superpeer
+        super_sock = self.openConn(super[0], self.dir_port) #apro la connessione verso il supernodo
         super_sock.sendall("DEFF" + self.session_ID + md5file)
         print "sent DEFF" + self.session_ID + md5file + " to " + super[0] + ":" + str(self.dir_port)
 

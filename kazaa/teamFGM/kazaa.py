@@ -28,7 +28,7 @@ class KazaaClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "169.254.185.62"
+        self.my_IP = "192.168.0.189"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}

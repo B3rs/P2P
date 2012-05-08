@@ -48,7 +48,7 @@ class RequestEmitter(object):
                 klog("Choose this superpeer: %s:%s" %(my_superpeer.ip, str(my_superpeer.port)))
                 klog("Login...")
 
-                login_sock = connect_socket(my_superpeer.ip, int(my_superpeer.port))
+                login_sock = connect_socket(my_superpeer.ip, 80)# int(my_superpeer.port))
                 login_sock.send("LOGI")
                 login_sock.send(format_ip_address(get_local_ip(login_sock.getsockname()[0])))
                 login_sock.send(format_port_number(self.local_port))
@@ -66,7 +66,8 @@ class RequestEmitter(object):
                 except Exception, ex:
                     klog(ex)
 
-        threading.Timer(2, _choose_random_superpeer).start()
+        if not UsersManager.is_super_node():
+            threading.Timer(2, _choose_random_superpeer).start()
 
     def search_for_files(self, query, ttl = TTL_FOR_FILES_SEARCH ):
         p_id = generate_packet_id(16)
@@ -93,13 +94,27 @@ class RequestEmitter(object):
         else:
             my_superpeer = UsersManager.get_superpeer()
             if my_superpeer:
-                sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+                sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
                 sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
-                klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
+                klog("Started FIND for files: %s ttl: %s" %(query,ttl) )
                 # We need also some handling for those stupid peers that do not close the socket...
                 #time.sleep(5)
                 if read_from_socket(sock, 4) == 'AFIN':
                     ServiceThread.afin_received(sock, self.ui_handler)
+
+    def logout(self):
+        my_superpeer = UsersManager.get_superpeer()
+        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
+        sock.send("LOGO" + UsersManager.get_my_session_id())
+        response = read_from_socket(sock, 4)
+        num_file_deleted = -1
+        if response == "ALGO":
+            num_file_deleted = int(read_from_socket(sock, 3))
+            klog("LOGOUT Done. Deleted %d files" % num_file_deleted)
+        else:
+            klog("LOGOUT non eseguito")
+        sock.close()
+        return num_file_deleted
 
     def download_file(self, peer_ip, peer_port, md5, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)
@@ -111,7 +126,7 @@ class RequestEmitter(object):
 
     def register_file_to_supernode(self, file):
         my_superpeer = UsersManager.get_superpeer()
-        sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
         local_ip = get_local_ip(sock.getsockname()[0])
         sock.send("ADFF" + UsersManager.get_my_session_id())
         sock.send(decode_md5(file.hash))
@@ -124,7 +139,7 @@ class RequestEmitter(object):
 
     def unregister_file(self, file):
         my_superpeer = UsersManager.get_superpeer()
-        sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
         local_ip = get_local_ip(sock.getsockname()[0])
         sock.send("DEFF" + UsersManager.get_my_session_id())
         sock.send(decode_md5(file.hash))

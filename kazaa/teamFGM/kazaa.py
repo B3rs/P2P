@@ -28,7 +28,7 @@ class KazaaClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "192.168.0.103"
+        self.my_IP = "169.254.185.62"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -135,7 +135,7 @@ class KazaaClient(object):
         # end of checkfile method
 
 
-    def findneigh(self):
+    def findsuper(self):
 
         print "Find neighbours..."
 
@@ -629,13 +629,13 @@ class KazaaClient(object):
 
         if self.logged==False: #menu testuale che appare se non sono ancora loggato ad un supernodo
 
-            print "1. Search neighbours"
+            print "1. Search superpeers"
             print "2. Login"
             print "3. Exit"
 
         else: #allora sono loggato -> menu testuale che appare se sono loggato
 
-            print "1. Search neighbours"
+            print "1. Search superpeers"
             print "2. Add file"
             print "3. Delete file"
             print "4. Search and Download file"
@@ -645,7 +645,7 @@ class KazaaClient(object):
 
         optNoLog = {
 
-            '1' : self.findneigh,
+            '1' : self.findsuper,
             '2' : self.login,
             '3' : self.nologin,
 
@@ -653,7 +653,7 @@ class KazaaClient(object):
 
         optLog = {
 
-            '1' : self.findneigh,
+            '1' : self.findsuper,
             '2' : self.addfile,
             '3' : self.delfile,
             '4' : self.findfile,

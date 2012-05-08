@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'designer/mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Apr 25 12:51:30 2012
+# Created: Mon May  7 12:00:07 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -99,19 +99,24 @@ class Ui_MainWindow(object):
         self.tabsWidget.addTab(self.tab, _fromUtf8(""))
         self.superPeersTab = QtGui.QWidget()
         self.superPeersTab.setObjectName(_fromUtf8("superPeersTab"))
-        self.verticalLayout_2 = QtGui.QVBoxLayout(self.superPeersTab)
+        self.verticalLayout_9 = QtGui.QVBoxLayout(self.superPeersTab)
+        self.verticalLayout_9.setObjectName(_fromUtf8("verticalLayout_9"))
+        self.sessionGroupBox = QtGui.QGroupBox(self.superPeersTab)
+        self.sessionGroupBox.setTitle(_fromUtf8(""))
+        self.sessionGroupBox.setObjectName(_fromUtf8("sessionGroupBox"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.sessionGroupBox)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
         self.horizontalLayout_7 = QtGui.QHBoxLayout()
         self.horizontalLayout_7.setObjectName(_fromUtf8("horizontalLayout_7"))
         spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_7.addItem(spacerItem4)
-        self.label_12 = QtGui.QLabel(self.superPeersTab)
+        self.label_12 = QtGui.QLabel(self.sessionGroupBox)
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_12.setFont(font)
         self.label_12.setObjectName(_fromUtf8("label_12"))
         self.horizontalLayout_7.addWidget(self.label_12)
-        self.superPeerLabel = QtGui.QLabel(self.superPeersTab)
+        self.superPeerLabel = QtGui.QLabel(self.sessionGroupBox)
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setBold(True)
@@ -126,13 +131,13 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
         spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem6)
-        self.label_9 = QtGui.QLabel(self.superPeersTab)
+        self.label_9 = QtGui.QLabel(self.sessionGroupBox)
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_9.setFont(font)
         self.label_9.setObjectName(_fromUtf8("label_9"))
         self.horizontalLayout.addWidget(self.label_9)
-        self.sessionIdLabel = QtGui.QLabel(self.superPeersTab)
+        self.sessionIdLabel = QtGui.QLabel(self.sessionGroupBox)
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setBold(True)
@@ -143,15 +148,21 @@ class Ui_MainWindow(object):
         spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem7)
         self.verticalLayout_2.addLayout(self.horizontalLayout)
+        self.verticalLayout_9.addWidget(self.sessionGroupBox)
         self.horizontalLayout_6 = QtGui.QHBoxLayout()
         self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
         spacerItem8 = QtGui.QSpacerItem(398, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_6.addItem(spacerItem8)
+        self.logoutBtn = QtGui.QPushButton(self.superPeersTab)
+        self.logoutBtn.setEnabled(True)
+        self.logoutBtn.setMinimumSize(QtCore.QSize(0, 70))
+        self.logoutBtn.setObjectName(_fromUtf8("logoutBtn"))
+        self.horizontalLayout_6.addWidget(self.logoutBtn)
         self.searchSuperPeerBtn = QtGui.QPushButton(self.superPeersTab)
         self.searchSuperPeerBtn.setMinimumSize(QtCore.QSize(0, 70))
         self.searchSuperPeerBtn.setObjectName(_fromUtf8("searchSuperPeerBtn"))
         self.horizontalLayout_6.addWidget(self.searchSuperPeerBtn)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_6)
+        self.verticalLayout_9.addLayout(self.horizontalLayout_6)
         self.superpeersTreeWidget = QtGui.QTreeWidget(self.superPeersTab)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
@@ -161,7 +172,7 @@ class Ui_MainWindow(object):
         self.superpeersTreeWidget.setAlternatingRowColors(True)
         self.superpeersTreeWidget.setItemsExpandable(False)
         self.superpeersTreeWidget.setObjectName(_fromUtf8("superpeersTreeWidget"))
-        self.verticalLayout_2.addWidget(self.superpeersTreeWidget)
+        self.verticalLayout_9.addWidget(self.superpeersTreeWidget)
         self.tabsWidget.addTab(self.superPeersTab, _fromUtf8(""))
         self.tab_6 = QtGui.QWidget()
         self.tab_6.setObjectName(_fromUtf8("tab_6"))
@@ -283,7 +294,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabsWidget.setCurrentIndex(0)
+        self.tabsWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -303,6 +314,7 @@ class Ui_MainWindow(object):
         self.superPeerLabel.setText(QtGui.QApplication.translate("MainWindow", "none", None, QtGui.QApplication.UnicodeUTF8))
         self.label_9.setText(QtGui.QApplication.translate("MainWindow", "Your sessionid:", None, QtGui.QApplication.UnicodeUTF8))
         self.sessionIdLabel.setText(QtGui.QApplication.translate("MainWindow", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.logoutBtn.setText(QtGui.QApplication.translate("MainWindow", "Logout", None, QtGui.QApplication.UnicodeUTF8))
         self.searchSuperPeerBtn.setText(QtGui.QApplication.translate("MainWindow", "Search a super peer!", None, QtGui.QApplication.UnicodeUTF8))
         self.superpeersTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "SuperPeer IP", None, QtGui.QApplication.UnicodeUTF8))
         self.superpeersTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "SuperPeer Port", None, QtGui.QApplication.UnicodeUTF8))

@@ -96,7 +96,7 @@ class RequestEmitter(object):
             if my_superpeer:
                 sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
                 sock.send("FIND" + UsersManager.get_my_session_id() + format_query(query))
-                klog("Started query flooding for files: %s ttl: %s" %(query,ttl) )
+                klog("Started FIND for files: %s ttl: %s" %(query,ttl) )
                 # We need also some handling for those stupid peers that do not close the socket...
                 #time.sleep(5)
                 if read_from_socket(sock, 4) == 'AFIN':

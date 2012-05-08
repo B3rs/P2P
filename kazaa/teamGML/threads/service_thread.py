@@ -62,7 +62,7 @@ class ServiceThread(Thread):
     @classmethod
     def add_query_result(cls, search_id, ip, port, hash, filename):
         if ServiceThread.aquers.has_key(search_id):
-            ServiceThread.aquers[search_id].push({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
+            ServiceThread.aquers[search_id].append({'search_id': search_id, 'ip':ip, 'port': port, 'hash':hash, 'filename':filename})
         else:
             print "AQUE refused for timeout"
 
@@ -170,12 +170,13 @@ class ServiceThread(Thread):
                     session_id = str(self._socket.recv(16))
                     query = str(self._socket.recv(20))
                     p_id = generate_packet_id(16)
+                    ttl = 3
 
                     # Launch a request to the other super peers with the query
                     for superpeer in PeersManager.find_known_peers(True):
                         sock = connect_socket(superpeer.ip, superpeer.port)
                         local_ip = get_local_ip(sock.getsockname()[0])
-                        sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.local_port) + format_ttl(ttl) + format_query(query))
+                        sock.send("QUER" + p_id + format_ip_address(local_ip) + format_port_number(self.port) + format_ttl(ttl) + format_query(query))
                         sock.close()
 
                     ServiceThread.initialize_for_pckt(p_id)    #enable the receive of packets for this query
@@ -189,10 +190,10 @@ class ServiceThread(Thread):
                     result = {}
                     #costruisco l array di risultati
                     for r in superpeers_result:
-                        if result.has_key(r.hash):
-                            result[r.hash].peers.append([{'ip':r.ip, 'port':r.port}])
+                        if result.has_key(r['hash']):
+                            result[r['hash']].peers.append([{'ip':r['ip'], 'port':r['port']}])
                         else:
-                            result[r.hash] = {'filemd5':r.hash, 'filename':r.filename, 'peers':[{'ip':r.ip, 'port':r.port}]}
+                            result[r['hash']] = {'filemd5':r['hash'], 'filename':r['filename'], 'peers':[{'ip':r['ip'], 'port':r['port']}]}
 
                     for f in my_directory_result:
                         if f.is_my_file():
@@ -324,10 +325,12 @@ class ServiceThread(Thread):
                     #Check if the superpeer war already added as a normal peer
                     if PeersManager.is_known_peer(Peer(peer_ip, peer_port)):
                         PeersManager.become_superpeer(peer_ip, peer_port)
+                        self.ui_handler.add_new_superpeer(peer_ip, peer_port)
                     else:
-                        PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+                        if peer_ip != self.ip and peer_port != self.port:
+                            PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+                            self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
-                    self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file
             elif command == "RETR":

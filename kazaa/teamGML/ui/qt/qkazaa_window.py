@@ -144,7 +144,7 @@ class QKazaaWindow(QMainWindow):
         file_md5 = item.text(3)
         klog("Scarico: %s da %s:%s" % (file_name, peer_ip, peer_port))
         self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
-        self.ui.tabsWidget.setCurrentIndex(3) #go to the transfer page
+        self.ui.tabsWidget.setCurrentIndex(4) #go to the transfer page
 
 
     def _redraw_neighbours_peers(self):

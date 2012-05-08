@@ -325,10 +325,12 @@ class ServiceThread(Thread):
                     #Check if the superpeer war already added as a normal peer
                     if PeersManager.is_known_peer(Peer(peer_ip, peer_port)):
                         PeersManager.become_superpeer(peer_ip, peer_port)
+                        self.ui_handler.add_new_superpeer(peer_ip, peer_port)
                     else:
-                        PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+                        if peer_ip != self.ip and peer_port != self.port:
+                            PeersManager.add_new_peer(Peer(peer_ip, peer_port, True))
+                            self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
-                    self.ui_handler.add_new_superpeer(peer_ip, peer_port)
 
             # Received package asking for a file
             elif command == "RETR":

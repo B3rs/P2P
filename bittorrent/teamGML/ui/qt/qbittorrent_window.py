@@ -3,12 +3,11 @@ from PyQt4.QtCore import QStringList, SIGNAL, Qt
 from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
 from managers.peersmanager import PeersManager
-from managers.usersmanager import UsersManager
+import threading
 from custom_utils.logging import klog
-from models.peer import Peer
 
-class QKazaaWindow(QMainWindow):
-    def __init__(self, request_emitter, is_superpeer=False):
+class QBittorrentWindow(QMainWindow):
+    def __init__(self, request_emitter):
 
         self.request_emitter = request_emitter
         self.request_emitter.ui_handler = self
@@ -22,29 +21,15 @@ class QKazaaWindow(QMainWindow):
         #Show the shared files into the shared folder
         self._redraw_shared_files()
 
-        #Show the known neighbours
-        self._redraw_neighbours_peers()
-
-        #Change the UI based on is_superpeer
-        if is_superpeer:
-            self.ui.sessionGroupBox.setVisible(False)
-            self.ui.youAreLabel.setText("superpeer")
-        else:
-            self.ui.youAreLabel.setText("peer")
-            self.ui.tabsWidget.removeTab(2) #remove the "My peers" tab
-
-        self.ui.logoutBtn.setVisible(False)
+        self.ui.logoutGroupBox.setVisible(False)
 
         #Connect the signals to events
         self.ui.searchBtn.clicked.connect(self._searchBtnClicked)
         self.ui.resultsTreeWidget.itemDoubleClicked.connect(self._resultsTreeClicked)
-        self.ui.addNeighbourPeerBtn.clicked.connect(self._addNeighourPeerBtnClicked)
-        self.ui.searchSuperPeerBtn.clicked.connect(self._searchSuperPeerBtnClicked)
-        self.ui.clearNeighboursBtn.clicked.connect(self._clearAllNeighbours)
         self.ui.reloadSharedFilesBtn.clicked.connect(self._reloadSharedFiles)
+        self.ui.loginBtn.clicked.connect(self._login)
         self.ui.logoutBtn.clicked.connect(self._logout)
 
-        self.connect(self, SIGNAL("neighbours_peers_changed"), self._redraw_neighbours_peers)
         self.connect(self, SIGNAL("shared_files_changed"), self._redraw_shared_files)
         self.connect(self, SIGNAL("new_result_file"), self._draw_new_result_file)
 
@@ -53,83 +38,56 @@ class QKazaaWindow(QMainWindow):
 
         self.connect(self, SIGNAL("log_message_ready"), self._show_log_message)
 
-        self.connect(self, SIGNAL("superpeer_choosen"), self._show_choosen_superpeer)
-        self.connect(self, SIGNAL("new_superpeer"), self._draw_new_superpeer)
-        self.connect(self, SIGNAL("new_peer"), self._draw_new_peer)
-        self.connect(self, SIGNAL("remove_peer"), self._remove_peer)
-
         self.connect(self, SIGNAL("login_done"), self._login_done)
 
 
     #EVENTS
+    def _login(self):
+        tracker_ip = self.ui.trackerIpLineEdit.text()
+        tracker_port = self.ui.trackerPortLineEdit.text()
+
+        if len(tracker_ip)>0 and len(tracker_port) > 0:
+            self.ui.trackerStatusLabel.setText("Sto connettendo...")
+            self.request_emitter.login(tracker_ip, tracker_port)
+
 
     def _logout(self):
         if self.request_emitter.logout() != -1:
-            self.ui.logoutBtn.setVisible(False)
-            self.ui.searchSuperPeerBtn.setVisible(True)
+            self.ui.trackerStatusLabel.setText("Disconnesso...")
+            self.ui.logoutGroupBox.setVisible(False)
+            self.ui.loginGroupBox.setVisible(True)
             self.ui.sessionIdLabel.setText("")
-            self.ui.superPeerLabel.setText("")
+        else:
+            self.ui.trackerStatusLabel.setText("Non puoi disconnetterti!")
+            #After some seconds redraw "Connesso"
+            threading.timer(3, self.ui.trackerStatusLabel.setText("Connesso")).start()
 
     def _login_done(self, session_id):
         try:
-            if int(session_id) == 0:
-                self.ui.sessionIdLabel.setText("Errore, esisti gia nel supernodo.")
+            if not session_id:
+                self.ui.trackerStatusLabel.setText("Login non riuscito, forse il tracker non esiste.")
                 return
+
+            elif int(session_id) == 0:
+                self.ui.trackerStatusLabel.setText("Il tracker non vuole farti loggare.")
+                return
+
         except Exception:
             pass
 
         self.ui.sessionIdLabel.setText(session_id)
-        self.request_emitter.register_all_files_to_supernode()
-
-    def _clearAllNeighbours(self):
-        PeersManager.remove_all_peers()
-        self.ui.neighboursPeersTreeWidget.clear()
+        self.ui.loginGroupBox.setVisible(False)
+        self.ui.logoutGroupBox.setVisible(True)
+        self.request_emitter.register_all_files_to_tracker()
 
     def _reloadSharedFiles(self):
-        self.request_emitter.unregister_all_files_to_supernode()
+        self.request_emitter.unregister_all_files_to_tracker()
         FilesManager.load_my_files()
         self._redraw_shared_files()
-        self.request_emitter.register_all_files_to_supernode()
-
-
-    def _draw_new_superpeer(self, superpeer_ip, superpeer_port):
-        item = QTreeWidgetItem(self.ui.superpeersTreeWidget, QStringList([str(superpeer_ip), str(superpeer_port)]))
-
-    def _remove_peer(self, peer_ip, peer_port):
-        items_found = self.ui.mypeersTreeWidget.findItems(peer_ip, Qt.MatchExactly, 0)
-
-        if len(items_found) > 0:
-
-            #search the port
-            for i in items_found:
-                if i.text(1) == peer_port:
-                    self.ui.mypeersTreeWidget.removeItemWidget(i, 0)
-                    self.ui.mypeersTreeWidget.removeItemWidget(i, 1)
-
-
-    def _draw_new_peer(self, peer_ip, peer_port):
-        item = QTreeWidgetItem(self.ui.mypeersTreeWidget, QStringList([str(peer_ip), str(peer_port)]))
-
-    def _show_choosen_superpeer(self, ip, port):
-        self.ui.superPeerLabel.setText("%s:%d" %(ip, int(port)))
-        self.ui.logoutBtn.setVisible(True)
-        self.ui.searchSuperPeerBtn.setVisible(False)
+        self.request_emitter.register_all_files_to_tracker()
 
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)
-
-    def _searchSuperPeerBtnClicked(self):
-        self.ui.superpeersTreeWidget.clear()
-        self.request_emitter.search_for_superpeers()
-
-    def _addNeighourPeerBtnClicked(self):
-        ip = self.ui.peerIP.text()
-        port = self.ui.peerPort.text()
-
-        if len(port) > 1 and len(ip.split(".")) == 4:
-            # Add peer to PeerManager and to list
-            PeersManager.add_new_peer(Peer(ip, port))
-            self.neighbours_peers_changed()
 
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
@@ -146,11 +104,6 @@ class QKazaaWindow(QMainWindow):
         self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
         self.ui.tabsWidget.setCurrentIndex(4) #go to the transfer page
 
-
-    def _redraw_neighbours_peers(self):
-        self.ui.neighboursPeersTreeWidget.clear()
-        for peer in PeersManager.find_known_peers():
-            item = QTreeWidgetItem(self.ui.neighboursPeersTreeWidget, QStringList([str(peer.ip),str(peer.port)]))
 
     def _redraw_shared_files(self):
         self.ui.sharedFilesListWidget.clear()
@@ -192,9 +145,6 @@ class QKazaaWindow(QMainWindow):
     def add_new_result_file(self, filename, file_id, file_size, part_size):
         self.emit(SIGNAL("new_result_file"), filename, file_id, file_size, part_size)
 
-    def neighbours_peers_changed(self):
-        self.emit(SIGNAL("neighbours_peers_changed"))
-
     def shared_files_changed(self):
         self.emit(SIGNAL("shared_files_changed"))
 
@@ -206,18 +156,6 @@ class QKazaaWindow(QMainWindow):
 
     def show_log_message(self, message):
         self.emit(SIGNAL("log_message_ready"), message)
-
-    def superpeer_choosen(self, ip, port):
-        self.emit(SIGNAL("superpeer_choosen"), ip, port)
-
-    def add_new_superpeer(self, ip, port):
-        self.emit(SIGNAL("new_superpeer"), ip, port)
-
-    def add_new_peer(self, ip, port):
-        self.emit(SIGNAL("new_peer"), ip, port)
-
-    def remove_peer(self, ip, port):
-        self.emit(SIGNAL("remove_peer"), ip, port)
 
     def login_done(self, session_id):
         self.emit(SIGNAL("login_done"), session_id)

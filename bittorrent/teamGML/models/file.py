@@ -10,7 +10,7 @@ class File(object):
         self.filename = name
         self.id = id
 
-        self.file_size = os.path.getsize(self.full_filepath())
+        self.file_size = os.path.getsize(path)
 
         if self.file_size > DEFAULT_PART_SIZE:
             self.part_size = 256
@@ -19,5 +19,4 @@ class File(object):
 
         self.parts_count = math.ceil(self.file_size / self.part_size)
 
-    def full_filepath(self):
-        return self.filepath+"/"+self.filename
+

@@ -9,11 +9,12 @@ DOWNLOAD_FOLDER = "downloads"
 
 class DownloadThread(Thread):
 
-    def __init__(self, socket, filename, file_md5, peer_ip, ui_handler):
+    def __init__(self, socket, filename, file_id, file_part, peer_ip, ui_handler):
         super(DownloadThread, self).__init__()
         self._socket = socket
         self._filename = filename
-        self._file_md5 = file_md5
+        self._file_id = file_id
+        self._file_part = file_part
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
 
@@ -41,10 +42,10 @@ class DownloadThread(Thread):
                     newFile.write(chunk_data)
 
                     percent = i* 100/chunk_number
-                    self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, percent)
+                    self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, percent)
 
                 newFile.close()
-                self._ui_handler.download_file_changed(self._filename, self._file_md5, self._peer_ip, 100)
+                self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, 100)
                 klog("Download completed")
                 klog("TODO: send RPAD to directory ")
                 klog("TODO: receive APAD from directory")

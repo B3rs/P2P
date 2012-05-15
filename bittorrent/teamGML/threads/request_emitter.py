@@ -27,12 +27,13 @@ class RequestEmitter(object):
 
 
     def login(self, tracker_ip, tracker_port = 80):
-        login_sock = connect_socket(tracker_ip, tracker_port)
-        login_sock.send("LOGI")
-        login_sock.send(format_ip_address(get_local_ip(login_sock.getsockname()[0])))
-        login_sock.send(format_port_number(self.local_port))
-
         try:
+            login_sock = connect_socket(tracker_ip, tracker_port)
+            login_sock.send("LOGI")
+            login_sock.send(format_ip_address(get_local_ip(login_sock.getsockname()[0])))
+            login_sock.send(format_port_number(self.local_port))
+
+
             response = read_from_socket(login_sock, 4) #read ALGI
             if response == "ALGI":
                 my_session_id = read_from_socket(login_sock, 16)
@@ -45,7 +46,8 @@ class RequestEmitter(object):
             else:
                 raise Exception("Response command error: %s" %response)
         except Exception, ex:
-            klog(ex)
+            klog(str(ex))
+            self.ui_handler.login_done(None)
 
     def search_for_files(self, query):
         PacketsManager.add_new_generated_packet(p_id)
@@ -70,7 +72,7 @@ class RequestEmitter(object):
                 raise Exception("Response command error: %s. Wanted LOOK" % response)
 
         except Exception, ex:
-            klog(ex)
+            klog(str(ex))
 
     def logout(self):
         my_superpeer = UsersManager.get_superpeer()

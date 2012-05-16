@@ -203,7 +203,7 @@ class Login(threading.Thread, Service):
         # end of run method
 
 
-class Logout(threading.Thread, Service): #TODO DA COMPLETARE
+class Logout(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -351,7 +351,7 @@ class AddFile(threading.Thread, Service):
         # end of run method
 
 
-class LookFile(threading.Thread, Service): #TO DO DA CREARE
+class LookFile(threading.Thread, Service): #TODO DA CREARE
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 

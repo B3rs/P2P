@@ -1,5 +1,7 @@
 __author__ = 'GuiducciGrillandaLoPiccolo'
 
+from bitarray import bitarray
+
 class FileHandler():
 
     def __init__(self):
@@ -169,3 +171,40 @@ class FileHandler():
         to_return.append(cont)
 
         return to_return
+
+    def fetchstring(self,randomID,filetable,peersdb):
+
+        #peersdb = sessionID, IP, port
+
+        numhitpeer = 0
+        to_send = ""
+
+        self.setFileTable(filetable)
+
+        filetable = self.getFileTable()
+
+        for i in range(0,len(filetable)):
+            numhitpeer += 1
+            sessionID = filetable[i][0]
+            print sessionID
+            #dal sessionID recupero ip e porta dalla peersdb
+            for j in range(0,len(peersdb)):
+                if peersdb[j][0] == sessionID:
+                    ipp2p = peersdb[j][1]
+                    pp2p = peersdb[j][2]
+            to_send += ipp2p + pp2p #intanto scrivo ip e porta
+
+            partlist = filetable[i][1]
+            print partlist
+            #devo trasformare partlist in una successione di 0 e 1
+            for k in range(0,len(partlist)):
+                ba = bitarray(partlist[k]) #dalla stringa ricavo l'oggetto bitarray
+                to_send += ba.tobytes() #scrivo gli 8 bit come un singolo byte
+
+        numhitpeer_form = '%(#)03d' % {"#" : int(numhitpeer)} #numhitpeer formattata per bene
+
+        total = numhitpeer_form + to_send
+
+        print total
+
+        return total

@@ -25,7 +25,6 @@ class KazaaClient(object):
         # PEER
 
         #OS X
-
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux

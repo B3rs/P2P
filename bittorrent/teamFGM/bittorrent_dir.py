@@ -42,7 +42,7 @@ class Dispatcher(threading.Thread):
             myservice = bittorrent_dir_serv.Logout(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 
-        elif request=="ADFF":
+        elif request=="ADDR":
             myservice = bittorrent_dir_serv.AddFile(self.socketclient, self.addrclient, self.my_IP_form, self.dir_port_form)
             myservice.start()
 

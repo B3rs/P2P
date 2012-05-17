@@ -1,8 +1,9 @@
 __author__ = 'GuiducciGrillandaLoPiccolo'
 
+import bittorrent_files
+
 import socket # networking module
 import threading
-import time
 import string
 import random
 
@@ -15,7 +16,7 @@ class Service():
 
     peersdb = [] #database con tutti i peer a me connessi (sessionID, IP, port)
 
-    filesdb = [] #tabella in cui salvo i file che conosco (sessionID, filemd5, filename)
+    filesdb = [] #tabella in cui salvo i file che conosco (randomID, sessionID, filename, lenFile, lenPart, numPart, filetable)
 
     def getPeersdb(self):
         return self.peersdb
@@ -28,6 +29,27 @@ class Service():
 
     def setFilesdb(self,filesdb):
         self.filesdb = filesdb
+
+    def printPeersdb(self):
+        print ""
+        print "_" * 200
+        print '\033[95m' + "Peersdb" + '\033[0m'
+        for i in range(0,len(self.peersdb)):
+            print self.peersdb[i]
+        print "_" * 200
+        print ""
+
+    def printFilesdb(self):
+        print ""
+        print "_" * 200
+        print '\033[94m' + "Filesdb" + '\033[0m'
+        print '\033[92m' + "randomID            sessionID           nomefile    lenfile[B]  lenpart[B]  numpart     sessionID            partlist" + '\033[0m'
+        for i in range(0,len(self.filesdb)):
+            print self.filesdb[i][0] + "\t" + self.filesdb[i][1] + "\t" + self.filesdb[i][2] + "\t" + self.filesdb[i][3] + "\t" + self.filesdb[i][4] + "\t\t" + self.filesdb[i][5]
+            for j in range(0,len(self.filesdb[i][6])):
+                print "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" + str(self.filesdb[i][6][j])
+        print "_" * 200
+        print ""
 
     def addPeerTodb(self, sessionID, IP, port):
 
@@ -47,14 +69,6 @@ class Service():
         newpeer.append(IP_form)
         newpeer.append(port_form)
         self.peersdb.append(newpeer)
-
-        print self.peersdb
-
-    def generate_pktID(self):
-        size=16
-        chars = string.ascii_uppercase + string.digits
-        return ''.join(random.choice(chars) for x in range(size))
-        #end of method generate_pktID
 
 
     def sockread(self, socket, numToRead):
@@ -96,79 +110,6 @@ class Service():
             print "Error occured in Disconnection from neighbour -> %s" % expt + "\n"
     # end of method closeConn
 
-    def addFileTodb(self, sessionID, filemd5, filename):
-
-        #devo aggiornare i filename dei file che hanno l'md5 del nuovo file
-        #e infine inserire, se non c'e' gia', il nuovo file
-
-        filesdb = self.getFilesdb() #(sessionID, filemd5, filename)
-
-        #aggiorno
-        for i in range(0,len(filesdb)):
-            if filesdb[i][1] == filemd5: #se il campo md5 e' uguale
-                filesdb[i][2] = filename #sovrascrivo il nome
-
-        notFound = True
-
-        for i in range(0,len(filesdb)):
-            if filesdb[i][0] == sessionID and filesdb[i][1] == filemd5:
-                notFound = False
-
-        if notFound: #il file non era presente nella tabellina, lo aggiungo
-
-            #inserisco
-            new_file = []
-            new_file.append(sessionID)
-            new_file.append(filemd5)
-            new_file.append(filename)
-            filesdb.append(new_file)
-
-        self.setFilesdb(filesdb)
-
-        print self.getFilesdb()
-
-
-    def delFileFromdb(self, sessID, filemd5):
-
-        filesdb = self.getFilesdb() #(sessionID, filemd5, filename)
-
-        #rimuovo
-        i = 0
-        while i < len(filesdb):
-            if i >= len(filesdb):
-                break
-            if filesdb[i][0] == sessID and filesdb[i][1] == filemd5:
-                filesdb.pop(i)
-            else:
-                i = i+1
-
-        self.setFilesdb(filesdb)
-
-        print self.getFilesdb()
-
-    def delPeerFilesFromdb(self, sessID):
-
-        cont = 0
-
-        filesdb = self.getFilesdb() #(sessionID, filemd5, filename)
-
-        #rimuovo tutti i files di quel peer
-        i = 0
-        while i < len(filesdb):
-            if i >= len(filesdb):
-                break
-            if filesdb[i][0] == sessID: #se trovo la riga da cancellare non procedo col contatore
-                filesdb.pop(i)
-                cont = cont + 1
-            else: #se la riga non va cancellata, procedo col contatore
-                i = i+1
-
-
-        self.setFilesdb(filesdb)
-
-        print self.getFilesdb()
-
-        return cont #ritorno il numero di file rimossi
 
     def delPeerFromdb(self,sessID):
 
@@ -185,9 +126,6 @@ class Service():
                 i = i+1
 
         self.setPeersdb(peersdb)
-
-        print self.getPeersdb()
-
 
     def checkPeerByIPPort(self,IP,port): #metodo per capire se il peer e' gia' loggato
 
@@ -213,18 +151,6 @@ class Service():
         #se sono uscita indenne dal ciclo (peer non trovato)
         return False
 
-    def getIPPortBySessID(self,sessID):
-
-        peersdb = self.getPeersdb()
-
-        for i in range (0,len(peersdb)):
-
-            if peersdb[i][0] == sessID: #se ho trovato il peer
-                info = []
-                info.append(peersdb[i][1])
-                info.append(peersdb[i][2])
-                return info #ritorno un array in cui il primo elemento e' l'ip, il secondo la porta
-
 
     def generate_sessID(self):
         size=16
@@ -234,7 +160,7 @@ class Service():
 
 
 
-class Login(threading.Thread, Service): #UGUALE A KAZAA
+class Login(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -268,12 +194,14 @@ class Login(threading.Thread, Service): #UGUALE A KAZAA
             self.socketclient.sendall("ALGI" + sessID)
             print "sent ALGI" + sessID + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
 
+        self.printPeersdb()
+
         print ""
 
         # end of run method
 
 
-class Logout(threading.Thread, Service): #DA MODIFICARE
+class Logout(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -294,33 +222,80 @@ class Logout(threading.Thread, Service): #DA MODIFICARE
 
         if self.checkPeerBySessID(sessID): #se il peer era loggato
 
-            #num_del = self.delPeerFilesFromdb(sessID) #cancello i files che aveva aggiunto e ritorno il numero di files
-            #num_del_form = '%(#)03d' % {"#" : int(num_del)}
+            #recupero il file che aveva aggiunto il peer
+            #provo a cancellare le parti aggiunte dal peer sorgente
 
-            #cancello il peer da peersdb
-            self.delPeerFromdb(sessID) #cancello il peer dalla tabella peersdb
+            filesdb = self.getFilesdb() #recupero il database con tutti i file
 
-            #invio l'ack
-            if True:
-                self.socketclient.sendall("NLOG" + "8888888888")
-                print "sent NLOG" + "8888888888" + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
-            else:
-                self.socketclient.sendall("ALOG" + "7777777777")
-                print "sent ALOG" + "7777777777" + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+            #vado a vedere se il peer e' una sorgente
+            found = False
+            for i in range(0,len(filesdb)):
+                if filesdb[i][1] == sessID:
+                    index_to_update = i
+                    filetable_to_update = filesdb[i][6]
+                    found = True
+
+            can_logout = True
+            num_parts = 0
+
+            if found == True: #se il peer e' sorgente di un file
+
+                fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
+
+                logout = fh.tryLogout(filetable_to_update) #mi faccio restituire il [possologout?, numparti]
+
+                can_logout = logout[0]
+                num_parts = logout[1]
+
+                if can_logout == False:
+                    #rispondo al peer che non posso sloggarmi e non faccio nient'altro
+                    num_parts_form = '%(#)010d' % {"#" : num_parts} #num_parts formattato per bene
+                    self.socketclient.sendall("NLOG" + num_parts_form)
+                    print "sent NLOG" + num_parts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
+                else:
+                    #aggiorno la tabella alla luce della cancellazione
+                    filesdb[index_to_update][6] = fh.getFileTable()
+                    self.setFilesdb(filesdb)
+
+            if can_logout: #cioe' sono una sorgente e mi posso sloggare oppure se sono un peer che non ha uploadato file
+
+                filesdb = self.getFilesdb()
+                for i in range(0,len(filesdb)): #per ogni file della tabella
+                    fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
+                    delete = fh.deleteParts(sessID, filesdb[i][6])
+                    do_delete = delete[0]
+                    if do_delete: #vuol dire che ho fatto una cancellazione nella filetable, devo aggiornare la tabella
+                        filesdb[i][6] = fh.getFileTable()
+                        self.setFilesdb(filesdb)
+                        num_parts += delete[1]
+
+                #cancello il peer da peersdb
+                self.delPeerFromdb(sessID) #cancello il peer dalla tabella peersdb
+
+                #rispondo al peer
+                num_parts_form = '%(#)010d' % {"#" : num_parts} #num_parts formattato per bene
+                self.socketclient.sendall("ALOG" + num_parts_form)
+                print "sent ALOG" + num_parts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
 
         else: #se il peer non era loggato
 
             print "il peer non era loggato"
 
-            self.socketclient.sendall("ALGO" + "999") #gli mando un numero fittizio
-            print "sent ALGO" + "999" + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+            self.socketclient.sendall("ALOG" + "9999999999") #gli mando un numero fittizio
+            print "sent ALOG" + "9999999999" + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
+        self.printPeersdb()
+        self.printFilesdb()
 
         print ""
+
 
         # end of run method
 
 
-class AddFile(threading.Thread, Service): #DA MODIFICARE
+class AddFile(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -335,21 +310,46 @@ class AddFile(threading.Thread, Service): #DA MODIFICARE
 
     def run(self):
 
-        addfile = self.sockread(self.socketclient,132)
-        print "received ADFF" + addfile + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
-        sessID = addfile[:16]
-        filemd5 = addfile[16:32]
-        filename_form = addfile[32:132]
+        addfile = self.sockread(self.socketclient,148)
+        print "received ADDR" + addfile + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = addfile[:16]
+        randomID = addfile[16:32]
+        lenFile = addfile[32:42]
+        lenPart = addfile[42:48]
+        filename_form = addfile[48:148]
         filename = filename_form.strip(" ")
 
-        self.addFileTodb(sessID, filemd5, filename) #aggiunta del file (fa lei tutti i controlli)
+        fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
+
+        numParts = fh.newTable(sessionID,int(lenFile),int(lenPart)) #mi faccio restituire il numPart
+
+        filesdb = self.getFilesdb() #recupero il database con tutti i file
+
+        newrow = []
+        newrow.append(randomID)
+        newrow.append(sessionID)
+        newrow.append(filename)
+        newrow.append(lenFile)
+        newrow.append(lenPart)
+        numParts_form = '%(#)08d' % {"#" : numParts} #numParts formattato per bene
+        newrow.append(numParts_form)
+        newrow.append(fh.getFileTable())
+
+        filesdb.append(newrow)
+
+        self.setFilesdb(filesdb)
+
+        self.socketclient.sendall("AADR" + numParts_form)
+        print "sent AADR" + numParts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
+        self.printFilesdb()
 
         print ""
 
         # end of run method
 
 
-class LookFile(threading.Thread, Service): #DA MODIFICARE
+class LookFile(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -362,170 +362,74 @@ class LookFile(threading.Thread, Service): #DA MODIFICARE
         self.dir_port_form = dir_port_form
 
 
-    def searchFiles(self,search_string):
+    def run(self):
 
-        lista_files = []
+        search = self.sockread(self.socketclient,36)
+        print "received LOOK" + search + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = search[:16]
+        ricerca_form = search[16:36]
+        ricerca = ricerca_form.strip(" ")
 
-        #ricerca nella tabella filesdb
-        filesdb = self.getFilesdb()
+        filesdb = self.getFilesdb() #recupero il database con tutti i file
+        numrandomID = 0 #numero file che matchano la ricerca
+        to_send = ""
 
         for i in range(0,len(filesdb)):
-            if filesdb[i][2].lower().find(search_string.lower()) != -1: #filesdb[i][2] e' il nome del file i-esimo
-                new_file = []
-                new_file.append(filesdb[i][0]) #sessionID
-                new_file.append(filesdb[i][1]) #filemd5
-                new_file.append(filesdb[i][2]) #filename
-                lista_files.append(new_file)
+            if filesdb[i][2].lower().find(ricerca.lower()) != -1: #filesdb = randomID, sessionID, filename, lenFile, lenPart, numPart, filetable
+                numrandomID += 1
+                randomID = filesdb[i][0]
+                filename = filesdb[i][2]
+                lenfile = filesdb[i][3]
+                lenpart = filesdb[i][4]
+                filename_form = '%(#)0100s' % {"#" : filename} #filename formattato per bene
+                to_send += randomID + filename_form + lenfile + lenpart
 
-        return lista_files #lista con i files che matchano la ricerca
+        numrandomID_form = '%(#)03d' % {"#" : numrandomID} #numrandomID formattato per bene
 
+        total = numrandomID_form + to_send
+
+        #rispondo al peer
+        self.socketclient.sendall("ALOO" + total)
+        print "sent ALOO" + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
+
+class FetchFile(threading.Thread, Service):
+
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
+
+        threading.Thread.__init__(self)
+
+        # info sul peer che si connette, magari servono
+        self.socketclient = socketclient
+        self.addrclient = addrclient
+        self.my_IP_form = my_IP_form
+        self.dir_port_form = dir_port_form
 
     def run(self):
 
-        findfile = self.sockread(self.socketclient,36)
-        print "received FIND" + findfile + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
-        sessID = findfile[:16] #sessionID del peer che ha effettuato la ricerca
-        ricerca_form = findfile[16:36]
-        ricerca = ricerca_form.strip(" ")
+        fetch = self.sockread(self.socketclient,32)
+        print "received FCHU" + fetch + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = fetch[:16]
+        randomID = fetch[16:32]
 
-        #da quando ricevo questo pacchetto ho 20 secondi di tempo per ricevere le risposte dai vari superpeer
-        start = time.time()
+        filesdb = self.getFilesdb()
 
-        ttl = 2 #ttl statico
-        ttl_form = '%(#)02d' % {"#" : int(ttl)}
+        for i in range(0,len(filesdb)):
+            if filesdb[i][0] == randomID: #filesdb = randomID, sessionID, filename, lenFile, lenPart, numPart, filetable
+                print "trovato random ID " + randomID + "=" + filesdb[i][0]
+                filetable = filesdb[i][6] #mi salvo la filetable che devo consultare
 
-        pktID = self.generate_pktID() #genero pktID
+        fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
 
-        #aggiungo il pktID a quelli della myQueryTable cosi' quando mi tornano i pacchetti AQUE di risposta
-        #riesco a capire se devo scartarli o meno in base a quanti secondi sono passati
-        queryService = kazaa_peer_services.Service()
-        myQueryTable = queryService.getMyQueryTable()
-        new_entry = []
-        new_entry.append(pktID)
-        new_entry.append(time.time())
-        myQueryTable.append(new_entry)
-        queryService.setMyQueryTable(myQueryTable)
+        total = fh.fetchstring(randomID,filetable,self.getPeersdb()) #mi faccio restituire la stringa lunga pronta per essere inviata
 
-        #mando QUER a tutti i miei amici
-        neighService = kazaa_peer_services.Service()
-        neighTable = neighService.getNeighTable()
-
-        for n in range(0,len(neighTable)): #n e' l'indice del vicino
-
-            neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.getP2pPort() + ttl_form + ricerca_form)
-            print "sent QUER" + pktID + self.my_IP_form + str(self.getP2pPort()) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
-            self.closeConn(neigh_sock)
-
-        #cerco anche all'interno dei miei files
-        files = self.searchFiles(ricerca) #files = lista di files che matchano la ricerca
-                                            #sessionID, filemd5, filename
-
-        if(len(files)==0):
-            print "No file matches with query's search in my superpeer"
-
-
-        else: #ho trovato almeno un file che matchi la ricerca
-            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer"
-
-            #aggiorno la mia tabella matchTable
-            for f in range(0,len(files)): #f = indice riga (una riga=un file)
-
-                IPPort = self.getIPPortBySessID(files[f][0]) #dal sessionID ricavo array con IP e porta del peer che ha il file
-                ipp2p = IPPort[0]
-                pp2p = IPPort[1]
-
-                filemd5 = files[f][1]
-                filename = files[f][2]
-
-                matchTable = self.getMatchTable()
-
-                new_match = []
-                new_match.append(pktID)
-                new_match.append(ipp2p)
-                new_match.append(pp2p)
-                new_match.append(filemd5)
-                new_match.append(filename)
-
-                matchTable.append(new_match)
-
-                self.setMatchTable(matchTable) #aggiorno matchTable
-
-        while True:
-            if time.time() - start > 20: #se da quando ho iniziato finora sono passati piu' di 20 secondi posso proseguire
-                break
-            time.sleep(1)
-
-        #ora devo mandare la mega risposta al peer che ha effettuato la ricerca (che e' ancora la' che aspetta)
-
-        matchTable = self.getMatchTable() #pktID, ipp2p, pp2p, filemd5, filename
-        #puo' essere che piu' file con lo stesso md5 abbiano nome di file differente,
-        #in quanto provenienti da differenti supernodi, si utilizza un solo nome tra quelli possibili,
-        #lasciando tale scelta  libera nella implementazione.
-
-        print matchTable
-
-        #formattazione pacchetto finale:
-        #AFIN.idmd5[3B].{Filemd5_i[16B].Filename_i[100B].#copy_i[3B].{IPP2P_i_j[15B].PP2P_i_j[5B]}(j=1..#copy_i)}(i=1..#idmd5)
-
-        i = 0
-        num_md5 = 0 #numero dei differenti idmd5
-        partial = ""
-
-        while i < len(matchTable):
-            if i >= len(matchTable):
-                break
-            if matchTable[i][0] == pktID:
-                #ho trovato una riga con un nuovo md5
-                num_md5 = num_md5 + 1 #incremento num dei diversi md5
-                cur_filemd5 = matchTable[i][3]
-                cur_filename = matchTable[i][4]
-                cur_filename_form = '%(#)0100s' % {"#" : cur_filename}
-                num_copy = 1
-                cur_ip = matchTable[i][1]
-                cur_port = matchTable[i][2]
-                ip_porta = cur_ip + cur_port
-
-                j=0
-
-                while j < len(matchTable): #scorro la tabella alla ricerca di altri md5 uguali
-                    if j >= len(matchTable):
-                        break
-                    if matchTable[j][0] == pktID and i!=j and matchTable[i][3] == matchTable[j][3]: #se i due md5 sono uguali
-                        num_copy = num_copy + 1
-                        cur_ip = matchTable[j][1]
-                        cur_port = matchTable[j][2]
-                        ip_porta += cur_ip + cur_port #aggiungo ip e porta della copia corrente
-                        matchTable.pop(j) #elimino la riga
-                    else:
-                        j = j+1
-
-                #formatto il numero delle copie
-                num_copy_form = '%(#)03d' % {"#" : int(num_copy)}
-
-                #costruisco la stringa per questo particolare md5
-                partial += cur_filemd5 + cur_filename_form + num_copy_form + ip_porta
-
-                matchTable.pop(i)
-            else:
-                i = i+1
-
-        #formatto il numero di differenti md5
-        num_md5_form = '%(#)03d' % {"#" : int(num_md5)}
-
-        #costruisco la stringa finale complessiva
-        total = "AFIN" + num_md5_form + partial
-
-        self.setMatchTable(matchTable)
-
-        self.socketclient.sendall(total) #invio mega pacchetto al peer che aveva effettuato la ricerca
-        print "sent " + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
-
-        print ""
+        #rispondo al peer
+        self.socketclient.sendall("AFCH" + total)
+        print "sent AFCH" + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
 
         # end of run method
 
-class FetchFile(threading.Thread, Service): #DA MODIFICARE
+class PostDownload(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -538,341 +442,37 @@ class FetchFile(threading.Thread, Service): #DA MODIFICARE
         self.dir_port_form = dir_port_form
 
 
-    def searchFiles(self,search_string):
-
-        lista_files = []
-
-        #ricerca nella tabella filesdb
-        filesdb = self.getFilesdb()
-
-        for i in range(0,len(filesdb)):
-            if filesdb[i][2].lower().find(search_string.lower()) != -1: #filesdb[i][2] e' il nome del file i-esimo
-                new_file = []
-                new_file.append(filesdb[i][0]) #sessionID
-                new_file.append(filesdb[i][1]) #filemd5
-                new_file.append(filesdb[i][2]) #filename
-                lista_files.append(new_file)
-
-        return lista_files #lista con i files che matchano la ricerca
-
-
     def run(self):
 
-        findfile = self.sockread(self.socketclient,36)
-        print "received FIND" + findfile + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
-        sessID = findfile[:16] #sessionID del peer che ha effettuato la ricerca
-        ricerca_form = findfile[16:36]
-        ricerca = ricerca_form.strip(" ")
+        postdown = self.sockread(self.socketclient,40)
+        print "received RPAD" + postdown + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = postdown[:16]
+        randomID = postdown[16:32]
+        numpart_to_update = postdown[32:40]
 
-        #da quando ricevo questo pacchetto ho 20 secondi di tempo per ricevere le risposte dai vari superpeer
-        start = time.time()
+        filesdb = self.getFilesdb() #recupero il database con tutti i file
 
-        ttl = 2 #ttl statico
-        ttl_form = '%(#)02d' % {"#" : int(ttl)}
-
-        pktID = self.generate_pktID() #genero pktID
-
-        #aggiungo il pktID a quelli della myQueryTable cosi' quando mi tornano i pacchetti AQUE di risposta
-        #riesco a capire se devo scartarli o meno in base a quanti secondi sono passati
-        queryService = kazaa_peer_services.Service()
-        myQueryTable = queryService.getMyQueryTable()
-        new_entry = []
-        new_entry.append(pktID)
-        new_entry.append(time.time())
-        myQueryTable.append(new_entry)
-        queryService.setMyQueryTable(myQueryTable)
-
-        #mando QUER a tutti i miei amici
-        neighService = kazaa_peer_services.Service()
-        neighTable = neighService.getNeighTable()
-
-        for n in range(0,len(neighTable)): #n e' l'indice del vicino
-
-            neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.getP2pPort() + ttl_form + ricerca_form)
-            print "sent QUER" + pktID + self.my_IP_form + str(self.getP2pPort()) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
-            self.closeConn(neigh_sock)
-
-        #cerco anche all'interno dei miei files
-        files = self.searchFiles(ricerca) #files = lista di files che matchano la ricerca
-        #sessionID, filemd5, filename
-
-        if(len(files)==0):
-            print "No file matches with query's search in my superpeer"
-
-
-        else: #ho trovato almeno un file che matchi la ricerca
-            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer"
-
-            #aggiorno la mia tabella matchTable
-            for f in range(0,len(files)): #f = indice riga (una riga=un file)
-
-                IPPort = self.getIPPortBySessID(files[f][0]) #dal sessionID ricavo array con IP e porta del peer che ha il file
-                ipp2p = IPPort[0]
-                pp2p = IPPort[1]
-
-                filemd5 = files[f][1]
-                filename = files[f][2]
-
-                matchTable = self.getMatchTable()
-
-                new_match = []
-                new_match.append(pktID)
-                new_match.append(ipp2p)
-                new_match.append(pp2p)
-                new_match.append(filemd5)
-                new_match.append(filename)
-
-                matchTable.append(new_match)
-
-                self.setMatchTable(matchTable) #aggiorno matchTable
-
-        while True:
-            if time.time() - start > 20: #se da quando ho iniziato finora sono passati piu' di 20 secondi posso proseguire
-                break
-            time.sleep(1)
-
-        #ora devo mandare la mega risposta al peer che ha effettuato la ricerca (che e' ancora la' che aspetta)
-
-        matchTable = self.getMatchTable() #pktID, ipp2p, pp2p, filemd5, filename
-        #puo' essere che piu' file con lo stesso md5 abbiano nome di file differente,
-        #in quanto provenienti da differenti supernodi, si utilizza un solo nome tra quelli possibili,
-        #lasciando tale scelta  libera nella implementazione.
-
-        print matchTable
-
-        #formattazione pacchetto finale:
-        #AFIN.idmd5[3B].{Filemd5_i[16B].Filename_i[100B].#copy_i[3B].{IPP2P_i_j[15B].PP2P_i_j[5B]}(j=1..#copy_i)}(i=1..#idmd5)
-
-        i = 0
-        num_md5 = 0 #numero dei differenti idmd5
-        partial = ""
-
-        while i < len(matchTable):
-            if i >= len(matchTable):
-                break
-            if matchTable[i][0] == pktID:
-                #ho trovato una riga con un nuovo md5
-                num_md5 = num_md5 + 1 #incremento num dei diversi md5
-                cur_filemd5 = matchTable[i][3]
-                cur_filename = matchTable[i][4]
-                cur_filename_form = '%(#)0100s' % {"#" : cur_filename}
-                num_copy = 1
-                cur_ip = matchTable[i][1]
-                cur_port = matchTable[i][2]
-                ip_porta = cur_ip + cur_port
-
-                j=0
-
-                while j < len(matchTable): #scorro la tabella alla ricerca di altri md5 uguali
-                    if j >= len(matchTable):
-                        break
-                    if matchTable[j][0] == pktID and i!=j and matchTable[i][3] == matchTable[j][3]: #se i due md5 sono uguali
-                        num_copy = num_copy + 1
-                        cur_ip = matchTable[j][1]
-                        cur_port = matchTable[j][2]
-                        ip_porta += cur_ip + cur_port #aggiungo ip e porta della copia corrente
-                        matchTable.pop(j) #elimino la riga
-                    else:
-                        j = j+1
-
-                #formatto il numero delle copie
-                num_copy_form = '%(#)03d' % {"#" : int(num_copy)}
-
-                #costruisco la stringa per questo particolare md5
-                partial += cur_filemd5 + cur_filename_form + num_copy_form + ip_porta
-
-                matchTable.pop(i)
-            else:
-                i = i+1
-
-        #formatto il numero di differenti md5
-        num_md5_form = '%(#)03d' % {"#" : int(num_md5)}
-
-        #costruisco la stringa finale complessiva
-        total = "AFIN" + num_md5_form + partial
-
-        self.setMatchTable(matchTable)
-
-        self.socketclient.sendall(total) #invio mega pacchetto al peer che aveva effettuato la ricerca
-        print "sent " + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
-
-        print ""
-
-        # end of run method
-
-class PostDownload(threading.Thread, Service): #DA MODIFICARE
-
-    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
-
-        threading.Thread.__init__(self)
-
-        # info sul peer che si connette, magari servono
-        self.socketclient = socketclient
-        self.addrclient = addrclient
-        self.my_IP_form = my_IP_form
-        self.dir_port_form = dir_port_form
-
-
-    def searchFiles(self,search_string):
-
-        lista_files = []
-
-        #ricerca nella tabella filesdb
-        filesdb = self.getFilesdb()
-
+        #vado a cercare la riga con il file che mi interessa(randomID)
         for i in range(0,len(filesdb)):
-            if filesdb[i][2].lower().find(search_string.lower()) != -1: #filesdb[i][2] e' il nome del file i-esimo
-                new_file = []
-                new_file.append(filesdb[i][0]) #sessionID
-                new_file.append(filesdb[i][1]) #filemd5
-                new_file.append(filesdb[i][2]) #filename
-                lista_files.append(new_file)
+            if filesdb[i][0] == randomID:
+                index_to_update = i
+                filetable_to_update = filesdb[i][6]
 
-        return lista_files #lista con i files che matchano la ricerca
+        fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
 
+        numPeerPart = fh.updateTable(sessionID, int(numpart_to_update), filetable_to_update) #mi faccio restituire il numPeerPart
 
-    def run(self):
+        numPeerParts_form = '%(#)08d' % {"#" : numPeerPart} #numPeerParts formattato per bene
 
-        findfile = self.sockread(self.socketclient,36)
-        print "received FIND" + findfile + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
-        sessID = findfile[:16] #sessionID del peer che ha effettuato la ricerca
-        ricerca_form = findfile[16:36]
-        ricerca = ricerca_form.strip(" ")
+        filesdb[index_to_update][6] = fh.getFileTable()
 
-        #da quando ricevo questo pacchetto ho 20 secondi di tempo per ricevere le risposte dai vari superpeer
-        start = time.time()
+        self.setFilesdb(filesdb)
 
-        ttl = 2 #ttl statico
-        ttl_form = '%(#)02d' % {"#" : int(ttl)}
+        self.socketclient.sendall("APAD" + numPeerParts_form)
+        print "sent APAD" + numPeerParts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
 
-        pktID = self.generate_pktID() #genero pktID
+        print "num peer parts " + str(numPeerPart)
 
-        #aggiungo il pktID a quelli della myQueryTable cosi' quando mi tornano i pacchetti AQUE di risposta
-        #riesco a capire se devo scartarli o meno in base a quanti secondi sono passati
-        queryService = kazaa_peer_services.Service()
-        myQueryTable = queryService.getMyQueryTable()
-        new_entry = []
-        new_entry.append(pktID)
-        new_entry.append(time.time())
-        myQueryTable.append(new_entry)
-        queryService.setMyQueryTable(myQueryTable)
-
-        #mando QUER a tutti i miei amici
-        neighService = kazaa_peer_services.Service()
-        neighTable = neighService.getNeighTable()
-
-        for n in range(0,len(neighTable)): #n e' l'indice del vicino
-
-            neigh_sock = self.openConn(neighTable[n][0], neighTable[n][1]) #passo ip e porta
-            neigh_sock.sendall("QUER" + pktID + self.my_IP_form + self.getP2pPort() + ttl_form + ricerca_form)
-            print "sent QUER" + pktID + self.my_IP_form + str(self.getP2pPort()) + ttl_form + ricerca_form + " to " + neighTable[n][0] + ":" + str(neighTable[n][1])
-            self.closeConn(neigh_sock)
-
-        #cerco anche all'interno dei miei files
-        files = self.searchFiles(ricerca) #files = lista di files che matchano la ricerca
-        #sessionID, filemd5, filename
-
-        if(len(files)==0):
-            print "No file matches with query's search in my superpeer"
-
-
-        else: #ho trovato almeno un file che matchi la ricerca
-            print "Found #" + str(len(files)) + " files that meet query's search in my superpeer"
-
-            #aggiorno la mia tabella matchTable
-            for f in range(0,len(files)): #f = indice riga (una riga=un file)
-
-                IPPort = self.getIPPortBySessID(files[f][0]) #dal sessionID ricavo array con IP e porta del peer che ha il file
-                ipp2p = IPPort[0]
-                pp2p = IPPort[1]
-
-                filemd5 = files[f][1]
-                filename = files[f][2]
-
-                matchTable = self.getMatchTable()
-
-                new_match = []
-                new_match.append(pktID)
-                new_match.append(ipp2p)
-                new_match.append(pp2p)
-                new_match.append(filemd5)
-                new_match.append(filename)
-
-                matchTable.append(new_match)
-
-                self.setMatchTable(matchTable) #aggiorno matchTable
-
-        while True:
-            if time.time() - start > 20: #se da quando ho iniziato finora sono passati piu' di 20 secondi posso proseguire
-                break
-            time.sleep(1)
-
-        #ora devo mandare la mega risposta al peer che ha effettuato la ricerca (che e' ancora la' che aspetta)
-
-        matchTable = self.getMatchTable() #pktID, ipp2p, pp2p, filemd5, filename
-        #puo' essere che piu' file con lo stesso md5 abbiano nome di file differente,
-        #in quanto provenienti da differenti supernodi, si utilizza un solo nome tra quelli possibili,
-        #lasciando tale scelta  libera nella implementazione.
-
-        print matchTable
-
-        #formattazione pacchetto finale:
-        #AFIN.idmd5[3B].{Filemd5_i[16B].Filename_i[100B].#copy_i[3B].{IPP2P_i_j[15B].PP2P_i_j[5B]}(j=1..#copy_i)}(i=1..#idmd5)
-
-        i = 0
-        num_md5 = 0 #numero dei differenti idmd5
-        partial = ""
-
-        while i < len(matchTable):
-            if i >= len(matchTable):
-                break
-            if matchTable[i][0] == pktID:
-                #ho trovato una riga con un nuovo md5
-                num_md5 = num_md5 + 1 #incremento num dei diversi md5
-                cur_filemd5 = matchTable[i][3]
-                cur_filename = matchTable[i][4]
-                cur_filename_form = '%(#)0100s' % {"#" : cur_filename}
-                num_copy = 1
-                cur_ip = matchTable[i][1]
-                cur_port = matchTable[i][2]
-                ip_porta = cur_ip + cur_port
-
-                j=0
-
-                while j < len(matchTable): #scorro la tabella alla ricerca di altri md5 uguali
-                    if j >= len(matchTable):
-                        break
-                    if matchTable[j][0] == pktID and i!=j and matchTable[i][3] == matchTable[j][3]: #se i due md5 sono uguali
-                        num_copy = num_copy + 1
-                        cur_ip = matchTable[j][1]
-                        cur_port = matchTable[j][2]
-                        ip_porta += cur_ip + cur_port #aggiungo ip e porta della copia corrente
-                        matchTable.pop(j) #elimino la riga
-                    else:
-                        j = j+1
-
-                #formatto il numero delle copie
-                num_copy_form = '%(#)03d' % {"#" : int(num_copy)}
-
-                #costruisco la stringa per questo particolare md5
-                partial += cur_filemd5 + cur_filename_form + num_copy_form + ip_porta
-
-                matchTable.pop(i)
-            else:
-                i = i+1
-
-        #formatto il numero di differenti md5
-        num_md5_form = '%(#)03d' % {"#" : int(num_md5)}
-
-        #costruisco la stringa finale complessiva
-        total = "AFIN" + num_md5_form + partial
-
-        self.setMatchTable(matchTable)
-
-        self.socketclient.sendall(total) #invio mega pacchetto al peer che aveva effettuato la ricerca
-        print "sent " + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        self.printFilesdb()
 
         print ""
-
-        # end of run method

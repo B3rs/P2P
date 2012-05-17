@@ -4,6 +4,7 @@ import socket
 from threading import Thread
 from models.peer import Peer
 import random
+
 from managers.peersmanager import PeersManager
 from managers.packetsmanager import PacketsManager
 from managers.filesmanager import FilesManager
@@ -42,6 +43,9 @@ class RequestEmitter(object):
                 UsersManager.set_my_session_id(my_session_id)
                 klog("Done. My session id is: %s" % my_session_id)
 
+                UsersManager.set_tracker(Peer(tracker_ip,tracker_port))
+                klog("Done. My session id is: %s" % my_session_id)
+
                 self.ui_handler.login_done(my_session_id)
             else:
                 raise Exception("Response command error: %s" %response)
@@ -52,10 +56,10 @@ class RequestEmitter(object):
     def search_for_files(self, query):
         PacketsManager.add_new_generated_packet(p_id)
 
-        my_superpeer = UsersManager.get_superpeer()
+        my_tracker = UsersManager.get_tracker()
 
         try:
-            sock = connect_socket(my_superpeer.ip, my_superpeer.port)
+            sock = connect_socket(my_tracker.ip, my_tracker.port)
             sock.send("LOOK" + UsersManager.get_my_session_id() + format_query(query))
             klog("Started LOOK for file: %s" %query)
 
@@ -75,49 +79,82 @@ class RequestEmitter(object):
             klog(str(ex))
 
     def logout(self):
-        my_superpeer = UsersManager.get_superpeer()
-        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
+        my_tracker = UsersManager.get_tracker()
+        sock = connect_socket(my_tracker.ip, 80)
         sock.send("LOGO" + UsersManager.get_my_session_id())
         response = read_from_socket(sock, 4)
         num_file_deleted = -1
-        if response == "ALGO":
-            num_file_deleted = int(read_from_socket(sock, 3))
+        if response == "ALOG":
+            num_file_deleted = int(read_from_socket(sock, 10))
             klog("LOGOUT Done. Deleted %d files" % num_file_deleted)
+        elif response == "NLOG":
+            num_files = int(read_from_socket(sock, 10))
+            klog("LOGOUT refused from directory, you are the source for %s files" % num_files)
         else:
-            klog("LOGOUT non eseguito")
+            klog("LOGOUT not working correctly in directory")
         sock.close()
         return num_file_deleted
 
-    def download_file(self, peer_ip, peer_port, md5, filename):
+    def download_file(self):
+        pass
+        #TODO: dobbiamo implementare che cerchi periodicamente le parti e che vada poi a scaricarle tramite la download_part. Fare nuovo thread?
+
+    def download_part(self, peer_ip, peer_port, file_id, file_part, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)
-        downloadSocket.send("RETR")
-        downloadSocket.send(decode_md5(md5))
+        downloadSocket.send("RETP")
+        downloadSocket.send(file_id)
+        downloadSocket.send(file_part)
         # Star a thread that will take care of the download and of the socket management
-        dlThread = DownloadThread(downloadSocket, filename, md5, peer_ip, self.ui_handler)
+        dlThread = DownloadThread(downloadSocket, filename, file_id, file_part, peer_ip, self.ui_handler)
         dlThread.start()
 
-    def register_file_to_supernode(self, file):
-        my_superpeer = UsersManager.get_superpeer()
-        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
+    def register_part_to_tracker(self, file, part_num):
+        my_tracker = UsersManager.get_tracker()
+        sock = connect_socket(my_tracker.ip, my_tracker.port)
         local_ip = get_local_ip(sock.getsockname()[0])
-        sock.send("ADFF" + UsersManager.get_my_session_id())
-        sock.send(decode_md5(file.hash))
-        sock.send(format_filename(file.filename))
+        sock.send("RPAD" + UsersManager.get_my_session_id())
+        sock.send(file.id)
+        sock.send(format_partnum(part_num))
+
+        try:
+            response = read_from_socket(sock,4)
+            if response == "APAD":
+                part_num = read_from_socket(sock, 8)
+                if part_num == file.numeropartichepossiedoperquestofile():
+                    klog("Part succesfully registered")
+                else:
+                    klog("Wrong partnumber from directory")
+            else:
+                klog("Wrong ack received from directory service when trying to register a part")
+
+        except Exception:
+            klog("Exception in registering a downloaded part on the tracker")
         sock.close()
 
-    def register_all_files_to_supernode(self):
-        for file in FilesManager.shared_files():
-            self.register_file_to_supernode(file)
-
-    def unregister_file(self, file):
-        my_superpeer = UsersManager.get_superpeer()
-        sock = connect_socket(my_superpeer.ip, 80)#my_superpeer.port)
+    def add_file_to_tracker(self, file):
+        my_tracker = UsersManager.get_tracker()
+        sock = connect_socket(my_tracker.ip, my_tracker.port)
         local_ip = get_local_ip(sock.getsockname()[0])
-        sock.send("DEFF" + UsersManager.get_my_session_id())
-        sock.send(decode_md5(file.hash))
-        sock.close()
+        sock.send("ADDR" + UsersManager.get_my_session_id())
+        sock.send(file.id)
+        sock.send(file.file_size)
+        sock.send(file.part_size)
+        sock.send(file.filename)
+        try:
+            response = read_from_socket(sock, 4)
+            if response == "AADR":
+                part_num = read_from_socket(sock, 8)
+                if part_num == math.ceil(file.file_size/file.filepart):
+                    klog("File %s successfully added to directory service" % file.filename)
+                else:
+                    klog("Wrong partnumber received from directory")
+            else:
+                klog("wrong ack received from directory service")
+        except Exception:
+            klog("Exception in adding file to tracker")
 
-    def unregister_all_files_to_supernode(self):
+    def add_all_files_to_tracker(self):
         for file in FilesManager.shared_files():
-            self.unregister_file(file)
+            self.add_file_to_tracker(file)
+
 

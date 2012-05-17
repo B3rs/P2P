@@ -29,3 +29,6 @@ def format_filename(filename):
 
 def format_deletenum(num):
     return '%(#)03d' % {"#" : int(num)}
+
+def format_partnum(num):
+    return '%(#)08d' % {"#" : int(num)}

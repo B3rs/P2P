@@ -8,3 +8,6 @@ class Peer(object):
     def __init__(self, ip, port):
         self.ip = format_ip_address(ip)
         self.port = format_port_number(port)
+
+    def __str__(self):
+        return "%s:%s" % (self.ip, self.port)

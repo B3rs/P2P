@@ -11,7 +11,7 @@ def connect_socket(ip, port):
 
 # See http://stackoverflow.com/questions/7334349/python-get-local-ip-address-used-to-send-ip-data-to-a-specific-remote-ip-addres
 # TODO use a better self explaining name
-def get_local_ip(host):
+def get_local_ip(host = "google.com"):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
         s.connect((host, 9))

@@ -29,7 +29,7 @@ class DownloadThread(QThread):
         self.connect(self, SIGNAL("part_download_finished"), self._check_parts)
         parts = PartsManager.getPartsOrdered()
         for i in range(0, QUEUE_LENGTH):
-            
+
 
 
 

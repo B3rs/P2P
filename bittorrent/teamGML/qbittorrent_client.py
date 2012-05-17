@@ -5,8 +5,8 @@ from threads.response_handler_thread import ResponseHandlerThread
 from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
 from custom_utils import logging
+from configurations import PORT
 
-PORT = 8000
 
 if __name__ == "__main__":
 

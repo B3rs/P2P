@@ -55,3 +55,5 @@ class DownloadThread(Thread):
 
 
         self._socket.close()
+        #TODO: mandami un segnale che dice che ho finito la parte
+

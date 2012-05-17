@@ -39,5 +39,14 @@ class File(object):
 
         self.parts_masks[str(peer)].set_available(part_num)
 
+    def get_peers_for_file_part(self, part_num):
+        peers = []
+
+        for (peer, part_mask) in self.parts_masks:
+            if part_mask.is_available(part_num):
+                peers.append(peer)
+
+        return peers
+
     def is_local(self):
         return len(self.filepath)>0

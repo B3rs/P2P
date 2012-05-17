@@ -23,6 +23,11 @@ class FilesManager(object):
     FILES = []
 
     @classmethod
+    def get_files(cls):
+        return FilesManager.FILES
+
+
+    @classmethod
     def load_my_files(cls):
         peer_me = Peer("127.0.0.0", PORT)
         for dirname, dirnames, filenames in os.walk(SHARED_PATH):
@@ -76,5 +81,6 @@ class FilesManager(object):
             return range(0, file.parts_count)
 
     @classmethod
-    def get_files(cls):
-        return FilesManager.FILES
+    def get_peers_for_file_part(cls, file_id, part_num):
+        file = cls.find_file_by_id(file_id)
+        return file.get_peers_for_file_part(part_num)

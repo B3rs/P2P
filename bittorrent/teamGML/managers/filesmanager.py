@@ -77,7 +77,7 @@ class FilesManager(object):
         file = cls.find_file_by_id(file_id)
         if file:
             klog("TODO: ordinare gli indici delle parti da quella meno conosciuta a quella piu conosciuta")
-
+            klog("TODO: passare solo le parti mancanti")
             return range(0, file.parts_count)
 
     @classmethod

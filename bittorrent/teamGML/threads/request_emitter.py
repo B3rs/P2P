@@ -13,6 +13,7 @@ from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.logging import *
 from custom_utils.sockets import *
+from threads.download_queue_thread import DownloadQueueThread
 from threads.download_thread import DownloadThread
 from threads.service_thread import ServiceThread
 import threading
@@ -96,8 +97,8 @@ class RequestEmitter(object):
         return num_file_deleted
 
     def download_file(self):
-        pass
-        #TODO: dobbiamo implementare che cerchi periodicamente le parti e che vada poi a scaricarle tramite la download_part. Fare nuovo thread?
+        thread = DownloadQueueThread()
+        klog("TODO download del file")
 
     def download_part(self, peer_ip, peer_port, file_id, file_part, filename):
         downloadSocket = connect_socket(peer_ip, peer_port)
@@ -105,7 +106,8 @@ class RequestEmitter(object):
         downloadSocket.send(file_id)
         downloadSocket.send(file_part)
         # Star a thread that will take care of the download and of the socket management
-        dlThread = DownloadThread(downloadSocket, filename, file_id, file_part, peer_ip, self.ui_handler)
+        f = FilesManager.find_file_by_id(file_id)
+        dlThread = DownloadThread(downloadSocket, f, peer_ip, self.ui_handler)
         dlThread.start()
 
     def register_part_to_tracker(self, file, part_num):

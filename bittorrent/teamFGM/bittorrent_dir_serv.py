@@ -70,8 +70,6 @@ class Service():
         newpeer.append(port_form)
         self.peersdb.append(newpeer)
 
-        print self.peersdb
-
 
     def sockread(self, socket, numToRead):
         """
@@ -351,7 +349,7 @@ class AddFile(threading.Thread, Service):
         # end of run method
 
 
-class LookFile(threading.Thread, Service): #TODO DA CREARE
+class LookFile(threading.Thread, Service):
 
     def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
 
@@ -364,37 +362,70 @@ class LookFile(threading.Thread, Service): #TODO DA CREARE
         self.dir_port_form = dir_port_form
 
 
-    def searchFiles(self,search_string):
+    def run(self):
 
-        lista_files = []
+        search = self.sockread(self.socketclient,36)
+        print "received LOOK" + search + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = search[:16]
+        ricerca_form = search[16:36]
+        ricerca = ricerca_form.strip(" ")
 
-        #ricerca nella tabella filesdb
+        filesdb = self.getFilesdb() #recupero il database con tutti i file
+        numrandomID = 0 #numero file che matchano la ricerca
+        to_send = ""
+
+        for i in range(0,len(filesdb)):
+            if filesdb[i][2].lower().find(ricerca.lower()) != -1: #filesdb = randomID, sessionID, filename, lenFile, lenPart, numPart, filetable
+                numrandomID += 1
+                randomID = filesdb[i][0]
+                filename = filesdb[i][2]
+                lenfile = filesdb[i][3]
+                lenpart = filesdb[i][4]
+                filename_form = '%(#)0100s' % {"#" : filename} #filename formattato per bene
+                to_send += randomID + filename_form + lenfile + lenpart
+
+        numrandomID_form = '%(#)03d' % {"#" : numrandomID} #numrandomID formattato per bene
+
+        total = numrandomID_form + to_send
+
+        #rispondo al peer
+        self.socketclient.sendall("ALOO" + total)
+        print "sent ALOO" + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
+
+
+class FetchFile(threading.Thread, Service):
+
+    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
+
+        threading.Thread.__init__(self)
+
+        # info sul peer che si connette, magari servono
+        self.socketclient = socketclient
+        self.addrclient = addrclient
+        self.my_IP_form = my_IP_form
+        self.dir_port_form = dir_port_form
+
+    def run(self):
+
+        fetch = self.sockread(self.socketclient,32)
+        print "received FCHU" + fetch + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
+        sessionID = fetch[:16]
+        randomID = fetch[16:32]
+
         filesdb = self.getFilesdb()
 
         for i in range(0,len(filesdb)):
-            if filesdb[i][2].lower().find(search_string.lower()) != -1: #filesdb[i][2] e' il nome del file i-esimo
-                new_file = []
-                new_file.append(filesdb[i][0]) #sessionID
-                new_file.append(filesdb[i][1]) #filemd5
-                new_file.append(filesdb[i][2]) #filename
-                lista_files.append(new_file)
+            if filesdb[i][0] == randomID: #filesdb = randomID, sessionID, filename, lenFile, lenPart, numPart, filetable
+                print "trovato random ID " + randomID + "=" + filesdb[i][0]
+                filetable = filesdb[i][6] #mi salvo la filetable che devo consultare
 
-        return lista_files #lista con i files che matchano la ricerca
+        fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
 
+        total = fh.fetchstring(randomID,filetable,self.getPeersdb()) #mi faccio restituire la stringa lunga pronta per essere inviata
 
-
-class FetchFile(threading.Thread, Service): #TODO DA CREARE
-
-    def __init__(self, socketclient, addrclient, my_IP_form, dir_port_form):
-
-        threading.Thread.__init__(self)
-
-        # info sul peer che si connette, magari servono
-        self.socketclient = socketclient
-        self.addrclient = addrclient
-        self.my_IP_form = my_IP_form
-        self.dir_port_form = dir_port_form
-
+        #rispondo al peer
+        self.socketclient.sendall("AFCH" + total)
+        print "sent AFCH" + total + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
 
         # end of run method
 
@@ -445,4 +476,3 @@ class PostDownload(threading.Thread, Service):
         self.printFilesdb()
 
         print ""
-

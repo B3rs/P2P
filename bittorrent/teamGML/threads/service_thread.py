@@ -38,43 +38,11 @@ class ServiceThread(Thread):
             command = str(self._socket.recv(4))
 
             #
-            # FILES
-            #
-            # Received package in reply to a file research
-
-            if command == "AFCH":
-                klog("AFCH received")
-                klog("TDB")
-
-
-            #
             # PEERS
             #
-            elif command == "ALGI":
-                #Normally this is done in the RequestEmitter, but we have the same code here to
-                #prevent crashes in case of closed and re-opened socket
-                session_id = str(read_from_socket(self._socket, 16))
-                klog("ALGI received form super peer: %s", session_id)
-                UsersManager.set_my_session_id(session_id)
-                self.ui_handler.login_done(session_id)
-
-
-            elif command == "ALOG":
-                klog("Received ALOG")
-                UsersManager.set_my_session_id("")
-                klog("TBD")
-
-            elif command == "NLOG":
-                klog("Received NLOG")
-                klog("TBD")
-
-
-            elif command == "APAD":
-                klog("Received APAD")
-                klog("TBD")
 
             # Received package asking for a file
-            elif command == "RETP":
+            if command == "RETP":
                 klog("RETR received")
                 CHUNK_DIM = 128
 
@@ -122,18 +90,11 @@ class ServiceThread(Thread):
                 else:
                     klog("I do not have this file!")
 
-            elif command == "AADR":
-                klog("Received AADR")
-                klog("TBD")
-
-
-            if command == "":
-                condition = False
-
+            else:
+                klog("ERROR: received a %s command that service_thread does not have to handle:" %command)
             # Close the socket
             self._socket.close()
 
         except Exception, ex:
-            condition = False
             print ex
 

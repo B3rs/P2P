@@ -16,6 +16,8 @@ from configurations import PORT
 # TODO find a way to evaluate the path in a way that is transparent to the caller of the method
 #SHARED_PATH = "../shared" # If u are a normal person
 SHARED_PATH = "shared"  # If u are GIO
+DOWNLOAD_FOLDER = "downloads"
+
 
 
 class FilesManager(object):
@@ -84,3 +86,23 @@ class FilesManager(object):
     def get_peers_for_file_part(cls, file_id, part_num):
         file = cls.find_file_by_id(file_id)
         return file.get_peers_for_file_part(part_num)
+
+    '''
+    status can be = ["downloading", "completed", "empty"]
+    '''
+    @classmethod
+    def set_status_part_for_file(cls, file_id, part_num, status):
+        klog("TODO: impostare stato downloading sulla part_num del file_id")
+
+    @classmethod
+    def create_file_from_parts(cls, file_id):
+        klog("TODO: salvare nel HDD il file intero tramite le parti scaricate (se tutte le parti sono scaricate)")
+
+
+    @classmethod
+    def get_filepart_path_from_file(cls, file_id, part_num):
+        file = cls.find_file_by_id(file_id)
+        if file:
+            return "%s/%s.part_%s" %(DOWNLOAD_FOLDER, file.filename, str(part_num))
+        else:
+            raise Exception("File %s not found" %file_id)

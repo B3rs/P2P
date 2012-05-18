@@ -96,18 +96,19 @@ class RequestEmitter(object):
         sock.close()
         return num_file_deleted
 
-    def download_file(self):
-        thread = DownloadQueueThread()
-        klog("TODO download del file")
+    def download_file(self, file_id):
+        f = FilesManager.find_file_by_id(file_id)
+        t = DownloadQueueThread(file_id, self, self.ui_handler)
+        t.start()
 
-    def download_part(self, peer_ip, peer_port, file_id, file_part, filename):
+    def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
         downloadSocket.send(file_id)
         downloadSocket.send(file_part)
         # Star a thread that will take care of the download and of the socket management
         f = FilesManager.find_file_by_id(file_id)
-        dlThread = DownloadThread(downloadSocket, f, peer_ip, self.ui_handler)
+        dlThread = DownloadThread(downloadSocket, f, peer_ip, self, self.ui_handler)
         dlThread.start()
 
     def register_part_to_tracker(self, file, part_num):

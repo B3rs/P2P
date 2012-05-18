@@ -12,7 +12,7 @@ DOWNLOAD_FOLDER = "downloads"
 
 class DownloadThread(QThread):
 
-    def __init__(self, socket, filename, file_id, file_part, peer_ip, ui_handler):
+    def __init__(self, socket, filename, file_id, file_part, peer_ip, request_emitter, ui_handler):
         super(DownloadThread, self).__init__()
         self._socket = socket
         self._filename = filename
@@ -20,6 +20,7 @@ class DownloadThread(QThread):
         self._file_part = file_part
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
+        self._request_emitter = request_emitter
 
         klog("downloading %s %s" %(self._filename, str(self._file_id)))
 
@@ -35,7 +36,7 @@ class DownloadThread(QThread):
             try:
                 klog("Download started")
                 klog("chunk number: " + str(chunk_number))
-                newFile = open(DOWNLOAD_FOLDER+"/"+self._filename+".part%s" % self._file_part, "wb") # a = append, b = binary mode
+                newFile = open(FilesManager.get_filepart_path_from_file(), "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
                     chunk_length = read_from_socket(self._socket, 5)
@@ -53,7 +54,7 @@ class DownloadThread(QThread):
 
                 f = FilesManager.find_file_by_id(self._file_id)
 
-                RequestEmitter.register_part_to_tracker(f, self._file_part)
+                self._request_emitter.register_part_to_tracker(f, self._file_part)
 
             except Exception, ex:
                 klog("An exception has occurred: "+str(ex))

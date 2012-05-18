@@ -3,8 +3,6 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 from threading import Thread
 import time
 from managers.filesmanager import FilesManager
-from managers.peersmanager import PeersManager
-from managers.packetsmanager import PacketsManager
 from managers.usersmanager import UsersManager
 from models.peer import Peer
 from models.file import File

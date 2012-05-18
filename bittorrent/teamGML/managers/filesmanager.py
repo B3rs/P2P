@@ -102,6 +102,7 @@ class FilesManager(object):
         else:
             raise Exception("File %s not found" %file_id)
 
+
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):
         file = cls.find_file_by_id(file_id)

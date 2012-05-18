@@ -6,7 +6,6 @@ from custom_utils import hashing
 from models.file import File
 from models.peer import Peer
 from custom_utils.logging import klog
-from configurations import PORT
 
 
 
@@ -30,7 +29,7 @@ class FilesManager(object):
 
     @classmethod
     def load_my_files(cls):
-        peer_me = Peer("127.0.0.0", PORT)
+        peer_me = Peer.get_local_peer()
         for dirname, dirnames, filenames in os.walk(SHARED_PATH):
             for filename in filenames:
                 path = dirname + "/" + filename
@@ -41,18 +40,6 @@ class FilesManager(object):
                     file.set_peer_has_part(peer_me, p)
 
                 cls.get_files().append(file)
-
-    @classmethod
-    def create_file(cls, name, hash, user):
-        klog("TBD")
-        file = cls.find_file_by_hash_and_sessionid(hash, user.session_id)
-        if file is None:
-            # Create new file
-            newFile = File(hash, name, "")
-            cls.shared_files().append(newFile)
-        else:
-            # Update file name
-            cls.update_file(file, name)
 
     @classmethod
     def delete_file(cls, file):
@@ -74,28 +61,61 @@ class FilesManager(object):
         return results
 
     @classmethod
+    def add_new_remote_file(cls, file_name, file_id, file_size, part_size):
+        file = File(file_id, file_name)
+        file.file_size = file_size
+        file.part_size = part_size
+        cls.get_files().append(file)
+
+    @classmethod
+    def update_remote_file_part(cls, file_id, peer, part_num, available):
+        file = cls.find_file_by_id(file_id)
+        if file:
+            file.set_peer_has_part(peer, part_num, available)
+        else:
+            raise Exception("File %s not found" %file_id)
+
+    @classmethod
     def get_ordered_parts_number(cls, file_id):
         file = cls.find_file_by_id(file_id)
         if file:
-            klog("TODO: ordinare gli indici delle parti da quella meno conosciuta a quella piu conosciuta")
-            klog("TODO: passare solo le parti mancanti e quelle che non sto scaricando")
-            return range(0, file.parts_count)
+            part_nums = []
+            for p_num in range(0, file.parts_count):
+                if not file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
+                    klog("TODO: ordinare gli indici delle parti da quella meno conosciuta a quella piu conosciuta")
+                    part_nums.append(p_num)
+
+            return part_nums
+        else:
+            raise Exception("File not found: %s" %file_id)
 
     @classmethod
     def get_completed_file_parts_count(cls, file_id):
-        klog("TODO: restituire il numero di parti già scaricate del file")
+        file = cls.find_file_by_id(file_id)
+        count = 0
+        if file:
+            for i in range(0, file.parts_count):
+                if file.peer_has_part(Peer.get_local_peer(), i):
+                    count +=1
+            return count
+
+        else:
+            raise Exception("File %s not found" %file_id)
 
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):
         file = cls.find_file_by_id(file_id)
         return file.get_peers_for_file_part(part_num)
 
-    '''
-    status can be = ["downloading", "completed", "empty"]
-    '''
+    #status can be = ["downloading", "completed", "empty"]
     @classmethod
     def set_status_part_for_file(cls, file_id, part_num, status):
-        klog("TODO: impostare stato downloading sulla part_num del file_id")
+        file = cls.find_file_by_id(file_id)
+        if file:
+            file.set_peer_status_for_part(Peer.get_local_peer(), part_num, status)
+        else:
+            raise Exception("File %s not found" %file_id)
+
 
     @classmethod
     def create_file_from_parts(cls, file_id):

@@ -5,8 +5,6 @@ from threading import Thread
 from models.peer import Peer
 import random
 
-from managers.peersmanager import PeersManager
-from managers.packetsmanager import PacketsManager
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
 from custom_utils.formatting import *

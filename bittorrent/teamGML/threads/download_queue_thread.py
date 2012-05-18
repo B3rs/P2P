@@ -7,7 +7,6 @@ from custom_utils.sockets import *
 from PyQt4.QtCore import QThread, SIGNAL
 from managers.filesmanager import FilesManager
 from threads.download_thread import DownloadThread
-from threads.request_emitter import RequestEmitter
 import random
 
 

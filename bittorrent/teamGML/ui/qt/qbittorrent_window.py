@@ -2,7 +2,6 @@ from PyQt4.QtGui import QMainWindow, QListWidgetItem, QTreeWidgetItem, QProgress
 from PyQt4.QtCore import QStringList, SIGNAL, Qt
 from uimainwindow import Ui_MainWindow
 from managers.filesmanager import FilesManager
-from managers.peersmanager import PeersManager
 import threading
 from custom_utils.logging import klog
 

@@ -83,7 +83,7 @@ class FilesManager(object):
 
     @classmethod
     def get_completed_file_parts_count(cls, file_id):
-        klog("TODO: restituire il numero di parti già scaricate del file")
+        klog("TODO: restituire il numero di parti gia scaricate del file")
 
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):

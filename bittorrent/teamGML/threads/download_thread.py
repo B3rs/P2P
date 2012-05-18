@@ -4,7 +4,6 @@ from threading import Thread
 from custom_utils.logging import klog
 from custom_utils.hashing import *
 from custom_utils.sockets import read_from_socket
-from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
 from PyQt4.QtCore import QThread, SIGNAL
 

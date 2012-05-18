@@ -29,6 +29,7 @@ class DownloadQueueThread(QThread):
         if file_id != self._file.id:
             return
         self._downloaded_parts += 1
+        FilesManager.set_status_part_for_file(file_id, file_part, "completed")
         if self._downloaded_parts == self._file.parts_count:
             FilesManager.create_file_from_parts(self._file.id)
         else:

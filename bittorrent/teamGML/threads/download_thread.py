@@ -34,6 +34,7 @@ class DownloadThread(QThread):
             chunk_number = int(read_from_socket(self._socket, 6))
             try:
                 klog("Download started")
+                FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
                 klog("chunk number: " + str(chunk_number))
                 newFile = open(FilesManager.get_filepart_path_from_file(), "wb") # a = append, b = binary mode
 

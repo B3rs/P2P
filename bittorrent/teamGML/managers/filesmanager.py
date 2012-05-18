@@ -28,7 +28,6 @@ class FilesManager(object):
     def get_files(cls):
         return FilesManager.FILES
 
-
     @classmethod
     def load_my_files(cls):
         peer_me = Peer("127.0.0.0", PORT)
@@ -79,8 +78,12 @@ class FilesManager(object):
         file = cls.find_file_by_id(file_id)
         if file:
             klog("TODO: ordinare gli indici delle parti da quella meno conosciuta a quella piu conosciuta")
-            klog("TODO: passare solo le parti mancanti")
+            klog("TODO: passare solo le parti mancanti e quelle che non sto scaricando")
             return range(0, file.parts_count)
+
+    @classmethod
+    def get_completed_file_parts_count(cls, file_id):
+        klog("TODO: restituire il numero di parti già scaricate del file")
 
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):
@@ -97,7 +100,6 @@ class FilesManager(object):
     @classmethod
     def create_file_from_parts(cls, file_id):
         klog("TODO: salvare nel HDD il file intero tramite le parti scaricate (se tutte le parti sono scaricate)")
-
 
     @classmethod
     def get_filepart_path_from_file(cls, file_id, part_num):

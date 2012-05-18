@@ -14,10 +14,7 @@ from custom_utils.sockets import *
 from threads.download_queue_thread import DownloadQueueThread
 from threads.download_thread import DownloadThread
 from threads.service_thread import ServiceThread
-import threading
-
-TTL_FOR_SUPERPEERS_SEARCH = 4
-TTL_FOR_FILES_SEARCH = 3
+import math
 
 class RequestEmitter(object):
 
@@ -69,6 +66,7 @@ class RequestEmitter(object):
                     file_name = read_from_socket(sock, 100)
                     file_size = read_from_socket(sock, 10)
                     part_size = read_from_socket(sock, 6)
+                    FilesManager.add_new_remote_file(file_name, file_id, file_size, part_size)
                     self.ui_handler.add_new_result_file(file_name, file_id, file_size, part_size)
 
             else:
@@ -158,4 +156,28 @@ class RequestEmitter(object):
         for file in FilesManager.shared_files():
             self.add_file_to_tracker(file)
 
+    def udpate_remote_file_data(self, file_id):
+        my_tracker = UsersManager.get_tracker()
+        try:
+            sock = connect_socket(my_tracker.ip, my_tracker.port)
+            local_ip = get_local_ip(sock.getsockname()[0])
+            sock.send("FCHU" + UsersManager.get_my_session_id())
+            sock.send(file.id)
+            command = read_from_socket(sock, 4)
+            if command == "AFCH":
+                hitpeer = read_from_socket(sock, 3)
+                for i in range(0, hitpeer):
+                    peer_ip = read_from_socket(sock, 15)
+                    peer_port = read_from_socket(sock, 5)
+                    f = FilesManager.find_file_by_id(file_id)
+
+                    if not f:
+                        raise Exception("File %s not found in request emitter" % file_id)
+
+                    mask_length = math.ceil(f.parts_count / 8)
+                    partlist = read_from_socket(sock, mask_length)
+                    for j in :
+                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), part_num, available):
+        except Exception:
+            pass
 

@@ -6,10 +6,11 @@ from custom_utils.hashing import *
 from custom_utils.sockets import read_from_socket
 from threads.request_emitter import RequestEmitter
 from managers.filesmanager import FilesManager
+from PyQt4.QtCore import QThread, SIGNAL
 
 DOWNLOAD_FOLDER = "downloads"
 
-class DownloadThread(Thread):
+class DownloadThread(QThread):
 
     def __init__(self, socket, filename, file_id, file_part, peer_ip, ui_handler):
         super(DownloadThread, self).__init__()
@@ -34,7 +35,7 @@ class DownloadThread(Thread):
             try:
                 klog("Download started")
                 klog("chunk number: " + str(chunk_number))
-                newFile = open(DOWNLOAD_FOLDER+"/"+self._filename, "wb") # a = append, b = binary mode
+                newFile = open(DOWNLOAD_FOLDER+"/"+self._filename+".part%s" % self._file_part, "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
                     chunk_length = read_from_socket(self._socket, 5)
@@ -59,5 +60,6 @@ class DownloadThread(Thread):
 
 
         self._socket.close()
-        #TODO: mandami un segnale che dice che ho finito la parte
+
+        self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
 

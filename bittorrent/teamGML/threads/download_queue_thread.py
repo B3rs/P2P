@@ -38,7 +38,7 @@ class DownloadQueueThread(QThread):
             klog("Part finished, starting the new part")
 
             parts = FilesManager.get_ordered_parts_number()
-            peers = FilesManager.get_peers_for_file_part()
+            peers = FilesManager.get_peers_for_file_part(parts[0])
             peer = peers[random.randrange(0,len(peers)-1)]
             RequestEmitter.download_part(peer.ip, peer.port, file_id, parts[0], self._file.filename)
 

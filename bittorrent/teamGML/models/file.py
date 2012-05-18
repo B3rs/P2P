@@ -3,7 +3,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 import os, math
 from models.partsmask import PartsMask
 
-DEFAULT_PART_SIZE = 256
+DEFAULT_PART_SIZE = 262144 #numero dei bit
 
 class File(object):
     def __init__(self, id, name, path=''):

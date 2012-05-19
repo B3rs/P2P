@@ -120,7 +120,22 @@ class FilesManager(object):
 
     @classmethod
     def create_file_from_parts(cls, file_id):
-        klog("TODO: salvare nel HDD il file intero tramite le parti scaricate (se tutte le parti sono scaricate)")
+        file = cls.find_file_by_id(file_id)
+        if file:
+            if file.is_completed():
+                completed_file = open(DOWNLOAD_FOLDER+"/"+file.filename, 'w')
+
+                #Create the file from the parts
+                for part_num in file.parts_count:
+                    part_file = open(cls.get_filepart_path_from_file(file_id, part_num))
+                    completed_file.write(part_file.read())
+                    part_file.close()
+
+                completed_file.close()
+            else:
+                raise Exception("File %s is not completed!" %file.filename)
+        else:
+            raise Exception("File %s not found" %file)
 
     @classmethod
     def get_filepart_path_from_file(cls, file_id, part_num):

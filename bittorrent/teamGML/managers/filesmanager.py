@@ -79,13 +79,18 @@ class FilesManager(object):
     def get_ordered_parts_number(cls, file_id):
         file = cls.find_file_by_id(file_id)
         if file:
-            part_nums = []
+            part_counter = Counter()
+            ordered_parts = []
+
             for p_num in range(0, file.parts_count):
                 if not file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
-                    klog("TODO: ordinare gli indici delle parti da quella meno conosciuta a quella piu conosciuta")
-                    part_nums.append(p_num)
+                    peers_count = len(file.get_peers_for_file_part(p_num))
+                    part_counter[p_num] = peers_count
 
-            return part_nums
+            for (part_num, frequency) in part_counter.most_common():
+                ordered_parts.append(part_num)
+
+            return list(reversed(ordered_parts))
         else:
             raise Exception("File not found: %s" %file_id)
 

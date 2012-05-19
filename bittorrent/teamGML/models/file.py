@@ -2,6 +2,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 import os, math
 from models.partsmask import PartsMask
+from models.peer import Peer
 
 DEFAULT_PART_SIZE = 262144 #numero dei bit
 
@@ -60,3 +61,11 @@ class File(object):
             self.parts_masks[str(peer)] = PartsMask(self.parts_count)
 
         self.parts_masks[str(peer)].set_part_status(part_num, status)
+
+    def is_completed(self):
+        local_peer = Peer.get_local_peer()
+
+        for part_num in self.parts_count:
+            if not self.peer_has_part(local_peer, part_num):
+                return False
+        return True

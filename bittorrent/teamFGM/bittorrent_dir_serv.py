@@ -416,7 +416,6 @@ class FetchFile(threading.Thread, Service):
 
         for i in range(0,len(filesdb)):
             if filesdb[i][0] == randomID: #filesdb = randomID, sessionID, filename, lenFile, lenPart, numPart, filetable
-                print "trovato random ID " + randomID + "=" + filesdb[i][0]
                 filetable = filesdb[i][6] #mi salvo la filetable che devo consultare
 
         fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler

@@ -24,14 +24,29 @@ class File(object):
             else:
                 self.part_size = self.file_size
 
-            self.parts_count = int(math.ceil(self.file_size / self.part_size))
+            self.calculate_parts_count()
+
+    def calculate_parts_count(self):
+        self.parts_count = int(math.ceil(self.file_size / self.part_size))
+
+        if (self.file_size % self.part_size) != 0:
+            self.parts_count +=1
+
+        return
+
+    def set_file_and_part_size(self, file_size, part_size):
+        self.file_size = int(file_size)
+        self.part_size = int(part_size)
+
+        self.calculate_parts_count()
+
 
     def parts_mask_for_peer(self, peer):
-        if self.parts_masks.has_key( str(peer)):
-            part_mask = self.parts_masks[str(peer)]
-            return part_mask
-        else:
-            raise Exception("Peer %s, does not have %s" %(str(peer), self.filename))
+        if not self.parts_masks.has_key( str(peer)):
+             self.parts_masks[str(peer)] = PartsMask(self.parts_count)
+
+        part_mask = self.parts_masks[str(peer)]
+        return part_mask
 
     def peer_has_part(self, peer, part_num):
         parts_mask = self.parts_mask_for_peer(peer)

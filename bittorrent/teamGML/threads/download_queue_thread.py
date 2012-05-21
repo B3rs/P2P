@@ -27,7 +27,7 @@ class DownloadQueueThread(QObject):
         self.connect(self, SIGNAL("part_download_finished"), self._completed_part)
         self._check_parts()
         parts = FilesManager.get_ordered_parts_number(self._file.id)
-        for i in range(0, min(QUEUE_LENGTH, len(parts))):
+        for i in range(min(QUEUE_LENGTH, len(parts))):
             peers = FilesManager.get_peers_for_file_part(self._file.id, i)
             peer = None
             if len(peers) > 0:

@@ -38,3 +38,6 @@ def format_deletenum(num):
 
 def format_partnum(num):
     return '%(#)08d' % {"#" : int(num)}
+
+def format_byte(bits):
+    return '%(#)08d' % {"#" : int(bits)}

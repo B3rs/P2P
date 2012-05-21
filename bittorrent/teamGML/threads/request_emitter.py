@@ -152,17 +152,17 @@ class RequestEmitter(object):
         for file in FilesManager.shared_files():
             self.add_file_to_tracker(file)
 
-    def udpate_remote_file_data(self, file_id):
+    def update_remote_file_data(self, file_id):
         my_tracker = UsersManager.get_tracker()
         try:
             sock = connect_socket(my_tracker.ip, my_tracker.port)
             local_ip = get_local_ip(sock.getsockname()[0])
             sock.send("FCHU" + UsersManager.get_my_session_id())
-            sock.send(file.id)
+            sock.send(file_id)
             command = read_from_socket(sock, 4)
             if command == "AFCH":
                 hitpeer = read_from_socket(sock, 3)
-                for i in range(0, hitpeer):
+                for i in range(0, int(hitpeer)):
                     peer_ip = read_from_socket(sock, 15)
                     peer_port = read_from_socket(sock, 5)
                     f = FilesManager.find_file_by_id(file_id)
@@ -170,7 +170,8 @@ class RequestEmitter(object):
                     if not f:
                         raise Exception("File %s not found in request emitter" % file_id)
 
-                    mask_length = math.ceil(f.parts_count / 8)
+                    mask_length = int(math.ceil(f.parts_count / 8))
+                    klog("MASK_LENGTH = %s" % mask_length)
                     partlist = read_from_socket(sock, mask_length)
                     partlist_array = []
                     for b in partlist:
@@ -179,6 +180,6 @@ class RequestEmitter(object):
                     for j in partlist_array:
                         klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
                         FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, partlist_array[j])
-        except Exception:
-            pass
+        except Exception, ex:
+            klog("Exception in updating file data to tracker: %s" % str(ex))
 

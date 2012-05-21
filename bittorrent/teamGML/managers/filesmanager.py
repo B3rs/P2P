@@ -5,6 +5,7 @@ from models.file import File
 from models.peer import Peer
 from custom_utils.logging import klog
 from collections import Counter
+import math
 
 # TODO: WARNING!
 # That way path is defined from this file location, but it doesn't work,
@@ -62,6 +63,7 @@ class FilesManager(object):
         file = File(file_id, file_name)
         file.file_size = file_size
         file.part_size = part_size
+        file.parts_count = int(math.ceil(int(file_size) / int(part_size)))
         cls.get_files().append(file)
 
     @classmethod

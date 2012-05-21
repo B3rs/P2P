@@ -180,11 +180,10 @@ class RequestEmitter(object):
                         byte = bin(int(binascii.b2a_hex(b),16))
                         byte = byte[2:]
                         byte = format_byte(byte)
-                        klog(byte)
                         for i in range(7,0, -1):
                             partlist_array.append(byte[i])
                     for j in range(len(partlist_array)):
-                        klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
+                        #klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
                         FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, partlist_array[j])
         except Exception, ex:
             klog("Exception in updating file data to tracker: %s" % str(ex))

@@ -171,6 +171,8 @@ class RequestEmitter(object):
                         raise Exception("File %s not found in request emitter" % file_id)
 
                     mask_length = int(math.ceil(f.parts_count / 8))
+                    if f.parts_count % 8 != 0:
+                        mask_length += 1
                     klog("MASK_LENGTH = %s" % mask_length)
                     partlist = read_from_socket(sock, mask_length)
                     partlist_array = []

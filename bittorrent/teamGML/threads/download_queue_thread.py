@@ -31,7 +31,10 @@ class DownloadQueueThread(QObject):
             peers = FilesManager.get_peers_for_file_part(self._file.id, parts[i])
             peer = None
             if len(peers) > 0:
-                peer = peers[random.randrange(0,len(peers)-1)]
+                if len(peers) == 0:
+                    peer = peers[0]
+                else:
+                    peer = peers[random.randrange(0,len(peers)-1)]
                 self._request_emitter.download_part(peer.ip, peer.port, self._file.id, parts[i])
 
     def _completed_part(self, file_id, file_part):

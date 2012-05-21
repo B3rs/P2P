@@ -184,7 +184,7 @@ class RequestEmitter(object):
                             partlist_array.append(byte[i])
                     for j in range(len(partlist_array)):
                         #klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
-                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, partlist_array[j])
+                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, bool(int(partlist_array[j])))
         except Exception, ex:
             klog("Exception in updating file data to tracker: %s" % str(ex))
 

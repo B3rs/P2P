@@ -68,7 +68,7 @@ class FilesManager(object):
     def update_remote_file_part(cls, file_id, peer, part_num, available):
         file = cls.find_file_by_id(file_id)
         if file:
-            file.set_peer_has_part(peer, part_num, available)
+            file.set_peer_has_part(peer, part_num, bool(available))
         else:
             raise Exception("File %s not found" %file_id)
 

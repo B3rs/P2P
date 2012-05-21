@@ -20,7 +20,7 @@ class BittorrentClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "10.14.225.209"
+        self.my_IP = "192.168.0.103"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -69,11 +69,6 @@ class BittorrentClient(object):
         # end of exit method
 
 
-    def error(self):
-        print "Option not valid: try again!\n"
-        # end of error method
-
-
     def openConn(self, IP, port): #DA TOGLIERE DOPO DEBUG
         #mi connetto al vicino
         neigh_addr = (IP, int(port))
@@ -109,7 +104,7 @@ class BittorrentClient(object):
         print "You're listening on address " + self.my_IP + " port " + str(self.dir_port) + "\n"
 
 
-
+        """
         #PROVE DI DEBUG IN CUI SIMULO DI ESSERE UN CLIENT
 
         #invio LOGI
@@ -305,22 +300,18 @@ class BittorrentClient(object):
         #ricevo ALGO
         ack = self.sockread(super_sock,14)
         self.closeConn(super_sock)
+        """
 
 
+        choice = ""
+        while choice != "Y":
+            choice = raw_input("If you want to logout press Y: ")
 
-        print "Do you want to logout? (Y):\n"
+            if choice == "Y":
+                self.exit()
+            else:
+                print "Option not valid: try again!\n"
 
-        choice = raw_input("Choose an option: ")
-
-        opt = {
-
-            'Y' : self.exit,
-
-        }
-
-        print ""
-
-        opt.get(choice,self.error)() #se l'utente ha digitato un qualcosa che non esiste, viene chiamata error()
 
         # end of doYourStuff method
 

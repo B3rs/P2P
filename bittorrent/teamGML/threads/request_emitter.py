@@ -152,13 +152,13 @@ class RequestEmitter(object):
         for file in FilesManager.shared_files():
             self.add_file_to_tracker(file)
 
-    def udpate_remote_file_data(self, file_id):
+    def update_remote_file_data(self, file_id):
         my_tracker = UsersManager.get_tracker()
         try:
             sock = connect_socket(my_tracker.ip, my_tracker.port)
             local_ip = get_local_ip(sock.getsockname()[0])
             sock.send("FCHU" + UsersManager.get_my_session_id())
-            sock.send(file.id)
+            sock.send(file_id)
             command = read_from_socket(sock, 4)
             if command == "AFCH":
                 hitpeer = read_from_socket(sock, 3)

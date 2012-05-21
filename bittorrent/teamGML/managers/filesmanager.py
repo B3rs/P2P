@@ -1,5 +1,5 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
-import os
+import os, math
 from custom_utils import hashing
 from models.file import File
 from models.peer import Peer
@@ -62,6 +62,7 @@ class FilesManager(object):
         file = File(file_id, file_name)
         file.file_size = file_size
         file.part_size = part_size
+        file.parts_count = int(math.ceil(int(file_size) / int(part_size)))
         cls.get_files().append(file)
 
     @classmethod

@@ -27,8 +27,20 @@ def format_chunk_length(length):
 def format_filename(filename):
     return '%(#)0100s' % {"#" : str(filename)}
 
+def format_filesize(filesize):
+    return '%(#)010d' % {"#" : int(filesize)}
+
+def format_partsize(part_size):
+    return '%(#)06d' % {"#" : part_size}
+
+def format_fileid(file_id):
+    return '%(#)16s' % {"#" : file_id}
+
 def format_deletenum(num):
     return '%(#)03d' % {"#" : int(num)}
 
 def format_partnum(num):
     return '%(#)08d' % {"#" : int(num)}
+
+def format_byte(bits):
+    return '%(#)08d' % {"#" : int(bits)}

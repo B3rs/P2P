@@ -1,9 +1,9 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 import socket
-from threading import Thread
+from threading import Timer
 from models.peer import Peer
-import random
+import random, binascii
 
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
@@ -40,7 +40,6 @@ class RequestEmitter(object):
                 klog("Done. My session id is: %s" % my_session_id)
 
                 UsersManager.set_tracker(Peer(tracker_ip,tracker_port))
-                klog("Done. My session id is: %s" % my_session_id)
 
                 self.ui_handler.login_done(my_session_id)
             else:
@@ -50,8 +49,6 @@ class RequestEmitter(object):
             self.ui_handler.login_done(None)
 
     def search_for_files(self, query):
-        PacketsManager.add_new_generated_packet(p_id)
-
         my_tracker = UsersManager.get_tracker()
 
         try:
@@ -63,7 +60,7 @@ class RequestEmitter(object):
                 files_count = int(read_from_socket(sock, 3))
                 for i in range(0, files_count):
                     file_id = read_from_socket(sock, 16)
-                    file_name = read_from_socket(sock, 100)
+                    file_name = read_from_socket(sock, 100).strip(' ')
                     file_size = read_from_socket(sock, 10)
                     part_size = read_from_socket(sock, 6)
                     FilesManager.add_new_remote_file(file_name, file_id, file_size, part_size)
@@ -94,17 +91,16 @@ class RequestEmitter(object):
 
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
-        t = DownloadQueueThread(file_id, self, self.ui_handler)
-        t.start()
+        t = DownloadQueueThread(f, self, self.ui_handler)
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
-        downloadSocket.send(file_id)
-        downloadSocket.send(file_part)
+        downloadSocket.send(format_fileid(file_id))
+        downloadSocket.send(format_partnum(file_part))
         # Star a thread that will take care of the download and of the socket management
         f = FilesManager.find_file_by_id(file_id)
-        dlThread = DownloadThread(downloadSocket, f, peer_ip, self, self.ui_handler)
+        dlThread = DownloadThread(downloadSocket, f.filename, f.id, file_part, peer_ip, self, self.ui_handler)
         dlThread.start()
 
     def register_part_to_tracker(self, file, part_num):
@@ -136,37 +132,37 @@ class RequestEmitter(object):
         local_ip = get_local_ip(sock.getsockname()[0])
         sock.send("ADDR" + UsersManager.get_my_session_id())
         sock.send(file.id)
-        sock.send(file.file_size)
-        sock.send(file.part_size)
-        sock.send(file.filename)
+        sock.send(format_filesize(file.file_size))
+        sock.send(format_partsize(file.part_size))
+        sock.send(format_filename(file.filename))
         try:
             response = read_from_socket(sock, 4)
             if response == "AADR":
                 part_num = read_from_socket(sock, 8)
-                if part_num == math.ceil(file.file_size/file.filepart):
+                if int(part_num) == int(file.parts_count):
                     klog("File %s successfully added to directory service" % file.filename)
                 else:
                     klog("Wrong partnumber received from directory")
             else:
                 klog("wrong ack received from directory service")
-        except Exception:
-            klog("Exception in adding file to tracker")
+        except Exception, ex:
+            klog("Exception in adding file to tracker: %s" % str(ex))
 
     def add_all_files_to_tracker(self):
         for file in FilesManager.shared_files():
             self.add_file_to_tracker(file)
 
-    def udpate_remote_file_data(self, file_id):
+    def update_remote_file_data(self, file_id):
         my_tracker = UsersManager.get_tracker()
         try:
             sock = connect_socket(my_tracker.ip, my_tracker.port)
             local_ip = get_local_ip(sock.getsockname()[0])
             sock.send("FCHU" + UsersManager.get_my_session_id())
-            sock.send(file.id)
+            sock.send(file_id)
             command = read_from_socket(sock, 4)
             if command == "AFCH":
                 hitpeer = read_from_socket(sock, 3)
-                for i in range(0, hitpeer):
+                for i in range(0, int(hitpeer)):
                     peer_ip = read_from_socket(sock, 15)
                     peer_port = read_from_socket(sock, 5)
                     f = FilesManager.find_file_by_id(file_id)
@@ -174,10 +170,21 @@ class RequestEmitter(object):
                     if not f:
                         raise Exception("File %s not found in request emitter" % file_id)
 
-                    mask_length = math.ceil(f.parts_count / 8)
+                    mask_length = int(math.ceil(f.parts_count / 8))
+                    if f.parts_count % 8 != 0:
+                        mask_length += 1
+                    klog("MASK_LENGTH = %s" % mask_length)
                     partlist = read_from_socket(sock, mask_length)
-                    for j in :
-                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), part_num, available):
-        except Exception:
-            pass
+                    partlist_array = []
+                    for b in partlist:
+                        byte = bin(int(binascii.b2a_hex(b),16))
+                        byte = byte[2:]
+                        byte = format_byte(byte)
+                        for i in range(7,0, -1):
+                            partlist_array.append(byte[i])
+                    for j in range(len(partlist_array)):
+                        #klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
+                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, bool(int(partlist_array[j])))
+        except Exception, ex:
+            klog("Exception in updating file data to tracker: %s" % str(ex))
 

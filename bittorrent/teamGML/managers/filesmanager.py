@@ -1,10 +1,11 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
-import os
+import os, math
 from custom_utils import hashing
 from models.file import File
 from models.peer import Peer
 from custom_utils.logging import klog
 from collections import Counter
+import math
 
 # TODO: WARNING!
 # That way path is defined from this file location, but it doesn't work,
@@ -34,7 +35,7 @@ class FilesManager(object):
 
                 #Set that I have all this file
                 for p in range(0, file.parts_count):
-                    file.set_peer_has_part(peer_me, p)
+                    file.set_peer_has_part(peer_me, p, True)
 
                 cls.get_files().append(file)
 
@@ -60,15 +61,14 @@ class FilesManager(object):
     @classmethod
     def add_new_remote_file(cls, file_name, file_id, file_size, part_size):
         file = File(file_id, file_name)
-        file.file_size = file_size
-        file.part_size = part_size
+        file.set_file_and_part_size(file_size, part_size)
         cls.get_files().append(file)
 
     @classmethod
     def update_remote_file_part(cls, file_id, peer, part_num, available):
         file = cls.find_file_by_id(file_id)
         if file:
-            file.set_peer_has_part(peer, part_num, available)
+            file.set_peer_has_part(peer, part_num, bool(available))
         else:
             raise Exception("File %s not found" %file_id)
 
@@ -80,7 +80,7 @@ class FilesManager(object):
             ordered_parts = []
 
             for p_num in range(0, file.parts_count):
-                if not file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
+                if file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
                     peers_count = len(file.get_peers_for_file_part(p_num))
                     part_counter[p_num] = peers_count
 

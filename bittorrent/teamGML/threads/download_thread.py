@@ -20,6 +20,7 @@ class DownloadThread(QThread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
+        self._queue = queue
 
         klog("downloading %s %s" %(self._filename, str(self._file_id)))
 
@@ -53,6 +54,7 @@ class DownloadThread(QThread):
                 klog("Download completed")
 
                 f = FilesManager.find_file_by_id(self._file_id)
+                self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
 
                 self._request_emitter.register_part_to_tracker(f, self._file_part)
 
@@ -62,5 +64,5 @@ class DownloadThread(QThread):
 
         self._socket.close()
 
-        self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
+
 

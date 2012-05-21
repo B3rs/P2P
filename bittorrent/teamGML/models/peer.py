@@ -16,3 +16,10 @@ class Peer(object):
     @classmethod
     def get_local_peer(cls):
         return Peer("127.0.0.0", PORT)
+
+    @classmethod
+    def peer_from_string(cls, peer_string):
+        ip = peer_string[0:15]
+        port = peer_string[16:]
+
+        return Peer(ip, port)

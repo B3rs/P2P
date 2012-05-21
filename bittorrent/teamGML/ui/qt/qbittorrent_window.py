@@ -59,7 +59,7 @@ class QBittorrentWindow(QMainWindow):
         else:
             self.ui.trackerStatusLabel.setText("Non puoi disconnetterti!")
             #After some seconds redraw "Connesso"
-            threading.timer(3, self.ui.trackerStatusLabel.setText("Connesso")).start()
+            threading.Timer(3, self.ui.trackerStatusLabel.setText("Connesso")).start()
 
     def _login_done(self, session_id):
         try:
@@ -77,13 +77,12 @@ class QBittorrentWindow(QMainWindow):
         self.ui.sessionIdLabel.setText(session_id)
         self.ui.loginGroupBox.setVisible(False)
         self.ui.logoutGroupBox.setVisible(True)
-        self.request_emitter.register_all_files_to_tracker()
+        self.request_emitter.add_all_files_to_tracker()
 
     def _reloadSharedFiles(self):
-        self.request_emitter.unregister_all_files_to_tracker()
         FilesManager.load_my_files()
         self._redraw_shared_files()
-        self.request_emitter.register_all_files_to_tracker()
+        self.request_emitter.add_all_files_to_tracker()
 
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)
@@ -91,16 +90,11 @@ class QBittorrentWindow(QMainWindow):
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
         query = self.ui.searchLineEdit.text()
-        ttl = int(self.ui.ttlFilesSearchSpinBox.value())
-        self.request_emitter.search_for_files(query, ttl)
+        self.request_emitter.search_for_files(query)
 
     def _resultsTreeClicked(self, item, index):
-        file_name = item.text(0)
-        peer_ip = item.text(1)
-        peer_port = item.text(2)
-        file_md5 = item.text(3)
-        klog("Scarico: %s da %s:%s" % (file_name, peer_ip, peer_port))
-        self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
+        file_id = item.text(1)
+        self.request_emitter.download_file(file_id)
         self.ui.tabsWidget.setCurrentIndex(4) #go to the transfer page
 
 

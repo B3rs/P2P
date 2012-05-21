@@ -1,6 +1,6 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-from threading import Thread
+from threading import Timer
 from custom_utils.logging import klog
 from custom_utils.hashing import *
 from custom_utils.sockets import *
@@ -39,11 +39,15 @@ class DownloadQueueThread(QThread):
             peers = FilesManager.get_peers_for_file_part(self._file.id, parts[0])
             peer = peers[random.randrange(0,len(peers)-1)]
             self._request_emitter.download_part(peer.ip, peer.port, file_id, parts[0])
-
+    
+    def _check_parts(self):
+        self._request_emitter.update_remote_filedata(self._file.id)
+        Timer(60,self._check_parts, ()).start()
 
 
     def run(self):
         self.connect(self, SIGNAL("part_download_finished"), self._completed_part)
+        self._check_parts()
         parts = FilesManager.get_ordered_parts_number()
         for i in range(0, min(QUEUE_LENGTH, len(parts))):
             peers = FilesManager.get_peers_for_file_part()

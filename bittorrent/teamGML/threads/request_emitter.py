@@ -1,7 +1,7 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 import socket
-from threading import Thread
+from threading import Timer
 from models.peer import Peer
 import random
 
@@ -176,8 +176,13 @@ class RequestEmitter(object):
 
                     mask_length = math.ceil(f.parts_count / 8)
                     partlist = read_from_socket(sock, mask_length)
-                    for j in :
-                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), part_num, available):
+                    partlist_array = []
+                    for b in partlist:
+                        for i in xrange(8):
+                             partlist_array.append(bool((b >> i) & 1))
+                    for j in partlist_array:
+                        klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))
+                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), j, partlist_array[j])
         except Exception:
             pass
 

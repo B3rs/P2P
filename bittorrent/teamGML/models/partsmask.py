@@ -5,7 +5,7 @@ class PartsMask(object):
 
         #Fill the mask with all False value
         for i in range(0, num_parts):
-            self.parts[i] = False
+            self.parts.append(False)
 
     def is_available(self, part_num):
         return type(self.parts[part_num]) is bool and self.parts[part_num] == True

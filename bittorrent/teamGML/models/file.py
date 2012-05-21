@@ -20,11 +20,11 @@ class File(object):
             self.file_size = os.path.getsize(path)
 
             if self.file_size > DEFAULT_PART_SIZE:
-                self.part_size = 256
+                self.part_size = DEFAULT_PART_SIZE
             else:
                 self.part_size = self.file_size
 
-            self.parts_count = math.ceil(self.file_size / self.part_size)
+            self.parts_count = int(math.ceil(self.file_size / self.part_size))
 
     def parts_mask_for_peer(self, peer):
         if self.parts_masks.has_key( str(peer)):

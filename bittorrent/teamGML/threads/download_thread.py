@@ -54,6 +54,7 @@ class DownloadThread(QThread):
                 klog("Download completed")
 
                 f = FilesManager.find_file_by_id(self._file_id)
+                self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
 
                 self._request_emitter.register_part_to_tracker(f, self._file_part)
 
@@ -63,5 +64,5 @@ class DownloadThread(QThread):
 
         self._socket.close()
 
-        self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
+
 

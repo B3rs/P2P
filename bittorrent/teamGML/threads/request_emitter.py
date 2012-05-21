@@ -95,7 +95,6 @@ class RequestEmitter(object):
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
         t = DownloadQueueThread(f, self, self.ui_handler)
-        t.start()
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)

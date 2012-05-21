@@ -34,7 +34,7 @@ class FilesManager(object):
 
                 #Set that I have all this file
                 for p in range(0, file.parts_count):
-                    file.set_peer_has_part(peer_me, p)
+                    file.set_peer_has_part(peer_me, p, True)
 
                 cls.get_files().append(file)
 

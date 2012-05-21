@@ -11,7 +11,7 @@ DOWNLOAD_FOLDER = "downloads"
 
 class DownloadThread(QThread):
 
-    def __init__(self, socket, filename, file_id, file_part, peer_ip, request_emitter, ui_handler, queue):
+    def __init__(self, socket, filename, file_id, file_part, peer_ip, request_emitter, ui_handler):
         super(DownloadThread, self).__init__()
         self._socket = socket
         self._filename = filename

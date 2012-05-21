@@ -100,7 +100,7 @@ class RequestEmitter(object):
         downloadSocket.send(file_part)
         # Star a thread that will take care of the download and of the socket management
         f = FilesManager.find_file_by_id(file_id)
-        dlThread = DownloadThread(downloadSocket, f, peer_ip, self, self.ui_handler)
+        dlThread = DownloadThread(downloadSocket, f.filename, f.id, file_part, peer_ip, self, self.ui_handler)
         dlThread.start()
 
     def register_part_to_tracker(self, file, part_num):

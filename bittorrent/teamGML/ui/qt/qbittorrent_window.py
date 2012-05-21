@@ -59,7 +59,7 @@ class QBittorrentWindow(QMainWindow):
         else:
             self.ui.trackerStatusLabel.setText("Non puoi disconnetterti!")
             #After some seconds redraw "Connesso"
-            threading.timer(3, self.ui.trackerStatusLabel.setText("Connesso")).start()
+            threading.Timer(3, self.ui.trackerStatusLabel.setText("Connesso")).start()
 
     def _login_done(self, session_id):
         try:

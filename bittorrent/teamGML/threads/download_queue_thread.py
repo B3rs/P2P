@@ -4,7 +4,7 @@ from threading import Timer
 from custom_utils.logging import klog
 from custom_utils.hashing import *
 from custom_utils.sockets import *
-from PyQt4.QtCore import QThread, SIGNAL
+from PyQt4.QtCore import SIGNAL, QObject
 from managers.filesmanager import FilesManager
 import random
 
@@ -12,7 +12,7 @@ import random
 DOWNLOAD_FOLDER = "downloads"
 QUEUE_LENGTH = 5
 
-class DownloadQueueThread(object):
+class DownloadQueueThread(QObject):
 
     def __init__(self, file, request_emitter, ui_handler):
         super(DownloadQueueThread, self).__init__()

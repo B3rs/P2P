@@ -40,7 +40,6 @@ class RequestEmitter(object):
                 klog("Done. My session id is: %s" % my_session_id)
 
                 UsersManager.set_tracker(Peer(tracker_ip,tracker_port))
-                klog("Done. My session id is: %s" % my_session_id)
 
                 self.ui_handler.login_done(my_session_id)
             else:
@@ -50,8 +49,6 @@ class RequestEmitter(object):
             self.ui_handler.login_done(None)
 
     def search_for_files(self, query):
-        PacketsManager.add_new_generated_packet(p_id)
-
         my_tracker = UsersManager.get_tracker()
 
         try:
@@ -135,21 +132,21 @@ class RequestEmitter(object):
         local_ip = get_local_ip(sock.getsockname()[0])
         sock.send("ADDR" + UsersManager.get_my_session_id())
         sock.send(file.id)
-        sock.send(file.file_size)
-        sock.send(file.part_size)
-        sock.send(file.filename)
+        sock.send(format_filesize(file.file_size))
+        sock.send(format_partsize(file.part_size))
+        sock.send(format_filename(file.filename))
         try:
             response = read_from_socket(sock, 4)
             if response == "AADR":
                 part_num = read_from_socket(sock, 8)
-                if part_num == math.ceil(file.file_size/file.filepart):
+                if int(part_num) == int(file.parts_count):
                     klog("File %s successfully added to directory service" % file.filename)
                 else:
                     klog("Wrong partnumber received from directory")
             else:
                 klog("wrong ack received from directory service")
-        except Exception:
-            klog("Exception in adding file to tracker")
+        except Exception, ex:
+            klog("Exception in adding file to tracker: %s" % str(ex))
 
     def add_all_files_to_tracker(self):
         for file in FilesManager.shared_files():

@@ -77,13 +77,12 @@ class QBittorrentWindow(QMainWindow):
         self.ui.sessionIdLabel.setText(session_id)
         self.ui.loginGroupBox.setVisible(False)
         self.ui.logoutGroupBox.setVisible(True)
-        self.request_emitter.register_all_files_to_tracker()
+        self.request_emitter.add_all_files_to_tracker()
 
     def _reloadSharedFiles(self):
-        self.request_emitter.unregister_all_files_to_tracker()
         FilesManager.load_my_files()
         self._redraw_shared_files()
-        self.request_emitter.register_all_files_to_tracker()
+        self.request_emitter.add_all_files_to_tracker()
 
     def _show_log_message(self, message):
         self.ui.loggingTextBrowser.append(message)

@@ -62,9 +62,9 @@ class File(object):
     def get_peers_for_file_part(self, part_num):
         peers = []
 
-        for (peer, part_mask) in self.parts_masks:
+        for (peer_str, part_mask) in self.parts_masks.items():
             if part_mask.is_available(part_num):
-                peers.append(peer)
+                peers.append(Peer.peer_from_string(peer_str))
 
         return peers
 

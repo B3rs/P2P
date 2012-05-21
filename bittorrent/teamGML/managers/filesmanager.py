@@ -80,7 +80,7 @@ class FilesManager(object):
             ordered_parts = []
 
             for p_num in range(0, file.parts_count):
-                if not file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
+                if file.parts_mask_for_peer(Peer.get_local_peer()).is_not_started(p_num):
                     peers_count = len(file.get_peers_for_file_part(p_num))
                     part_counter[p_num] = peers_count
 

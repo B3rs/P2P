@@ -60,7 +60,7 @@ class RequestEmitter(object):
                 files_count = int(read_from_socket(sock, 3))
                 for i in range(0, files_count):
                     file_id = read_from_socket(sock, 16)
-                    file_name = read_from_socket(sock, 100)
+                    file_name = read_from_socket(sock, 100).strip(' ')
                     file_size = read_from_socket(sock, 10)
                     part_size = read_from_socket(sock, 6)
                     FilesManager.add_new_remote_file(file_name, file_id, file_size, part_size)

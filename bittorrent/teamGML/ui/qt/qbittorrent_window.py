@@ -90,16 +90,11 @@ class QBittorrentWindow(QMainWindow):
     def _searchBtnClicked(self):
         self.ui.resultsTreeWidget.clear()
         query = self.ui.searchLineEdit.text()
-        ttl = int(self.ui.ttlFilesSearchSpinBox.value())
-        self.request_emitter.search_for_files(query, ttl)
+        self.request_emitter.search_for_files(query)
 
     def _resultsTreeClicked(self, item, index):
-        file_name = item.text(0)
-        peer_ip = item.text(1)
-        peer_port = item.text(2)
-        file_md5 = item.text(3)
-        klog("Scarico: %s da %s:%s" % (file_name, peer_ip, peer_port))
-        self.request_emitter.download_file(peer_ip, peer_port, file_md5, file_name)
+        file_id = item.text(1)
+        self.request_emitter.download_file(file_id)
         self.ui.tabsWidget.setCurrentIndex(4) #go to the transfer page
 
 

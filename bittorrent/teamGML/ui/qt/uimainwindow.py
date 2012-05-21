@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'ui/qt/designer/mainwindow.ui'
+# Form implementation generated from reading ui file 'qt/designer/mainwindow.ui'
 #
-# Created: Tue May 15 12:46:14 2012
+# Created: Mon May 21 16:23:07 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -201,7 +201,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabsWidget.setCurrentIndex(0)
+        self.tabsWidget.setCurrentIndex(3)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -234,9 +234,9 @@ class Ui_MainWindow(object):
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "File name to search:", None, QtGui.QApplication.UnicodeUTF8))
         self.searchBtn.setText(QtGui.QApplication.translate("MainWindow", "Search!", None, QtGui.QApplication.UnicodeUTF8))
         self.resultsTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
-        self.resultsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Peer IP", None, QtGui.QApplication.UnicodeUTF8))
-        self.resultsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Peer port", None, QtGui.QApplication.UnicodeUTF8))
-        self.resultsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Md5", None, QtGui.QApplication.UnicodeUTF8))
+        self.resultsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.resultsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "File size", None, QtGui.QApplication.UnicodeUTF8))
+        self.resultsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Part size", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Double click on a file to download it", None, QtGui.QApplication.UnicodeUTF8))
         self.tabsWidget.setTabText(self.tabsWidget.indexOf(self.tab_4), QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
         self.tabsWidget.setTabText(self.tabsWidget.indexOf(self.tab_5), QtGui.QApplication.translate("MainWindow", "Logging", None, QtGui.QApplication.UnicodeUTF8))

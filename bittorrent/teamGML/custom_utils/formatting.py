@@ -33,6 +33,9 @@ def format_filesize(filesize):
 def format_partsize(part_size):
     return '%(#)06d' % {"#" : part_size}
 
+def format_fileid(file_id):
+    return '%(#)16s' % {"#" : file_id}
+
 def format_deletenum(num):
     return '%(#)03d' % {"#" : int(num)}
 

@@ -31,7 +31,7 @@ class DownloadQueueThread(QObject):
             peers = FilesManager.get_peers_for_file_part(self._file.id, parts[i])
             peer = None
             if len(peers) > 0:
-                if len(peers) == 0:
+                if len(peers) == 1:
                     peer = peers[0]
                 else:
                     peer = peers[random.randrange(0,len(peers)-1)]

@@ -96,8 +96,8 @@ class RequestEmitter(object):
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
-        downloadSocket.send(file_id)
-        downloadSocket.send(file_part)
+        downloadSocket.send(format_fileid(file_id))
+        downloadSocket.send(format_partnum(file_part))
         # Star a thread that will take care of the download and of the socket management
         f = FilesManager.find_file_by_id(file_id)
         dlThread = DownloadThread(downloadSocket, f, peer_ip, self, self.ui_handler)

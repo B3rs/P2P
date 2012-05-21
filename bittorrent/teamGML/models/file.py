@@ -32,7 +32,7 @@ class File(object):
         if (self.file_size % self.part_size) != 0:
             self.parts_count +=1
 
-        return self.calculate_parts_count()
+        return
 
     def set_file_and_part_size(self, file_size, part_size):
         self.file_size = int(file_size)

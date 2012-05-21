@@ -5,20 +5,16 @@ from threading import Thread
 from models.peer import Peer
 import random
 
-from managers.peersmanager import PeersManager
-from managers.packetsmanager import PacketsManager
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
 from custom_utils.formatting import *
 from custom_utils.hashing import *
 from custom_utils.logging import *
 from custom_utils.sockets import *
+from threads.download_queue_thread import DownloadQueueThread
 from threads.download_thread import DownloadThread
 from threads.service_thread import ServiceThread
-import threading
-
-TTL_FOR_SUPERPEERS_SEARCH = 4
-TTL_FOR_FILES_SEARCH = 3
+import math
 
 class RequestEmitter(object):
 
@@ -70,6 +66,7 @@ class RequestEmitter(object):
                     file_name = read_from_socket(sock, 100)
                     file_size = read_from_socket(sock, 10)
                     part_size = read_from_socket(sock, 6)
+                    FilesManager.add_new_remote_file(file_name, file_id, file_size, part_size)
                     self.ui_handler.add_new_result_file(file_name, file_id, file_size, part_size)
 
             else:
@@ -95,17 +92,19 @@ class RequestEmitter(object):
         sock.close()
         return num_file_deleted
 
-    def download_file(self):
-        pass
-        #TODO: dobbiamo implementare che cerchi periodicamente le parti e che vada poi a scaricarle tramite la download_part. Fare nuovo thread?
+    def download_file(self, file_id):
+        f = FilesManager.find_file_by_id(file_id)
+        t = DownloadQueueThread(file_id, self, self.ui_handler)
+        t.start()
 
-    def download_part(self, peer_ip, peer_port, file_id, file_part, filename):
+    def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
         downloadSocket.send(file_id)
         downloadSocket.send(file_part)
         # Star a thread that will take care of the download and of the socket management
-        dlThread = DownloadThread(downloadSocket, filename, file_id, file_part, peer_ip, self.ui_handler)
+        f = FilesManager.find_file_by_id(file_id)
+        dlThread = DownloadThread(downloadSocket, f, peer_ip, self, self.ui_handler)
         dlThread.start()
 
     def register_part_to_tracker(self, file, part_num):
@@ -157,4 +156,28 @@ class RequestEmitter(object):
         for file in FilesManager.shared_files():
             self.add_file_to_tracker(file)
 
+    def udpate_remote_file_data(self, file_id):
+        my_tracker = UsersManager.get_tracker()
+        try:
+            sock = connect_socket(my_tracker.ip, my_tracker.port)
+            local_ip = get_local_ip(sock.getsockname()[0])
+            sock.send("FCHU" + UsersManager.get_my_session_id())
+            sock.send(file.id)
+            command = read_from_socket(sock, 4)
+            if command == "AFCH":
+                hitpeer = read_from_socket(sock, 3)
+                for i in range(0, hitpeer):
+                    peer_ip = read_from_socket(sock, 15)
+                    peer_port = read_from_socket(sock, 5)
+                    f = FilesManager.find_file_by_id(file_id)
+
+                    if not f:
+                        raise Exception("File %s not found in request emitter" % file_id)
+
+                    mask_length = math.ceil(f.parts_count / 8)
+                    partlist = read_from_socket(sock, mask_length)
+                    for j in :
+                        FilesManager.update_remote_file_part(file_id, Peer(peer_ip, peer_port), part_num, available):
+        except Exception:
+            pass
 

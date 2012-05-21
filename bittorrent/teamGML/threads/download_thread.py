@@ -4,12 +4,14 @@ from threading import Thread
 from custom_utils.logging import klog
 from custom_utils.hashing import *
 from custom_utils.sockets import read_from_socket
+from managers.filesmanager import FilesManager
+from PyQt4.QtCore import QThread, SIGNAL
 
 DOWNLOAD_FOLDER = "downloads"
 
-class DownloadThread(Thread):
+class DownloadThread(QThread):
 
-    def __init__(self, socket, filename, file_id, file_part, peer_ip, ui_handler):
+    def __init__(self, socket, filename, file_id, file_part, peer_ip, request_emitter, ui_handler):
         super(DownloadThread, self).__init__()
         self._socket = socket
         self._filename = filename
@@ -17,8 +19,9 @@ class DownloadThread(Thread):
         self._file_part = file_part
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
+        self._request_emitter = request_emitter
 
-        klog("downloading %s %s" %(self._filename, str(self._file_md5)))
+        klog("downloading %s %s" %(self._filename, str(self._file_id)))
 
     def run(self):
 
@@ -31,8 +34,9 @@ class DownloadThread(Thread):
             chunk_number = int(read_from_socket(self._socket, 6))
             try:
                 klog("Download started")
+                FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
                 klog("chunk number: " + str(chunk_number))
-                newFile = open(DOWNLOAD_FOLDER+"/"+self._filename, "wb") # a = append, b = binary mode
+                newFile = open(FilesManager.get_filepart_path_from_file(), "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
                     chunk_length = read_from_socket(self._socket, 5)
@@ -47,13 +51,16 @@ class DownloadThread(Thread):
                 newFile.close()
                 self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, 100)
                 klog("Download completed")
-                klog("TODO: send RPAD to directory ")
-                klog("TODO: receive APAD from directory")
+
+                f = FilesManager.find_file_by_id(self._file_id)
+
+                self._request_emitter.register_part_to_tracker(f, self._file_part)
 
             except Exception, ex:
                 klog("An exception has occurred: "+str(ex))
 
 
         self._socket.close()
-        #TODO: mandami un segnale che dice che ho finito la parte
+
+        self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
 

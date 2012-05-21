@@ -2,8 +2,9 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 import os, math
 from models.partsmask import PartsMask
+from models.peer import Peer
 
-DEFAULT_PART_SIZE = 256
+DEFAULT_PART_SIZE = 262144 #numero dei bit
 
 class File(object):
     def __init__(self, id, name, path=''):
@@ -25,19 +26,23 @@ class File(object):
 
             self.parts_count = math.ceil(self.file_size / self.part_size)
 
-
-    def peer_has_part(self, peer, part_num):
+    def parts_mask_for_peer(self, peer):
         if self.parts_masks.has_key( str(peer)):
             part_mask = self.parts_masks[str(peer)]
-            return part_mask.is_available(part_num)
+            return part_mask
         else:
             raise Exception("Peer %s, does not have %s" %(str(peer), self.filename))
 
-    def set_peer_has_part(self, peer, part_num):
+    def peer_has_part(self, peer, part_num):
+        parts_mask = self.parts_mask_for_peer(peer)
+        return parts_mask.is_available(part_num)
+
+    def set_peer_has_part(self, peer, part_num, has_part):
         if not self.parts_masks.has_key( str(peer)):
             self.parts_masks[str(peer)] = PartsMask(self.parts_count)
 
-        self.parts_masks[str(peer)].set_available(part_num)
+        self.parts_masks[str(peer)].set_available(part_num, has_part)
+
 
     def get_peers_for_file_part(self, part_num):
         peers = []
@@ -50,3 +55,17 @@ class File(object):
 
     def is_local(self):
         return len(self.filepath)>0
+
+    def set_peer_status_for_part(self, peer, part_num, status):
+        if not self.parts_masks.has_key(str(peer)):
+            self.parts_masks[str(peer)] = PartsMask(self.parts_count)
+
+        self.parts_masks[str(peer)].set_part_status(part_num, status)
+
+    def is_completed(self):
+        local_peer = Peer.get_local_peer()
+
+        for part_num in self.parts_count:
+            if not self.peer_has_part(local_peer, part_num):
+                return False
+        return True

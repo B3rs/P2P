@@ -179,7 +179,7 @@ class RequestEmitter(object):
                         byte = bin(int(binascii.b2a_hex(b),16))
                         byte = byte[2:]
                         byte = format_byte(byte)
-                        for i in range(7,0, -1):
+                        for i in range(7,-1, -1):
                             partlist_array.append(byte[i])
                     for j in range(len(partlist_array)):
                         #klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))

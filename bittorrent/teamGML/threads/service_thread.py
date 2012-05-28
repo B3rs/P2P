@@ -71,13 +71,13 @@ class ServiceThread(Thread):
                         bytes_sent += self._socket.send(chunk)    #sending the chunk
 
                         percent = bytes_sent*100/size
-                        self.ui_handler.upload_file_changed(file.filename, file.hash, remote_ip, percent)
+                        self.ui_handler.upload_file_changed(file.filename, file.id, remote_ip, percent)
 
                         chunk = file2send.read(CHUNK_DIM)
                     file2send.close()
 
                     klog("upload completed: %s" %file.filename)
-                    self.ui_handler.upload_file_changed(file.filename, file.hash, remote_ip, 100)
+                    self.ui_handler.upload_file_changed(file.filename, file.id, remote_ip, 100)
 
                 else:
                     klog("I do not have this file!")

@@ -2,8 +2,6 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Timer
 from custom_utils.logging import klog
-from custom_utils.hashing import *
-from custom_utils.sockets import *
 from PyQt4.QtCore import SIGNAL, QObject
 from managers.filesmanager import FilesManager
 import random
@@ -12,10 +10,10 @@ import random
 DOWNLOAD_FOLDER = "downloads"
 QUEUE_LENGTH = 5
 
-class DownloadQueueThread(QObject):
+class DownloadQueue(QObject):
 
     def __init__(self, file, request_emitter, ui_handler):
-        super(DownloadQueueThread, self).__init__()
+        super(DownloadQueue, self).__init__()
         self._file = file
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
@@ -29,7 +27,6 @@ class DownloadQueueThread(QObject):
         parts = FilesManager.get_ordered_parts_number(self._file.id)
         for i in range(min(QUEUE_LENGTH, len(parts))):
             peers = FilesManager.get_peers_for_file_part(self._file.id, parts[i])
-            peer = None
             if len(peers) > 0:
                 if len(peers) == 1:
                     peer = peers[0]

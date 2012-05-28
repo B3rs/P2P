@@ -1,11 +1,9 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
-import os, math
+import os
 from custom_utils import hashing
 from models.file import File
 from models.peer import Peer
-from custom_utils.logging import klog
 from collections import Counter
-import math
 
 # TODO: WARNING!
 # That way path is defined from this file location, but it doesn't work,

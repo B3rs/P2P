@@ -1,19 +1,15 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-import socket
-from threading import Timer
 from models.peer import Peer
-import random, binascii
+import binascii
 
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
 from custom_utils.formatting import *
-from custom_utils.hashing import *
 from custom_utils.logging import *
 from custom_utils.sockets import *
-from threads.download_queue_thread import DownloadQueueThread
+from threads.download_queue import DownloadQueue
 from threads.download_thread import DownloadThread
-from threads.service_thread import ServiceThread
 import math
 
 class RequestEmitter(object):
@@ -91,7 +87,7 @@ class RequestEmitter(object):
 
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
-        t = DownloadQueueThread(f, self, self.ui_handler)
+        t = DownloadQueue(f, self, self.ui_handler)
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)

@@ -44,10 +44,10 @@ class DownloadThread(QThread):
                     newFile.write(chunk_data)
 
                     percent = i* 100/chunk_number
-                    self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, percent)
+                    self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, percent)
 
                 newFile.close()
-                self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, 100)
+                self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, 100)
                 klog("Download completed")
 
                 f = FilesManager.find_file_by_id(self._file_id)

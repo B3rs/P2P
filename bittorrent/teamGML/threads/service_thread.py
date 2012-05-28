@@ -44,16 +44,16 @@ class ServiceThread(Thread):
                 klog("RETR received")
                 CHUNK_DIM = 128
 
-                md5 = encode_md5(self._socket.recv(16))
+                file_id = self._socket.recv(16)
 
                 self._socket.send("AREP")   #sending the ack command
                 remote_ip = self._socket.getpeername()[0]
                 my_session_id = UsersManager.get_my_session_id()
 
-                # Get the file matching the md5
-                klog("finding file with md5: %s, session_id %s" %(md5, my_session_id))
+                # Get the file matching the file_id
+                klog("finding file with id: %s, session_id %s" %(file_id, my_session_id))
 
-                file = FilesManager.find_file_by_hash(md5)
+                file = FilesManager.find_file_by_id(file_id)
 
                 if file:
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))

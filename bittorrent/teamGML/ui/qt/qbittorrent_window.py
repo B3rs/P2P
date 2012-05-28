@@ -130,7 +130,7 @@ class QBittorrentWindow(QMainWindow):
             progress_bar.setMinimum(0)
             progress_bar.setMaximum(100)
             progress_bar.setValue(percent)
-            container.setItemWidget(item, 1, progress_bar)
+            container.setItemWidget(item, 3, progress_bar)
 
 
     #PUBLIC Methods (ovverides from AbstractUI in the future)

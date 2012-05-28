@@ -116,7 +116,7 @@ class RequestEmitter(object):
             response = read_from_socket(sock,4)
             if response == "APAD":
                 part_num = read_from_socket(sock, 8)
-                if part_num == file.numeropartichepossiedoperquestofile():
+                if part_num == file.get_completed_file_parts_count():
                     klog("Part succesfully registered")
                 else:
                     klog("Wrong partnumber from directory")

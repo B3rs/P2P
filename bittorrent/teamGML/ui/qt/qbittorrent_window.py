@@ -113,19 +113,19 @@ class QBittorrentWindow(QMainWindow):
         self._draw_transfer_item(self.ui.uploadsTreeWidget, filename, id, part_number, peer_ip, percent)
 
     def _draw_transfer_item(self, container, filename, id, part_number, peer_ip, percent):
-        items_found = container.findItems(id, Qt.MatchExactly, 3)
+        items_found = container.findItems(id, Qt.MatchExactly, 1)
         item = None
         if len(items_found) > 0:
 
             for i in items_found:
-                if i.text(4) == peer_ip and i.text(1) == str(part_number):
+                if i.text(4) == peer_ip and i.text(2) == str(part_number):
                     item = i
                     break
 
         if item:
-            container.itemWidget(item, 1).setValue(percent)
+            container.itemWidget(item, 3).setValue(percent)
         else:
-            item = QTreeWidgetItem(container, QStringList([str(filename), str(part_number), "0", str(id), str(peer_ip)]))
+            item = QTreeWidgetItem(container, QStringList([str(filename), str(id), str(part_number), "0",  str(peer_ip)]))
             progress_bar = QProgressBar()
             progress_bar.setMinimum(0)
             progress_bar.setMaximum(100)

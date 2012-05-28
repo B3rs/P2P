@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'qt/designer/mainwindow.ui'
+# Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Mon May 21 16:39:49 2012
+# Created: Mon May 28 18:13:16 2012
 #      by: PyQt4 UI code generator 4.9.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -201,7 +201,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.retranslateUi(MainWindow)
-        self.tabsWidget.setCurrentIndex(0)
+        self.tabsWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -222,14 +222,16 @@ class Ui_MainWindow(object):
         self.tabsWidget.setTabText(self.tabsWidget.indexOf(self.tab_2), QtGui.QApplication.translate("MainWindow", "Shared files", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setText(QtGui.QApplication.translate("MainWindow", "Downloads:", None, QtGui.QApplication.UnicodeUTF8))
         self.downloadsTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Percentage", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Peer", None, QtGui.QApplication.UnicodeUTF8))
-        self.downloadsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Md5", None, QtGui.QApplication.UnicodeUTF8))
+        self.downloadsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.downloadsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Part num", None, QtGui.QApplication.UnicodeUTF8))
+        self.downloadsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Percentage", None, QtGui.QApplication.UnicodeUTF8))
+        self.downloadsTreeWidget.headerItem().setText(4, QtGui.QApplication.translate("MainWindow", "Peer", None, QtGui.QApplication.UnicodeUTF8))
         self.label_8.setText(QtGui.QApplication.translate("MainWindow", "Uploads:", None, QtGui.QApplication.UnicodeUTF8))
         self.uploadsTreeWidget.headerItem().setText(0, QtGui.QApplication.translate("MainWindow", "Filename", None, QtGui.QApplication.UnicodeUTF8))
-        self.uploadsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "Percentage", None, QtGui.QApplication.UnicodeUTF8))
-        self.uploadsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Peer", None, QtGui.QApplication.UnicodeUTF8))
-        self.uploadsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Md5", None, QtGui.QApplication.UnicodeUTF8))
+        self.uploadsTreeWidget.headerItem().setText(1, QtGui.QApplication.translate("MainWindow", "ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.uploadsTreeWidget.headerItem().setText(2, QtGui.QApplication.translate("MainWindow", "Part num", None, QtGui.QApplication.UnicodeUTF8))
+        self.uploadsTreeWidget.headerItem().setText(3, QtGui.QApplication.translate("MainWindow", "Percentage", None, QtGui.QApplication.UnicodeUTF8))
+        self.uploadsTreeWidget.headerItem().setText(4, QtGui.QApplication.translate("MainWindow", "Peer", None, QtGui.QApplication.UnicodeUTF8))
         self.tabsWidget.setTabText(self.tabsWidget.indexOf(self.tab_3), QtGui.QApplication.translate("MainWindow", "Transfers", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "File name to search:", None, QtGui.QApplication.UnicodeUTF8))
         self.searchBtn.setText(QtGui.QApplication.translate("MainWindow", "Search!", None, QtGui.QApplication.UnicodeUTF8))

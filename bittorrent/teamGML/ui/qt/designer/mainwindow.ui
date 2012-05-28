@@ -56,7 +56,7 @@
     <item>
      <widget class="QTabWidget" name="tabsWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="superPeersTab">
        <attribute name="title">
@@ -313,17 +313,22 @@
           </column>
           <column>
            <property name="text">
+            <string>ID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Part num</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
             <string>Percentage</string>
            </property>
           </column>
           <column>
            <property name="text">
             <string>Peer</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Md5</string>
            </property>
           </column>
          </widget>
@@ -352,17 +357,22 @@
           </column>
           <column>
            <property name="text">
+            <string>ID</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Part num</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
             <string>Percentage</string>
            </property>
           </column>
           <column>
            <property name="text">
             <string>Peer</string>
-           </property>
-          </column>
-          <column>
-           <property name="text">
-            <string>Md5</string>
            </property>
           </column>
          </widget>

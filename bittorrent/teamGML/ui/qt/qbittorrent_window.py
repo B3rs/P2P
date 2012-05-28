@@ -109,7 +109,7 @@ class QBittorrentWindow(QMainWindow):
     def _draw_download_item(self, filename, id, part_number, peer_ip, percent):
         self._draw_transfer_item(self.ui.downloadsTreeWidget, filename, id, part_number, peer_ip, percent)
 
-    def _draw_upload_item(self, filename, md5, peer_ip, percent):
+    def _draw_upload_item(self, filename, id, part_number, peer_ip, percent):
         self._draw_transfer_item(self.ui.uploadsTreeWidget, filename, id, part_number, peer_ip, percent)
 
     def _draw_transfer_item(self, container, filename, id, part_number, peer_ip, percent):
@@ -144,8 +144,8 @@ class QBittorrentWindow(QMainWindow):
     def download_file_changed(self, filename, file_id, part_number, peer_ip, percent):
         self.emit(SIGNAL("download_file_changed"), filename, file_id, part_number, peer_ip, percent)
 
-    def upload_file_changed(self, filename, file_id, peer_ip, percent):
-        self.emit(SIGNAL("upload_file_changed"), filename, file_id, peer_ip, percent)
+    def upload_file_changed(self, filename, file_id, part_number, peer_ip, percent):
+        self.emit(SIGNAL("upload_file_changed"), filename, file_id, part_number, peer_ip, percent)
 
     def show_log_message(self, message):
         self.emit(SIGNAL("log_message_ready"), message)

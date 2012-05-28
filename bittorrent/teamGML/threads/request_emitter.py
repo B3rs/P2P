@@ -17,6 +17,7 @@ class RequestEmitter(object):
     def __init__(self, local_port):
         self.local_port = local_port
         self.ui_handler = None
+        self.download_queues = []
 
 
     def login(self, tracker_ip, tracker_port = 80):
@@ -87,7 +88,9 @@ class RequestEmitter(object):
 
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
-        t = DownloadQueue(f, self, self.ui_handler)
+        queue = DownloadQueue(f, self, self.ui_handler)
+        self.download_queues.append(queue)
+
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         downloadSocket = connect_socket(peer_ip, peer_port)

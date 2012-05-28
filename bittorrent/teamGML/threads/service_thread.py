@@ -39,7 +39,7 @@ class ServiceThread(Thread):
                 CHUNK_DIM = 128
 
                 file_id = self._socket.recv(16)
-                part_num = self._socket.recv(8)
+                part_num = int(self._socket.recv(8))
 
                 self._socket.send("AREP")   #sending the ack command
                 remote_ip = self._socket.getpeername()[0]

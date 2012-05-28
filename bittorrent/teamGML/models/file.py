@@ -84,3 +84,16 @@ class File(object):
             if not self.peer_has_part(local_peer, part_num):
                 return False
         return True
+
+    def get_part_size(self, num):
+        if num < self.parts_count and num > 0:
+            return self.part_size
+        elif num == self.parts_count:
+            return os.path.getsize(self.filepath) - ((self.parts_count - 1) * self.part_size)
+
+    def get_part(self, num):
+        f = open(self.filepath, 'rb')
+        f.seek(self.part_size * (num - 1))
+        result = f.read(self.part_size)
+        f.close()
+        return result

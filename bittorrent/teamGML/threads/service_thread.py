@@ -35,17 +35,18 @@ class ServiceThread(Thread):
 
             # Received package asking for a file
             if command == "RETP":
-                klog("RETR received")
+                klog("RETP received")
                 CHUNK_DIM = 128
 
                 file_id = self._socket.recv(16)
+                part_num = self._socket.recv(8)
 
                 self._socket.send("AREP")   #sending the ack command
                 remote_ip = self._socket.getpeername()[0]
                 my_session_id = UsersManager.get_my_session_id()
 
                 # Get the file matching the file_id
-                klog("finding file with id: %s, session_id %s" %(file_id, my_session_id))
+                klog("finding file with id: %s, session_id %s, part %s" %(file_id, my_session_id, part_num))
 
                 file = FilesManager.find_shared_file_by_id(file_id)
 
@@ -62,8 +63,30 @@ class ServiceThread(Thread):
 
                     self._socket.send(format_chunks_number(chunks_num)) #sending the chunks number
 
+                    part = file.get_part(part_num)
+                    part_size = file.get_part_size(part_num)
+
+                    index = 0
+                    chunk = part[0:CHUNK_DIM]
+
+                    while True:
+                        self._socket.send(format_chunk_length(len(chunk)))  #sending the chunk length
+                        bytes_sent += self._socket.send(chunk)    #sending the chunk
+
+                        percent = bytes_sent*100/size
+                        self.ui_handler.upload_file_changed(file.filename, file.id, part_num, remote_ip, percent)
+
+                        index += 1
+                        if ((index * CHUNK_DIM) <= part_size) and ((index + 1)* CHUNK_DIM <= part_size):
+                            chunk = part[index * CHUNK_DIM : (index + 1)* CHUNK_DIM]
+                        elif ((index * CHUNK_DIM) <= part_size) and ((index + 1)* CHUNK_DIM > part_size):
+                            chunk = part[index * CHUNK_DIM : ]
+                        else:
+                            break
+
+                    '''
                     #open the file
-                    file2send= open(file.filepath, 'rb')
+                    file2send = file.get_part(part_num)#open(file.filepath, 'rb')
                     chunk = file2send.read(CHUNK_DIM)
 
                     while chunk != '':
@@ -71,13 +94,13 @@ class ServiceThread(Thread):
                         bytes_sent += self._socket.send(chunk)    #sending the chunk
 
                         percent = bytes_sent*100/size
-                        self.ui_handler.upload_file_changed(file.filename, file.id, remote_ip, percent)
+                        self.ui_handler.upload_file_changed(file.filename, file.id, part_num, remote_ip, percent)
 
                         chunk = file2send.read(CHUNK_DIM)
                     file2send.close()
-
+                    '''
                     klog("upload completed: %s" %file.filename)
-                    self.ui_handler.upload_file_changed(file.filename, file.id, remote_ip, 100)
+                    self.ui_handler.upload_file_changed(file.filename, file.id, part_num, remote_ip, 100)
 
                 else:
                     klog("I do not have this file!")

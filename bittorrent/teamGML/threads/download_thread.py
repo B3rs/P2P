@@ -20,7 +20,6 @@ class DownloadThread(QThread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
-        self._queue = queue
 
         klog("downloading %s %s" %(self._filename, str(self._file_id)))
 

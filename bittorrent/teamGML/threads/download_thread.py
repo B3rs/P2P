@@ -34,7 +34,7 @@ class DownloadThread(QThread):
                 klog("Download started")
                 FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
                 klog("chunk number: " + str(chunk_number))
-                newFile = open(FilesManager.get_filepart_path_from_file(), "wb") # a = append, b = binary mode
+                newFile = open(FilesManager.get_filepart_path_from_file(self._file_id, self._file_part), "wb") # a = append, b = binary mode
 
                 for i in range(0, chunk_number):
                     chunk_length = read_from_socket(self._socket, 5)

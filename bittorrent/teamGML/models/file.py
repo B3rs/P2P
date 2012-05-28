@@ -86,9 +86,9 @@ class File(object):
         return True
 
     def get_part_size(self, num):
-        if num < self.parts_count and num > 0:
+        if num < self.parts_count - 1 and num >= 0:
             return self.part_size
-        elif num == self.parts_count:
+        elif num == self.parts_count -1 :
             return os.path.getsize(self.filepath) - ((self.parts_count - 1) * self.part_size)
 
     def get_part(self, num):

@@ -28,6 +28,8 @@ class FileHandler():
         row.append(sessionID) #aggiungo il sessionID come primo elemento della fileTable
         partList = []
         numParts = lenFile/lenPart #calcolo il numero delle parti
+        if lenFile % lenPart != 0:
+            numParts += 1
         numByteDifetto = numParts/8 #approssimazione per difetto del numero dei byte da utilizzare
         for i in range(0,numByteDifetto):
             partList.append('11111111') #creo la partList con N byte (ognuno con 8 bit a 1)
@@ -186,7 +188,6 @@ class FileHandler():
         for i in range(0,len(filetable)):
             numhitpeer += 1
             sessionID = filetable[i][0]
-            print sessionID
             #dal sessionID recupero ip e porta dalla peersdb
             for j in range(0,len(peersdb)):
                 if peersdb[j][0] == sessionID:
@@ -195,7 +196,6 @@ class FileHandler():
             to_send += ipp2p + pp2p #intanto scrivo ip e porta
 
             partlist = filetable[i][1]
-            print partlist
             #devo trasformare partlist in una successione di 0 e 1
             for k in range(0,len(partlist)):
                 ba = bitarray(partlist[k]) #dalla stringa ricavo l'oggetto bitarray
@@ -204,7 +204,5 @@ class FileHandler():
         numhitpeer_form = '%(#)03d' % {"#" : int(numhitpeer)} #numhitpeer formattata per bene
 
         total = numhitpeer_form + to_send
-
-        print total
 
         return total

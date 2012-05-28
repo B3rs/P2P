@@ -1,18 +1,12 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from threading import Thread
-import time
+
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
-from models.peer import Peer
-from models.file import File
 from custom_utils.formatting import *
-from custom_utils.hashing import *
-from custom_utils.sockets import *
 from custom_utils.files import file_size
 from custom_utils.logging import klog
-import os
-
 
 
 class ServiceThread(Thread):
@@ -53,7 +47,7 @@ class ServiceThread(Thread):
                 # Get the file matching the file_id
                 klog("finding file with id: %s, session_id %s" %(file_id, my_session_id))
 
-                file = FilesManager.find_file_by_id(file_id)
+                file = FilesManager.find_shared_file_by_id(file_id)
 
                 if file:
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))

@@ -51,6 +51,14 @@ class FilesManager(object):
         return None
 
     @classmethod
+    def find_shared_file_by_id(cls, id):
+        for file in cls.shared_files():
+            if file.id == id:
+                return file
+        return None
+
+
+    @classmethod
     def shared_files(cls):
         results = []
         for f in cls.get_files():

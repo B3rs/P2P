@@ -18,6 +18,7 @@ class RequestEmitter(object):
         self.local_port = local_port
         self.ui_handler = None
         self.download_queues = []
+        self.download_threads = []
 
 
     def login(self, tracker_ip, tracker_port = 80):
@@ -101,6 +102,7 @@ class RequestEmitter(object):
         f = FilesManager.find_file_by_id(file_id)
         dlThread = DownloadThread(downloadSocket, f.filename, f.id, file_part, peer_ip, self, self.ui_handler)
         dlThread.start()
+        self.download_threads.append(dlThread)
 
     def register_part_to_tracker(self, file, part_num):
         my_tracker = UsersManager.get_tracker()

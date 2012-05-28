@@ -93,7 +93,7 @@ class File(object):
 
     def get_part(self, num):
         f = open(self.filepath, 'rb')
-        f.seek(self.part_size * (num - 1))
+        f.seek(self.part_size * num)
         result = f.read(self.part_size)
         f.close()
         return result

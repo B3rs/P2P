@@ -54,7 +54,7 @@ class ServiceThread(Thread):
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))
 
                     # Chunks
-                    size = file_size(file.filepath)
+                    size = file.get_part_size(part_num)#file_size(file.filepath)
                     bytes_sent = 0
                     chunks_num = int(size // CHUNK_DIM)
                     leftover = size % CHUNK_DIM

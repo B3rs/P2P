@@ -17,7 +17,7 @@ class RequestEmitter(object):
     def __init__(self, local_port):
         self.local_port = local_port
         self.ui_handler = None
-        self.download_queues = []
+        self.download_queues = {}
         self.download_threads = []
 
 
@@ -90,7 +90,7 @@ class RequestEmitter(object):
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
         queue = DownloadQueue(f, self, self.ui_handler)
-        self.download_queues.append(queue)
+        self.download_queues[file_id] = queue
 
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
@@ -116,7 +116,7 @@ class RequestEmitter(object):
             response = read_from_socket(sock,4)
             if response == "APAD":
                 part_num = read_from_socket(sock, 8)
-                if part_num == file.get_completed_file_parts_count():
+                if part_num == FilesManager.get_completed_file_parts_count(file.id):
                     klog("Part succesfully registered")
                 else:
                     klog("Wrong partnumber from directory")
@@ -126,6 +126,11 @@ class RequestEmitter(object):
         except Exception, ex:
             klog("Exception in registering a downloaded part on the tracker: %s" %str(ex))
         sock.close()
+
+    def part_download_finished(self, file_id, part_num):
+        queue = self.download_queues[file_id]
+        if queue:
+            queue.emit(SIGNAL("part_download_finished"), file_id, part_num)
 
     def add_file_to_tracker(self, file):
         my_tracker = UsersManager.get_tracker()

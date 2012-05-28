@@ -123,8 +123,8 @@ class RequestEmitter(object):
             else:
                 klog("Wrong ack received from directory service when trying to register a part")
 
-        except Exception:
-            klog("Exception in registering a downloaded part on the tracker")
+        except Exception, ex:
+            klog("Exception in registering a downloaded part on the tracker: %s" %str(ex))
         sock.close()
 
     def add_file_to_tracker(self, file):

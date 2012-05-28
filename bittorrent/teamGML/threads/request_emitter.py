@@ -2,6 +2,7 @@ __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
 from models.peer import Peer
 import binascii
+from PyQt4.QtCore import SIGNAL
 
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
@@ -90,7 +91,7 @@ class RequestEmitter(object):
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
         queue = DownloadQueue(f, self, self.ui_handler)
-        self.download_queues[file_id] = queue
+        self.download_queues[str(file_id)] = queue
 
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
@@ -116,6 +117,7 @@ class RequestEmitter(object):
             response = read_from_socket(sock,4)
             if response == "APAD":
                 part_num = read_from_socket(sock, 8)
+                klog("Part num from tracker: %s" %str(part_num))
                 if part_num == FilesManager.get_completed_file_parts_count(file.id):
                     klog("Part succesfully registered")
                 else:
@@ -128,9 +130,12 @@ class RequestEmitter(object):
         sock.close()
 
     def part_download_finished(self, file_id, part_num):
-        queue = self.download_queues[file_id]
-        if queue:
-            queue.emit(SIGNAL("part_download_finished"), file_id, part_num)
+        file_id = str(file_id)
+        print self.download_queues
+        if self.download_queues.has_key(file_id):
+            queue = self.download_queues[file_id]
+            if queue:
+                queue.emit(SIGNAL("part_download_finished"), file_id, part_num)
 
     def add_file_to_tracker(self, file):
         my_tracker = UsersManager.get_tracker()

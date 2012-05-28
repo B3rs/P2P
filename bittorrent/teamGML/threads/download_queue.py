@@ -35,7 +35,7 @@ class DownloadQueue(QObject):
                 self._request_emitter.download_part(peer.ip, peer.port, self._file.id, parts[i])
 
     def _completed_part(self, file_id, file_part):
-        if file_id != self._file.id:
+        if str(file_id) != str(self._file.id):
             return
         self._downloaded_parts += 1
         FilesManager.set_status_part_for_file(file_id, file_part, "completed")
@@ -46,9 +46,16 @@ class DownloadQueue(QObject):
             klog("Part finished, starting the new part")
 
             parts = FilesManager.get_ordered_parts_number(self._file.id)
-            peers = FilesManager.get_peers_for_file_part(self._file.id, parts[0])
-            peer = peers[random.randrange(0,len(peers)-1)]
-            self._request_emitter.download_part(peer.ip, peer.port, file_id, parts[0])
+            if len(parts) >0:
+                peers = FilesManager.get_peers_for_file_part(self._file.id, parts[0])
+
+                if len(peers) > 0:
+                    if len(peers) > 1:
+                        peer = peers[random.randrange(0,len(peers)-1)]
+                    else:
+                        peer = peers[0]
+
+                    self._request_emitter.download_part(peer.ip, peer.port, file_id, parts[0])
     
     def _check_parts(self):
         self._request_emitter.update_remote_file_data(self._file.id)

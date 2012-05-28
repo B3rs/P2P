@@ -30,33 +30,33 @@ class DownloadThread(QThread):
             klog("Received AREP")
 
             chunk_number = int(read_from_socket(self._socket, 6))
-            try:
-                klog("Download started")
-                FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
-                klog("chunk number: " + str(chunk_number))
-                newFile = open(FilesManager.get_filepart_path_from_file(self._file_id, self._file_part), "wb") # a = append, b = binary mode
+            #try:
+            klog("Download started")
+            FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
+            klog("chunk number: " + str(chunk_number))
+            newFile = open(FilesManager.get_filepart_path_from_file(self._file_id, self._file_part), "wb") # a = append, b = binary mode
 
-                for i in range(0, chunk_number):
-                    chunk_length = read_from_socket(self._socket, 5)
-                    chunk_length = int(chunk_length)
+            for i in range(0, chunk_number):
+                chunk_length = read_from_socket(self._socket, 5)
+                chunk_length = int(chunk_length)
 
-                    chunk_data = read_from_socket(self._socket, chunk_length)
-                    newFile.write(chunk_data)
+                chunk_data = read_from_socket(self._socket, chunk_length)
+                newFile.write(chunk_data)
 
-                    percent = i* 100/chunk_number
-                    self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, percent)
+                percent = i* 100/chunk_number
+                self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, percent)
 
-                newFile.close()
-                self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, 100)
-                klog("Download completed")
+            newFile.close()
+            self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, 100)
+            klog("Download completed")
 
-                f = FilesManager.find_file_by_id(self._file_id)
-                self.request_emitter.part_download_finished(self._file_id, self._file_part)
+            f = FilesManager.find_file_by_id(self._file_id)
+            self._request_emitter.part_download_finished(self._file_id, self._file_part)
 
-                self._request_emitter.register_part_to_tracker(f, self._file_part)
+            self._request_emitter.register_part_to_tracker(f, self._file_part)
 
-            except Exception, ex:
-                klog("An exception has occurred: "+str(ex))
+#            except Exception, ex:
+ #               klog("An exception has occurred: "+str(ex))
 
 
         self._socket.close()

@@ -80,7 +80,7 @@ class File(object):
     def is_completed(self):
         local_peer = Peer.get_local_peer()
 
-        for part_num in self.parts_count:
+        for part_num in range(0, self.parts_count):
             if not self.peer_has_part(local_peer, part_num):
                 return False
         return True

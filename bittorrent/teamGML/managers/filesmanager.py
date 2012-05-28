@@ -135,7 +135,7 @@ class FilesManager(object):
                 completed_file = open(DOWNLOAD_FOLDER+"/"+file.filename, 'w')
 
                 #Create the file from the parts
-                for part_num in file.parts_count:
+                for part_num in range(0, file.parts_count):
                     part_file = open(cls.get_filepart_path_from_file(file_id, part_num))
                     completed_file.write(part_file.read())
                     part_file.close()

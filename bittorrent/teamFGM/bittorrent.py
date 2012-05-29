@@ -20,7 +20,7 @@ class BittorrentClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "5.194.57.216"
+        self.my_IP = "5.218.23.66"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -104,9 +104,9 @@ class BittorrentClient(object):
         print "You're listening on address " + self.my_IP + " port " + str(self.dir_port) + "\n"
 
 
-        """
-        #PROVE DI DEBUG IN CUI SIMULO DI ESSERE UN CLIENT
 
+        #PROVE DI DEBUG IN CUI SIMULO DI ESSERE UN CLIENT
+        """"
         #invio LOGI
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGI" + self.my_IP_form + "09999")
@@ -123,6 +123,7 @@ class BittorrentClient(object):
         self.session_ID_2 = ack[4:20]
         self.closeConn(super_sock)
 
+
         #invio LOGI
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGI" + self.my_IP_form + "07777")
@@ -135,7 +136,7 @@ class BittorrentClient(object):
 
         #invio ADDR
         super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("ADDR" + self.session_ID_1 + "0101010101010101" + "0000000176" + "000027" + "                                                                                           pippo.txt")
+        super_sock.sendall("ADDR" + self.session_ID_1 + "0101010101010101" + "0000819200" + "262144" + "                                                                                           pippo.txt")
         #ricevo AADR
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
@@ -201,12 +202,37 @@ class BittorrentClient(object):
 
         print "INIZIO AGGIUNTA PARTI"
 
+
+
         #invio RPAD
         super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("RPAD" + self.session_ID_3 + "0101010101010101" + "00000001")
+        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000001")
         #ricevo APAD
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
+
+        #invio RPAD
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000002")
+        #ricevo APAD
+        ack = self.sockread(super_sock,12)
+        self.closeConn(super_sock)
+
+        #invio RPAD
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000003")
+        #ricevo APAD
+        ack = self.sockread(super_sock,12)
+        self.closeConn(super_sock)
+
+        #invio RPAD
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000004")
+        #ricevo APAD
+        ack = self.sockread(super_sock,12)
+        self.closeConn(super_sock)
+
+
 
         #invio RPAD
         super_sock = self.openConn(self.my_IP, self.dir_port)

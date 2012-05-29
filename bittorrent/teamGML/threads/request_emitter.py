@@ -131,7 +131,7 @@ class RequestEmitter(object):
 
     def part_download_finished(self, file_id, part_num):
         file_id = str(file_id)
-        print self.download_queues
+        FilesManager.set_status_part_for_file(file_id, part_num, "completed")
         if self.download_queues.has_key(file_id):
             queue = self.download_queues[file_id]
             if queue:

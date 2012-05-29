@@ -45,15 +45,18 @@ class DownloadQueue(QObject):
             return
 
         part_num = int(part_num)
+        klog("Completed part %d" %part_num)
+
         if part_num not in self._downloaded_parts:
             self._downloaded_parts.append(part_num)
 
 
         if len(self._downloaded_parts) == self._file.parts_count:
+            klog("All parts downloaded, creating the file")
             self._timer.cancel()
             FilesManager.create_file_from_parts(self._file.id)
         else:
-            klog("Part finished, starting the new part")
+            klog("Starting the new part")
 
             parts = FilesManager.get_ordered_parts_number(self._file.id)
             if len(parts) >0:
@@ -66,9 +69,11 @@ class DownloadQueue(QObject):
                         peer = peers[0]
 
                     self._request_emitter.download_part(peer.ip, peer.port, file_id, parts[0])
-
+                    klog("Started download part %d from peer: %s" %(parts[0], peer.ip))
         lock.release()
+
     def _check_parts(self):
+        klog("Timer: update remote file datas for file: %s" %self._file.id)
         self._request_emitter.update_remote_file_data(self._file.id)
         self._timer = Timer(60,self._check_parts, ())
         self._timer.start()

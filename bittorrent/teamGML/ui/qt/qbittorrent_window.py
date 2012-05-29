@@ -95,7 +95,7 @@ class QBittorrentWindow(QMainWindow):
     def _resultsTreeClicked(self, item, index):
         file_id = item.text(1)
         self.request_emitter.download_file(file_id)
-        self.ui.tabsWidget.setCurrentIndex(4) #go to the transfer page
+        self.ui.tabsWidget.setCurrentIndex(2) #go to the transfer page
 
 
     def _redraw_shared_files(self):

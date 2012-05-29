@@ -144,6 +144,10 @@ class FilesManager(object):
                     part_file.close()
 
                 completed_file.close()
+
+                for part_num in range(0, file.parts_count):
+                    os.remove(cls.get_filepart_path_from_file(file_id, part_num))
+
             else:
                 raise Exception("File %s is not completed!" %file.filename)
         else:

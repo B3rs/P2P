@@ -19,6 +19,7 @@ class DownloadQueue(QObject):
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
         self._downloaded_parts = FilesManager.get_completed_file_parts_nums(file.id)
+        self._downloading_parts = []
 
 
         klog("Started queue system for files %s %s" %(self._file.filename, str(self._file.id)))

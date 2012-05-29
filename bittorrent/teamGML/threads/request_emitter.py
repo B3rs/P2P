@@ -95,6 +95,7 @@ class RequestEmitter(object):
 
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
+        FilesManager.set_status_part_for_file(file_id, file_part, "downloading")
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
         downloadSocket.send(format_fileid(file_id))

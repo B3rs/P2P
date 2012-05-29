@@ -17,7 +17,7 @@ class DownloadQueue(QObject):
         self._file = file
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
-        self._downloaded_parts = int(FilesManager.get_completed_file_parts_count(file.id))
+        self._downloaded_parts = FilesManager.get_completed_file_parts_nums(file.id)
 
 
         klog("Started queue system for files %s %s" %(self._file.filename, str(self._file.id)))
@@ -34,11 +34,17 @@ class DownloadQueue(QObject):
                     peer = peers[random.randrange(0,len(peers)-1)]
                 self._request_emitter.download_part(peer.ip, peer.port, self._file.id, parts[i])
 
-    def _completed_part(self, file_id, file_part):
+    def _completed_part(self, file_id, part_num):
+        part_num = int(part_num)
+
         if str(file_id) != str(self._file.id):
             return
-        self._downloaded_parts += 1
-        if self._downloaded_parts == self._file.parts_count:
+
+        if part_num not in self._downloaded_parts:
+            self._downloaded_parts.append(part_num)
+
+
+        if len(self._downloaded_parts) == self._file.parts_count:
             self._timer.cancel()
             FilesManager.create_file_from_parts(self._file.id)
         else:

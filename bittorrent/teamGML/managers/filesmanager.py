@@ -99,18 +99,21 @@ class FilesManager(object):
             raise Exception("File not found: %s" %file_id)
 
     @classmethod
-    def get_completed_file_parts_count(cls, file_id):
+    def get_completed_file_parts_nums(cls, file_id):
         file = cls.find_file_by_id(file_id)
-        count = 0
+        parts = []
         if file:
             for i in range(0, file.parts_count):
                 if file.peer_has_part(Peer.get_local_peer(), i):
-                    count +=1
-            return count
+                    parts.append(i)
+            return parts
 
         else:
             raise Exception("File %s not found" %file_id)
 
+    @classmethod
+    def get_completed_file_parts_nums_count(cls, file_id):
+        return len(cls.get_completed_file_parts_nums(file_id))
 
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):

@@ -34,19 +34,22 @@ class Service():
         print ""
         print "_" * 150
         print '\033[95m' + "Peersdb" + '\033[0m'
+        print ""
+        print '\033[94m' + "sessionID           ipp2p              portp2p" + '\033[0m'
         for i in range(0,len(self.peersdb)):
-            print self.peersdb[i]
+            print str(self.peersdb[i][0]) + "    " + str(self.peersdb[i][1]) + "    " + str(self.peersdb[i][2])
         print "_" * 150
         print ""
 
     def printFilesdb(self):
         print ""
         print "_" * 150
-        print '\033[94m' + "Filesdb" + '\033[0m'
-        print '\033[92m' + "randomID            sessionID        lenfile[B]  lenpart[B]  numpart             nomefile" + '\033[0m'
+        print '\033[91m' + "Filesdb" + '\033[0m'
         for i in range(0,len(self.filesdb)):
-            print self.filesdb[i][0] + "\t" + self.filesdb[i][1] + "\t" + self.filesdb[i][3] + "\t" + self.filesdb[i][4] + "\t" + self.filesdb[i][5] + "\t" + self.filesdb[i][2]
-            print '\033[92m' + "partlist" + '\033[0m'
+            print ""
+            print '\033[94m' + "randomID            sessionID           lenfile[B]    lenpart[B]    numpart     nomefile" + '\033[0m'
+            print self.filesdb[i][0] + "    " + self.filesdb[i][1] + "    " + self.filesdb[i][3] + "    " + self.filesdb[i][4] + "        " + self.filesdb[i][5] + "    " + self.filesdb[i][2]
+            print '\033[94m' + "partlist" + '\033[0m'
             for j in range(0,len(self.filesdb[i][6])):
                 print str(self.filesdb[i][6][j])
         print "_" * 150
@@ -448,7 +451,8 @@ class PostDownload(threading.Thread, Service):
         print "received RPAD" + postdown + " from " + self.addrclient[0] + ":" + str(self.addrclient[1])
         sessionID = postdown[:16]
         randomID = postdown[16:32]
-        numpart_to_update = postdown[32:40]
+        numpart_to_update = postdown[32:40] #il numero che ricevo va da 0 a parti-1
+        numpart_to_update = int(numpart_to_update) + 1 #il numero ora va da 1 a parti, in linea con le funzioni di bittorrent_files
 
         filesdb = self.getFilesdb() #recupero il database con tutti i file
 
@@ -460,7 +464,7 @@ class PostDownload(threading.Thread, Service):
 
         fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
 
-        numPeerPart = fh.updateTable(sessionID, int(numpart_to_update), filetable_to_update) #mi faccio restituire il numPeerPart
+        numPeerPart = fh.updateTable(sessionID, numpart_to_update, filetable_to_update) #mi faccio restituire il numPeerPart
 
         numPeerParts_form = '%(#)08d' % {"#" : numPeerPart} #numPeerParts formattato per bene
 

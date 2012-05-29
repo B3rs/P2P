@@ -14,7 +14,6 @@ SHARED_PATH = "shared"  # If u are GIO
 DOWNLOAD_FOLDER = "downloads"
 
 
-
 class FilesManager(object):
 
     FILES = []
@@ -148,6 +147,7 @@ class FilesManager(object):
                 for part_num in range(0, file.parts_count):
                     os.remove(cls.get_filepart_path_from_file(file_id, part_num))
 
+                file.filepath = DOWNLOAD_FOLDER+"/"+file.filename
             else:
                 raise Exception("File %s is not completed!" %file.filename)
         else:

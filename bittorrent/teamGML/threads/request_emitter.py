@@ -117,12 +117,12 @@ class RequestEmitter(object):
         try:
             response = read_from_socket(sock,4)
             if response == "APAD":
-                part_num = read_from_socket(sock, 8)
+                part_num = int(read_from_socket(sock, 8))
                 klog("Part num from tracker: %s" %str(part_num))
                 if part_num == FilesManager.get_completed_file_parts_nums_count(file.id):
                     klog("Part succesfully registered")
                 else:
-                    klog("Wrong partnumber from directory")
+                    klog("Wrong partnumber from directory received %s but i have %s" %(str(part_num), str(FilesManager.get_completed_file_parts_nums_count(file.id))))
             else:
                 klog("Wrong ack received from directory service when trying to register a part")
 

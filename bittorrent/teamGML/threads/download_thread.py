@@ -60,7 +60,7 @@ class DownloadThread(QThread):
 
         else:
             FilesManager.set_status_part_for_file(self._file_id, self._file_part, "empty")
-            
+
         self._socket.close()
 
 

@@ -1,19 +1,16 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-import socket
-from threading import Timer
 from models.peer import Peer
-import random, binascii
+import binascii
+from PyQt4.QtCore import SIGNAL
 
 from managers.filesmanager import FilesManager
 from managers.usersmanager import UsersManager
 from custom_utils.formatting import *
-from custom_utils.hashing import *
 from custom_utils.logging import *
 from custom_utils.sockets import *
-from threads.download_queue_thread import DownloadQueueThread
+from threads.download_queue import DownloadQueue
 from threads.download_thread import DownloadThread
-from threads.service_thread import ServiceThread
 import math
 
 class RequestEmitter(object):
@@ -21,6 +18,8 @@ class RequestEmitter(object):
     def __init__(self, local_port):
         self.local_port = local_port
         self.ui_handler = None
+        self.download_queues = {}
+        self.download_threads = []
 
 
     def login(self, tracker_ip, tracker_port = 80):
@@ -91,9 +90,12 @@ class RequestEmitter(object):
 
     def download_file(self, file_id):
         f = FilesManager.find_file_by_id(file_id)
-        t = DownloadQueueThread(f, self, self.ui_handler)
+        queue = DownloadQueue(f, self, self.ui_handler)
+        self.download_queues[str(file_id)] = queue
+
 
     def download_part(self, peer_ip, peer_port, file_id, file_part):
+        FilesManager.set_status_part_for_file(file_id, file_part, "downloading")
         downloadSocket = connect_socket(peer_ip, peer_port)
         downloadSocket.send("RETP")
         downloadSocket.send(format_fileid(file_id))
@@ -102,6 +104,7 @@ class RequestEmitter(object):
         f = FilesManager.find_file_by_id(file_id)
         dlThread = DownloadThread(downloadSocket, f.filename, f.id, file_part, peer_ip, self, self.ui_handler)
         dlThread.start()
+        self.download_threads.append(dlThread)
 
     def register_part_to_tracker(self, file, part_num):
         my_tracker = UsersManager.get_tracker()
@@ -115,16 +118,25 @@ class RequestEmitter(object):
             response = read_from_socket(sock,4)
             if response == "APAD":
                 part_num = read_from_socket(sock, 8)
-                if part_num == file.numeropartichepossiedoperquestofile():
+                klog("Part num from tracker: %s" %str(part_num))
+                if part_num == FilesManager.get_completed_file_parts_nums_count(file.id):
                     klog("Part succesfully registered")
                 else:
                     klog("Wrong partnumber from directory")
             else:
                 klog("Wrong ack received from directory service when trying to register a part")
 
-        except Exception:
-            klog("Exception in registering a downloaded part on the tracker")
+        except Exception, ex:
+            klog("Exception in registering a downloaded part on the tracker: %s" %str(ex))
         sock.close()
+
+    def part_download_finished(self, file_id, part_num):
+        file_id = str(file_id)
+        FilesManager.set_status_part_for_file(file_id, part_num, "completed")
+        if self.download_queues.has_key(file_id):
+            queue = self.download_queues[file_id]
+            if queue:
+                queue.emit(SIGNAL("part_download_finished"), file_id, part_num)
 
     def add_file_to_tracker(self, file):
         my_tracker = UsersManager.get_tracker()
@@ -180,7 +192,7 @@ class RequestEmitter(object):
                         byte = bin(int(binascii.b2a_hex(b),16))
                         byte = byte[2:]
                         byte = format_byte(byte)
-                        for i in range(7,0, -1):
+                        for i in range(7,-1, -1):
                             partlist_array.append(byte[i])
                     for j in range(len(partlist_array)):
                         #klog("%s PARTE %s: %s" %(file_id,j,partlist_array[j]))

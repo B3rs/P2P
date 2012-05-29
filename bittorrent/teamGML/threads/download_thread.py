@@ -1,8 +1,6 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
 
-from threading import Thread
 from custom_utils.logging import klog
-from custom_utils.hashing import *
 from custom_utils.sockets import read_from_socket
 from managers.filesmanager import FilesManager
 from PyQt4.QtCore import QThread, SIGNAL
@@ -20,9 +18,8 @@ class DownloadThread(QThread):
         self._peer_ip = peer_ip
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
-        self._queue = queue
 
-        klog("downloading %s %s" %(self._filename, str(self._file_id)))
+        klog("downloading %s %s part %s" %(self._filename, str(self._file_id), str(file_part)))
 
     def run(self):
 
@@ -33,35 +30,37 @@ class DownloadThread(QThread):
             klog("Received AREP")
 
             chunk_number = int(read_from_socket(self._socket, 6))
-            try:
-                klog("Download started")
-                FilesManager.set_status_part_for_file(self._file_id, self._file_part, "downloading")
-                klog("chunk number: " + str(chunk_number))
-                newFile = open(FilesManager.get_filepart_path_from_file(), "wb") # a = append, b = binary mode
+            #try:
+            klog("Download started")
 
-                for i in range(0, chunk_number):
-                    chunk_length = read_from_socket(self._socket, 5)
-                    chunk_length = int(chunk_length)
+            klog("chunk number: " + str(chunk_number))
+            newFile = open(FilesManager.get_filepart_path_from_file(self._file_id, self._file_part), "wb") # a = append, b = binary mode
 
-                    chunk_data = read_from_socket(self._socket, chunk_length)
-                    newFile.write(chunk_data)
+            for i in range(0, chunk_number):
+                chunk_length = read_from_socket(self._socket, 5)
+                chunk_length = int(chunk_length)
 
-                    percent = i* 100/chunk_number
-                    self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, percent)
+                chunk_data = read_from_socket(self._socket, chunk_length)
+                newFile.write(chunk_data)
 
-                newFile.close()
-                self._ui_handler.download_file_changed(self._filename, self._file_id, self._peer_ip, 100)
-                klog("Download completed")
+                percent = i* 100/chunk_number
+                self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, percent)
 
-                f = FilesManager.find_file_by_id(self._file_id)
-                self.emit(SIGNAL("part_download_finished"), self._file_id, self._file_part)
+            newFile.close()
+            self._ui_handler.download_file_changed(self._filename, self._file_id, self._file_part, self._peer_ip, 100)
+            klog("Download completed")
 
-                self._request_emitter.register_part_to_tracker(f, self._file_part)
+            f = FilesManager.find_file_by_id(self._file_id)
+            self._request_emitter.part_download_finished(self._file_id, self._file_part)
 
-            except Exception, ex:
-                klog("An exception has occurred: "+str(ex))
+            self._request_emitter.register_part_to_tracker(f, self._file_part)
 
+#            except Exception, ex:
+ #               klog("An exception has occurred: "+str(ex))
 
+        else:
+            FilesManager.set_status_part_for_file(self._file_id, self._file_part, "empty")
+            
         self._socket.close()
 
 

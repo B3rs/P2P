@@ -80,7 +80,20 @@ class File(object):
     def is_completed(self):
         local_peer = Peer.get_local_peer()
 
-        for part_num in self.parts_count:
+        for part_num in range(0, self.parts_count):
             if not self.peer_has_part(local_peer, part_num):
                 return False
         return True
+
+    def get_part_size(self, num):
+        if num < self.parts_count - 1 and num >= 0:
+            return self.part_size
+        elif num == self.parts_count -1 :
+            return os.path.getsize(self.filepath) - ((self.parts_count - 1) * self.part_size)
+
+    def get_part(self, num):
+        f = open(self.filepath, 'rb')
+        f.seek(self.part_size * num)
+        result = f.read(self.part_size)
+        f.close()
+        return result

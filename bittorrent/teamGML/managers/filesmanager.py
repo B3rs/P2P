@@ -1,11 +1,9 @@
 __author__ = 'LucaFerrari MarcoBersani GiovanniLodi'
-import os, math
+import os
 from custom_utils import hashing
 from models.file import File
 from models.peer import Peer
-from custom_utils.logging import klog
 from collections import Counter
-import math
 
 # TODO: WARNING!
 # That way path is defined from this file location, but it doesn't work,
@@ -51,6 +49,14 @@ class FilesManager(object):
         return None
 
     @classmethod
+    def find_shared_file_by_id(cls, id):
+        for file in cls.shared_files():
+            if file.id == id:
+                return file
+        return None
+
+
+    @classmethod
     def shared_files(cls):
         results = []
         for f in cls.get_files():
@@ -68,7 +74,8 @@ class FilesManager(object):
     def update_remote_file_part(cls, file_id, peer, part_num, available):
         file = cls.find_file_by_id(file_id)
         if file:
-            file.set_peer_has_part(peer, part_num, bool(available))
+            if file.parts_count > part_num:
+                file.set_peer_has_part(peer, part_num, bool(available))
         else:
             raise Exception("File %s not found" %file_id)
 
@@ -92,18 +99,21 @@ class FilesManager(object):
             raise Exception("File not found: %s" %file_id)
 
     @classmethod
-    def get_completed_file_parts_count(cls, file_id):
+    def get_completed_file_parts_nums(cls, file_id):
         file = cls.find_file_by_id(file_id)
-        count = 0
+        parts = []
         if file:
             for i in range(0, file.parts_count):
                 if file.peer_has_part(Peer.get_local_peer(), i):
-                    count +=1
-            return count
+                    parts.append(i)
+            return parts
 
         else:
             raise Exception("File %s not found" %file_id)
 
+    @classmethod
+    def get_completed_file_parts_nums_count(cls, file_id):
+        return len(cls.get_completed_file_parts_nums(file_id))
 
     @classmethod
     def get_peers_for_file_part(cls, file_id, part_num):
@@ -128,12 +138,16 @@ class FilesManager(object):
                 completed_file = open(DOWNLOAD_FOLDER+"/"+file.filename, 'w')
 
                 #Create the file from the parts
-                for part_num in file.parts_count:
+                for part_num in range(0, file.parts_count):
                     part_file = open(cls.get_filepart_path_from_file(file_id, part_num))
                     completed_file.write(part_file.read())
                     part_file.close()
 
                 completed_file.close()
+
+                for part_num in range(0, file.parts_count):
+                    os.remove(cls.get_filepart_path_from_file(file_id, part_num))
+
             else:
                 raise Exception("File %s is not completed!" %file.filename)
         else:

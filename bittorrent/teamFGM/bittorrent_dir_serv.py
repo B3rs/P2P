@@ -32,23 +32,24 @@ class Service():
 
     def printPeersdb(self):
         print ""
-        print "_" * 200
+        print "_" * 150
         print '\033[95m' + "Peersdb" + '\033[0m'
         for i in range(0,len(self.peersdb)):
             print self.peersdb[i]
-        print "_" * 200
+        print "_" * 150
         print ""
 
     def printFilesdb(self):
         print ""
-        print "_" * 200
+        print "_" * 150
         print '\033[94m' + "Filesdb" + '\033[0m'
-        print '\033[92m' + "randomID            sessionID           nomefile    lenfile[B]  lenpart[B]  numpart     sessionID            partlist" + '\033[0m'
+        print '\033[92m' + "randomID            sessionID        lenfile[B]  lenpart[B]  numpart             nomefile" + '\033[0m'
         for i in range(0,len(self.filesdb)):
-            print self.filesdb[i][0] + "\t" + self.filesdb[i][1] + "\t" + self.filesdb[i][2] + "\t" + self.filesdb[i][3] + "\t" + self.filesdb[i][4] + "\t\t" + self.filesdb[i][5]
+            print self.filesdb[i][0] + "\t" + self.filesdb[i][1] + "\t" + self.filesdb[i][3] + "\t" + self.filesdb[i][4] + "\t" + self.filesdb[i][5] + "\t" + self.filesdb[i][2]
+            print '\033[92m' + "partlist" + '\033[0m'
             for j in range(0,len(self.filesdb[i][6])):
-                print "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" + str(self.filesdb[i][6][j])
-        print "_" * 200
+                print str(self.filesdb[i][6][j])
+        print "_" * 150
         print ""
 
     def addPeerTodb(self, sessionID, IP, port):

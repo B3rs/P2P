@@ -109,28 +109,28 @@ class QBittorrentWindow(QMainWindow):
     def _draw_download_item(self, filename, id, part_number, peer_ip, percent):
         self._draw_transfer_item(self.ui.downloadsTreeWidget, filename, id, part_number, peer_ip, percent)
 
-    def _draw_upload_item(self, filename, md5, peer_ip, percent):
+    def _draw_upload_item(self, filename, id, part_number, peer_ip, percent):
         self._draw_transfer_item(self.ui.uploadsTreeWidget, filename, id, part_number, peer_ip, percent)
 
     def _draw_transfer_item(self, container, filename, id, part_number, peer_ip, percent):
-        items_found = container.findItems(id, Qt.MatchExactly, 3)
+        items_found = container.findItems(id, Qt.MatchExactly, 1)
         item = None
         if len(items_found) > 0:
 
             for i in items_found:
-                if i.text(4) == peer_ip and i.text(1) == str(part_number):
+                if i.text(4) == peer_ip and i.text(2) == str(part_number):
                     item = i
                     break
 
         if item:
-            container.itemWidget(item, 1).setValue(percent)
+            container.itemWidget(item, 3).setValue(percent)
         else:
-            item = QTreeWidgetItem(container, QStringList([str(filename), str(part_number), "0", str(id), str(peer_ip)]))
+            item = QTreeWidgetItem(container, QStringList([str(filename), str(id), str(part_number), "0",  str(peer_ip)]))
             progress_bar = QProgressBar()
             progress_bar.setMinimum(0)
             progress_bar.setMaximum(100)
             progress_bar.setValue(percent)
-            container.setItemWidget(item, 1, progress_bar)
+            container.setItemWidget(item, 3, progress_bar)
 
 
     #PUBLIC Methods (ovverides from AbstractUI in the future)
@@ -144,8 +144,8 @@ class QBittorrentWindow(QMainWindow):
     def download_file_changed(self, filename, file_id, part_number, peer_ip, percent):
         self.emit(SIGNAL("download_file_changed"), filename, file_id, part_number, peer_ip, percent)
 
-    def upload_file_changed(self, filename, file_id, peer_ip, percent):
-        self.emit(SIGNAL("upload_file_changed"), filename, file_id, peer_ip, percent)
+    def upload_file_changed(self, filename, file_id, part_number, peer_ip, percent):
+        self.emit(SIGNAL("upload_file_changed"), filename, file_id, part_number, peer_ip, percent)
 
     def show_log_message(self, message):
         self.emit(SIGNAL("log_message_ready"), message)

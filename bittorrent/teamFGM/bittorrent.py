@@ -20,7 +20,7 @@ class BittorrentClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "192.168.0.103"
+        self.my_IP = "5.218.23.66"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -106,7 +106,7 @@ class BittorrentClient(object):
 
 
         #PROVE DI DEBUG IN CUI SIMULO DI ESSERE UN CLIENT
-
+        """"
         #invio LOGI
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGI" + self.my_IP_form + "09999")
@@ -123,7 +123,7 @@ class BittorrentClient(object):
         self.session_ID_2 = ack[4:20]
         self.closeConn(super_sock)
 
-        """
+
         #invio LOGI
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGI" + self.my_IP_form + "07777")
@@ -133,14 +133,14 @@ class BittorrentClient(object):
         self.closeConn(super_sock)
 
         print "INIZIO AGGIUNTA FILE"
-        """
+
         #invio ADDR
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("ADDR" + self.session_ID_1 + "0101010101010101" + "0000819200" + "262144" + "                                                                                           pippo.txt")
         #ricevo AADR
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
-        """
+
         #invio ADDR
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("ADDR" + self.session_ID_2 + "0202020202020202" + "0000000176" + "000025" + "                                                                                           marco.txt")
@@ -202,7 +202,7 @@ class BittorrentClient(object):
 
         print "INIZIO AGGIUNTA PARTI"
 
-        """
+
 
         #invio RPAD
         super_sock = self.openConn(self.my_IP, self.dir_port)
@@ -232,7 +232,7 @@ class BittorrentClient(object):
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
 
-        """
+
 
         #invio RPAD
         super_sock = self.openConn(self.my_IP, self.dir_port)

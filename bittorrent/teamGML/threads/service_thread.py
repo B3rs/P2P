@@ -48,7 +48,7 @@ class ServiceThread(Thread):
                 # Get the file matching the file_id
                 klog("finding file with id: %s, session_id %s, part %s" %(file_id, my_session_id, part_num))
 
-                file = FilesManager.find_shared_file_by_id(file_id)
+                file = FilesManager.find_file_by_id(file_id)
 
                 if file:
                     klog("i have found the file: %s stored in %s" % (file.filename, file.filepath))

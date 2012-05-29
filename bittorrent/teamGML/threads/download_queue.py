@@ -5,6 +5,7 @@ from custom_utils.logging import klog
 from PyQt4.QtCore import SIGNAL, QObject
 from managers.filesmanager import FilesManager
 import random
+from threading import Lock
 
 
 DOWNLOAD_FOLDER = "downloads"
@@ -35,11 +36,15 @@ class DownloadQueue(QObject):
                 self._request_emitter.download_part(peer.ip, peer.port, self._file.id, parts[i])
 
     def _completed_part(self, file_id, part_num):
-        part_num = int(part_num)
+
+        lock = Lock()
+        lock.acquire()
 
         if str(file_id) != str(self._file.id):
+            lock.release()
             return
 
+        part_num = int(part_num)
         if part_num not in self._downloaded_parts:
             self._downloaded_parts.append(part_num)
 
@@ -61,7 +66,8 @@ class DownloadQueue(QObject):
                         peer = peers[0]
 
                     self._request_emitter.download_part(peer.ip, peer.port, file_id, parts[0])
-    
+
+        lock.release()
     def _check_parts(self):
         self._request_emitter.update_remote_file_data(self._file.id)
         self._timer = Timer(60,self._check_parts, ())

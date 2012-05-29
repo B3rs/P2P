@@ -19,7 +19,7 @@ class DownloadThread(QThread):
         self._ui_handler = ui_handler
         self._request_emitter = request_emitter
 
-        klog("downloading %s %s" %(self._filename, str(self._file_id)))
+        klog("downloading %s %s part %s" %(self._filename, str(self._file_id), str(file_part)))
 
     def run(self):
 

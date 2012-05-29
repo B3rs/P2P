@@ -65,7 +65,7 @@ class DownloadQueue(QObject):
 
                 if len(peers) > 0:
                     if len(peers) > 1:
-                        peer = peers[random.randrange(0,len(peers)-1)]
+                        peer = peers[random.randrange(0,len(peers))]
                     else:
                         peer = peers[0]
 

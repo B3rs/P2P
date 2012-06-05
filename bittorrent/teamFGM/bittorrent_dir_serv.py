@@ -229,43 +229,35 @@ class Logout(threading.Thread, Service):
             #recupero il file che aveva aggiunto il peer
             #provo a cancellare le parti aggiunte dal peer sorgente
 
-            filesdb = self.getFilesdb() #recupero il database con tutti i file
-
-            #vado a vedere se il peer e' una sorgente
-            found = False
-            for i in range(0,len(filesdb)):
-                if filesdb[i][1] == sessID:
-                    index_to_update = i
-                    filetable_to_update = filesdb[i][6]
-                    found = True
-
             can_logout = True
             num_parts = 0
 
-            if found == True: #se il peer e' sorgente di un file
+            filesdb = self.getFilesdb() #recupero il database con tutti i file
 
-                fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
+            #vado a vedere se il peer e' una sorgente
+            for i in range(0,len(filesdb)):
+                if filesdb[i][1] == sessID: #se trovo un file uploadato dal peer
+                    filetable_to_update = filesdb[i][6]
+                    fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
+                    logout = fh.checkLogout(filetable_to_update) #mi faccio restituire il [possologout?, numparti]
+                    can_logout = can_logout and logout[0] #questa var alla fine mi dice se posso sloggarmi
+                    num_parts += logout[1] #questa mi dice il numero di parti che altri hanno scaricato da me
 
-                logout = fh.tryLogout(filetable_to_update) #mi faccio restituire il [possologout?, numparti]
+            if can_logout == False:
+                #rispondo al peer che non posso sloggarmi e non faccio nient'altro
+                num_parts_form = '%(#)010d' % {"#" : num_parts} #num_parts formattato per bene
+                self.socketclient.sendall("NLOG" + num_parts_form)
+                print "sent NLOG" + num_parts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
 
-                can_logout = logout[0]
-                num_parts = logout[1]
+            else: #cioe' sono una sorgente e mi posso sloggare oppure se sono un peer che non ha uploadato file
 
-                if can_logout == False:
-                    #rispondo al peer che non posso sloggarmi e non faccio nient'altro
-                    num_parts_form = '%(#)010d' % {"#" : num_parts} #num_parts formattato per bene
-                    self.socketclient.sendall("NLOG" + num_parts_form)
-                    print "sent NLOG" + num_parts_form + " to " + self.addrclient[0] + ":" + str(self.addrclient[1])
-
-                else:
-                    #aggiorno la tabella alla luce della cancellazione
-                    filesdb[index_to_update][6] = fh.getFileTable()
-                    self.setFilesdb(filesdb)
-
-            if can_logout: #cioe' sono una sorgente e mi posso sloggare oppure se sono un peer che non ha uploadato file
+                num_parts = 0 #riazzero il numero delle parti
 
                 filesdb = self.getFilesdb()
-                for i in range(0,len(filesdb)): #per ogni file della tabella
+
+                i=0
+                while i < len(filesdb):
+
                     fh = bittorrent_files.FileHandler() #inizializzazione di un filehandler
                     delete = fh.deleteParts(sessID, filesdb[i][6])
                     do_delete = delete[0]
@@ -273,6 +265,13 @@ class Logout(threading.Thread, Service):
                         filesdb[i][6] = fh.getFileTable()
                         self.setFilesdb(filesdb)
                         num_parts += delete[1]
+
+                    do_delete_file = delete[2]
+                    if do_delete_file=="y": #se devo cancellare tutto il file perche' nessun peer ne ha una parte
+                        filesdb.pop(i) #poppo il file
+                        self.setFilesdb(filesdb) #aggiorno la tabella filesdb
+                    else: #altrimenti proseguo nello scorrere la filesdb
+                        i += 1
 
                 #cancello il peer da peersdb
                 self.delPeerFromdb(sessID) #cancello il peer dalla tabella peersdb
@@ -452,7 +451,7 @@ class PostDownload(threading.Thread, Service):
         sessionID = postdown[:16]
         randomID = postdown[16:32]
         numpart_to_update = postdown[32:40] #il numero che ricevo va da 0 a parti-1
-        numpart_to_update = int(numpart_to_update) + 1 #il numero ora va da 1 a parti, in linea con le funzioni di bittorrent_files
+        numpart_to_update = int(numpart_to_update)
 
         filesdb = self.getFilesdb() #recupero il database con tutti i file
 

@@ -4,6 +4,7 @@ import bittorrent_dir
 
 import sys
 import socket #TOGLIERE DOPO DEBUG
+import time
 
 class BittorrentClient(object):
 
@@ -20,7 +21,7 @@ class BittorrentClient(object):
         #self.my_IP = socket.gethostbyname(socket.gethostname())
 
         #Linux
-        self.my_IP = "192.168.0.103"
+        self.my_IP = "5.218.23.66"
 
         my_IP_split = self.my_IP.split(".")
         IP_1 = '%(#)03d' % {"#" : int(my_IP_split[0])}
@@ -117,6 +118,8 @@ class BittorrentClient(object):
         self.session_ID_1 = ack[4:20]
         self.closeConn(super_sock)
 
+        time.sleep(1)
+
         #invio LOGI
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGI" + self.my_IP_form + "08888")
@@ -125,95 +128,33 @@ class BittorrentClient(object):
         self.session_ID_2 = ack[4:20]
         self.closeConn(super_sock)
 
+        time.sleep(1)
+
+        #invio LOGI
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("LOGI" + self.my_IP_form + "07777")
+        #ricevo ALGI
+        ack = self.sockread(super_sock,20)
+        self.session_ID_3 = ack[4:20]
+        self.closeConn(super_sock)
+
+        time.sleep(1)
+
         #invio ADDR
         super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("ADDR" + self.session_ID_1 + "0101010101010101" + "0000819200" + "262144" + "                                                                                           pippo.txt")
+        super_sock.sendall("ADDR" + self.session_ID_1 + "0202020202020202" + "0000000176" + "000176" + "                                                                                           marco.txt")
         #ricevo AADR
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
 
         #invio ADDR
         super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("ADDR" + self.session_ID_2 + "0202020202020202" + "0000000176" + "000025" + "                                                                                           marco.txt")
+        super_sock.sendall("ADDR" + self.session_ID_1 + "0900002020202020" + "0000000176" + "000176" + "                                                                                           marco.txt")
         #ricevo AADR
         ack = self.sockread(super_sock,12)
         self.closeConn(super_sock)
 
-        #invio LOOK
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("LOOK" + self.session_ID_2 + "                 pip")
-        #ricevo ALOO
-        ack = self.sockread(super_sock,7)
-        numidrnd = int(ack[4:7])
-        for i in range(0,numidrnd):
-            ack = self.sockread(super_sock,132)
-            print "file " + ack
-        self.closeConn(super_sock)
-
-        #invio LOOK
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("LOOK" + self.session_ID_3 + "                   .")
-        #ricevo ALOO
-        ack = self.sockread(super_sock,7)
-        numidrnd = int(ack[4:7])
-        for i in range(0,numidrnd):
-            ack = self.sockread(super_sock,132)
-            print "file " + ack
-        self.closeConn(super_sock)
-
-        #invio FCHU
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("FCHU" + self.session_ID_2 + "0101010101010101")
-        #ricevo AFCH
-        ack = self.sockread(super_sock,7)
-        numhitpeer = int(ack[4:7])
-        for i in range(0,numhitpeer):
-            ack = self.sockread(super_sock,20)
-            print "peer " + ack
-            ack = self.sockread(super_sock,1) #TODO questo 1 in realta' dovrebbe essere il numero di byte da leggere
-            print "partlist " + ack
-        self.closeConn(super_sock)
-
-        #invio FCHU
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("FCHU" + self.session_ID_2 + "0202020202020202")
-        #ricevo AFCH
-        ack = self.sockread(super_sock,7)
-        numhitpeer = int(ack[4:7])
-        for i in range(0,numhitpeer):
-            ack = self.sockread(super_sock,20)
-            print "peer " + ack
-            ack = self.sockread(super_sock,1) #TODO questo 1 in realta' dovrebbe essere il numero di byte da leggere
-            print "partlist " + ack
-        self.closeConn(super_sock)
-
-        #invio RPAD
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000000")
-        #ricevo APAD
-        ack = self.sockread(super_sock,12)
-        self.closeConn(super_sock)
-
-        #invio RPAD
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("RPAD" + self.session_ID_2 + "0101010101010101" + "00000001")
-        #ricevo APAD
-        ack = self.sockread(super_sock,12)
-        self.closeConn(super_sock)
-
-        #invio RPAD
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("RPAD" + self.session_ID_1 + "0202020202020202" + "00000000")
-        #ricevo APAD
-        ack = self.sockread(super_sock,12)
-        self.closeConn(super_sock)
-
-        #invio RPAD
-        super_sock = self.openConn(self.my_IP, self.dir_port)
-        super_sock.sendall("RPAD" + self.session_ID_1 + "0202020202020202" + "00000001")
-        #ricevo APAD
-        ack = self.sockread(super_sock,12)
-        self.closeConn(super_sock)
+        time.sleep(1)
 
         #invio LOGO
         super_sock = self.openConn(self.my_IP, self.dir_port)
@@ -222,12 +163,48 @@ class BittorrentClient(object):
         ack = self.sockread(super_sock,14)
         self.closeConn(super_sock)
 
+        #invio RPAD
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("RPAD" + self.session_ID_3 + "0202020202020202" + "00000000")
+        #ricevo APAD
+        ack = self.sockread(super_sock,12)
+        self.closeConn(super_sock)
+
+        time.sleep(1)
+
+        #invio LOGO
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("LOGO" + self.session_ID_1)
+        #ricevo ALGO
+        ack = self.sockread(super_sock,14)
+        self.closeConn(super_sock)
+
+        #invio RPAD
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("RPAD" + self.session_ID_3 + "0900002020202020" + "00000000")
+        #ricevo APAD
+        ack = self.sockread(super_sock,12)
+        self.closeConn(super_sock)
+
+        time.sleep(1)
+
+        #invio LOGO
+        super_sock = self.openConn(self.my_IP, self.dir_port)
+        super_sock.sendall("LOGO" + self.session_ID_1)
+        #ricevo ALGO
+        ack = self.sockread(super_sock,14)
+        self.closeConn(super_sock)
+
+        time.sleep(1)
+
         #invio LOGO
         super_sock = self.openConn(self.my_IP, self.dir_port)
         super_sock.sendall("LOGO" + self.session_ID_2)
         #ricevo ALGO
         ack = self.sockread(super_sock,14)
         self.closeConn(super_sock)
+
+        time.sleep(1)
 
         #invio LOGO
         super_sock = self.openConn(self.my_IP, self.dir_port)
@@ -237,6 +214,7 @@ class BittorrentClient(object):
         self.closeConn(super_sock)
 
         """
+
 
         choice = ""
         while choice != "Y":

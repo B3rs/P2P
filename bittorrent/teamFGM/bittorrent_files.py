@@ -77,17 +77,18 @@ class FileHandler():
         #in ogni caso aggiorno gli uni
         partList = fileTable[index][1]
 
-        numByte = numpart_to_update / 8
+        numByte = numpart_to_update / 8 #0/8 fino a 7/8 mi da 0 quindi byte 0
 
-        offset = numpart_to_update % 8
+        offset = numpart_to_update % 8 #0%8 mi da 0, 7%8 mi da 7
 
         byte = partList[numByte]
         new_byte = ""
         for i in range(0,len(byte)):
-            if i != 8-offset:
-                new_byte += byte[i]
-            else:
+            if i == 8-offset-1: #8-0 da 8, 8-7 da 1 --> li trasformo in 8-0-1 che da 7 e 8-7-1 che da 0
                 new_byte += '1'
+            else:
+                new_byte += byte[i]
+
         partList[numByte] = new_byte
 
         self.setFileTable(fileTable)
@@ -102,7 +103,7 @@ class FileHandler():
 
         return cont #restituisco il numero di parti che questo peer possiede di questo file
 
-    def tryLogout(self,filetable_to_update):
+    def checkLogout(self,filetable_to_update):
 
         self.setFileTable(filetable_to_update)
 
@@ -125,17 +126,11 @@ class FileHandler():
                 if bit_ok and sorgente[j][k] == '1':
                     cont += 1
 
-
-        if canlogout == True: #se mi posso sloggare
-
-            fileTable.pop(0) #elimino l'elemento 0 (peer sorgente)
-            self.setFileTable(fileTable) #aggiorno la tabella, altrimenti non ce n'e' bisogno visto che non l'ho modificata
-
         to_return = []
         to_return.append(canlogout)
         to_return.append(cont)
-
         return to_return
+
 
     def deleteParts(self,sessionID, filetable_to_update):
 
@@ -146,6 +141,7 @@ class FileHandler():
         k=0
         pop=False
         cont = 0
+
         while k < len(fileTable):
 
             if fileTable[k][0] == sessionID:
@@ -171,6 +167,10 @@ class FileHandler():
         to_return = []
         to_return.append(pop)
         to_return.append(cont)
+        if len(fileTable)==0:
+            to_return.append("y")
+        else:
+            to_return.append("n")
 
         return to_return
 

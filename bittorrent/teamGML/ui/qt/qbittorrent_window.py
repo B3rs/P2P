@@ -47,7 +47,8 @@ class QBittorrentWindow(QMainWindow):
 
         if len(tracker_ip)>0 and len(tracker_port) > 0:
             self.ui.trackerStatusLabel.setText("Sto connettendo...")
-            self.request_emitter.login(tracker_ip, tracker_port)
+            if self.request_emitter.login(tracker_ip, tracker_port):
+                self.ui.trackerStatusLabel.setText("Connesso")
 
 
     def _logout(self):

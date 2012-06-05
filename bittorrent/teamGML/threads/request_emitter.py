@@ -41,6 +41,7 @@ class RequestEmitter(object):
                 UsersManager.set_tracker(Peer(tracker_ip,tracker_port))
 
                 self.ui_handler.login_done(my_session_id)
+                return True
             else:
                 raise Exception("Response command error: %s" %response)
         except Exception, ex:
@@ -82,7 +83,7 @@ class RequestEmitter(object):
             klog("LOGOUT Done. Deleted %d files" % num_file_deleted)
         elif response == "NLOG":
             num_files = int(read_from_socket(sock, 10))
-            klog("LOGOUT refused from directory, you are the source for %s files" % num_files)
+            klog("LOGOUT refused from directory, you are the source for %d files" % num_files)
         else:
             klog("LOGOUT not working correctly in directory")
         sock.close()
@@ -97,9 +98,9 @@ class RequestEmitter(object):
     def download_part(self, peer_ip, peer_port, file_id, file_part):
         FilesManager.set_status_part_for_file(file_id, file_part, "downloading")
         downloadSocket = connect_socket(peer_ip, peer_port)
-        downloadSocket.send("RETP")
-        downloadSocket.send(format_fileid(file_id))
-        downloadSocket.send(format_partnum(file_part))
+        downloadSocket.send("RETP"+format_fileid(file_id)+format_partnum(file_part))
+        #downloadSocket.send(format_fileid(file_id))
+        #downloadSocket.send(format_partnum(file_part))
         # Star a thread that will take care of the download and of the socket management
         f = FilesManager.find_file_by_id(file_id)
         dlThread = DownloadThread(downloadSocket, f.filename, f.id, file_part, peer_ip, self, self.ui_handler)
